@@ -1,48 +1,51 @@
-import { FaBell, FaSearch } from "react-icons/fa";
-import { FcAreaChart } from "react-icons/fc";
-import { SlSettings } from "react-icons/sl";
+import { FaSearch } from "react-icons/fa";
 
 export default function Header() {
-    return (
-        <div id="header-container" className="flex justify-between items-center p-4">
-            {/* Search Bar */}
-            <div id="search-bar" className="relative w-full max-w-lg">
-                <input
-                    id="search-input"
-                    type="text"
-                    placeholder="Search Here..."
-                    className="border border-gray-100 p-2 pr-10 bg-white w-full max-w-lg rounded-md outline-none"
-                />
-                <FaSearch id="search-icon" className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-300" />
+  return (
+    <nav
+      id="header-container"
+      className="absolute top-0 left-0 w-full z-10 bg-transparent md:flex-row md:flex-nowrap md:justify-start flex items-center p-4"
+    >
+      <div className="w-full mx-autp items-center flex justify-between md:flex-nowrap flex-wrap md:px-10 px-4">
+        {/* Search Bar & Profile Section */}
+        <div className="flex flex-row flex-wrap items-center lg:ml-auto mr-3">
+          <form className="md:flex hidden flex-row flex-wrap items-center lg:ml-auto mr-3">
+            <div className="relative flex w-full flex-wrap items-stretch">
+              <span className="z-10 h-full leading-snug font-normal absolute text-center text-gray-400 absolute bg-transparent rounded text-base items-center justify-center w-8 pl-3 py-3">
+                <FaSearch />
+              </span>
+              <input
+                id="search-input"
+                type="text"
+                placeholder="Search here..."
+                className="border-0 px-3 py-3 placeholder-gray-400 text-gray-600 relative bg-white rounded text-sm shadow outline-none focus:outline-none focus:ring w-full pl-10"
+              />
             </div>
+          </form>
 
-            {/* Icon & Profile Section */}
-            <div id="icons-container" className="flex items-center space-x-4">
-                {/* Icons */}
-                <div id="notification-icon" className="relative p-3 bg-blue-100 rounded-2xl text-blue-500 cursor-pointer">
-                    <FaBell />
-                    <span id="notification-badge" className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/2 bg-blue-200 rounded-full px-2 py-1 text-xs">50</span>
-                </div>
-                <div id="chart-icon" className="p-3 bg-blue-100 rounded-2xl cursor-pointer">
-                    <FcAreaChart />
-                </div>
-                <div id="settings-icon" className="p-3 bg-red-100 rounded-2xl text-red-500 cursor-pointer">
-                    <SlSettings />
-                </div>
-             
-
-                {/* Profile Section */}
-                <div id="profile-container" className="flex items-center space-x-4 border-l pl-4 border-gray-300">
-                    <span id="profile-text">
-                        Hello, <b>Zika Dwi Alya Putri</b>
-                    </span>
-                    <img
-                        id="profile-avatar"
-                        src="public\img\pp.jpg"
-                        className="w-10 h-10 rounded-full"
-                    />
-                </div>
+          {/* Profile Section */}
+          <ul className="flex-col md:flex-row list-none items-center hidden md:flex">
+            <div
+              id="profile-container"
+              className="flex items-center space-x-3 text-white"
+            >
+              <span id="profile-text" className="text-sm hidden lg:block">
+                Hello, <span className="font-bold">Zika Dwi Alya Putri</span>
+              </span>
+              <div className="items-center flex">
+                <span className="w-12 h-12 text-sm text-white bg-gray-200 inline-flex items-center justify-center rounded-full">
+                  <img
+                    id="profile-avatar"
+                    alt="..."
+                    className="w-full rounded-full align-middle border-none shadow-lg"
+                    src="/img/pp.jpg"
+                  />
+                </span>
+              </div>
             </div>
+          </ul>
         </div>
-    );
+      </div>
+    </nav>
+  );
 }

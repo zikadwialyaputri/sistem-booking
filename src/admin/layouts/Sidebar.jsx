@@ -1,53 +1,119 @@
-import { AiOutlineUser } from "react-icons/ai"; 
-import { AiTwotoneCustomerService } from "react-icons/ai"; 
-import { AiOutlineOrderedList } from "react-icons/ai"; 
-import { MdSpaceDashboard } from "react-icons/md"; 
+import { AiOutlineUser, AiOutlineCalendar } from "react-icons/ai";
+import {
+  MdSpaceDashboard,
+  MdOutlineSportsTennis,
+  MdOutlineAnalytics,
+} from "react-icons/md";
+import { HiOutlineDocumentReport } from "react-icons/hi";
+
+const menuItems = [
+  {
+    section: "Main Menu",
+    items: [
+      {
+        id: "dashboard",
+        label: "Dashboard",
+        icon: MdSpaceDashboard,
+        active: true,
+      },
+      {
+        id: "booking",
+        label: "Daftar Booking",
+        icon: AiOutlineCalendar,
+      },
+    ],
+  },
+  {
+    section: "Manajemen",
+    items: [
+      {
+        id: "customers",
+        label: "Data Pelanggan",
+        icon: AiOutlineUser,
+      },
+      {
+        id: "court",
+        label: "Status Lapangan",
+        icon: MdOutlineSportsTennis,
+      },
+    ],
+  },
+  {
+    section: "Monitoring (Owner)",
+    items: [
+      {
+        id: "reports",
+        label: "Laporan Bulanan",
+        icon: HiOutlineDocumentReport,
+      },
+      {
+        id: "stats",
+        label: "Statistik Ramai",
+        icon: MdOutlineAnalytics,
+      },
+    ],
+  },
+];
+
 export default function Sidebar() {
-    return (
-        <div id="sidebar" className="flex min-h-screen w-90 flex-col bg-white p-10 shadow-lg">
-            {/* Logo */}
-            <div id="sidebar-logo"className="flex flex-col">
-                <span id="logo-title" className="font-poppins-extrabold text-[48px] text-gray-900">
-		                Sedap <b id="logo-dot" className="text-hijau">.</b>
-		            </span>
-                <span id="logo-subtitle" className="font-semibold text-gray-400">Modern Admin Dashboard</span>
-            </div>
-
-            {/* List Menu */}
-            <div id="sidebar-menu" className="mt-10">
-                <ul id="menu-list" className="space-y-3">
-                    <li>
-	                    <div id="menu-1" className="hover:text-hijau flex cursor-pointer items-center rounded-xl p-4 font-medium text-gray-600 hover:bg-green-200 hover:font-extrabold">
-                            <MdSpaceDashboard  className="mr-4 text-xl" />
-                            Dashboard</div>
-	                  </li>
-                    <li>
-	                    <div id="menu-2" className="hover:text-hijau flex cursor-pointer items-center rounded-xl p-4 font-medium text-gray-600 hover:bg-green-200 hover:font-extrabold">
-                            <AiOutlineOrderedList className="mr-4 text-xl"  />
-                            Orders</div>
-	                  </li>
-	                  <li>
-	                    <div id="menu-3" className="hover:text-hijau flex cursor-pointer items-center rounded-xl p-4 font-medium text-gray-600 hover:bg-green-200 hover:font-extrabold">
-                            <AiOutlineUser className="mr-4 text-xl"  />
-                            Customers</div>
-	                  </li>
-                </ul>
-            </div>
-
-            {/* Footer */}
-            <div id="sidebar-footer" className="mt-auto">
-                <div id="footer-card" className="bg-hijau px-4 py-2 rounded-md shadow-lg mb-10 flex items-center">
-                    <div id="footer-text" className="text-white text-sm">
-                        <span>Please organize your menus through button below!</span>
-                        <div id="add-menu-button" className="flex justify-center items-center p-2 mt-3 bg-white rounded-md space-x-2">
-                            <span className="text-gray-600 flex items-center">Add Menus</span>
-                        </div>
-                    </div>
-                    <img id="footer-avatar" className="w-20 rounded-full" src="public\img\pp.jpg" />
-                </div>
-                <span id="footer-brand" className="font-bold text-gray-400">Sedap Restaurant Admin Dashboard</span>
-                <p id="footer-copyright" className="font-light text-gray-400">&copy; 2025 All Right Reserved</p>
-            </div>
+  return (
+    <div className="flex min-h-screen w-72 flex-col bg-white p-6 shadow-xl border-r border-gray-100">
+      {/* Logo */}
+      <div className="flex flex-col px-4 mb-8">
+        <div className="flex items-center space-x-3">
+          <MdOutlineSportsTennis className="text-3xl text-blue-600" />
+          <div className="font-bold text-xl text-slate-800">
+            Smash<span className="text-blue-600">Booking</span>
+          </div>
         </div>
-    );
+        <span className="text-[10px] mt-2 font-bold text-gray-400 uppercase tracking-widest">
+          Manajemen Lapangan
+        </span>
+      </div>
+
+      {/* Menu */}
+      <div className="flex-grow">
+        {menuItems.map((section, index) => (
+          <div key={index} className="mt-6">
+            <p className="text-[10px] font-bold text-gray-400 uppercase px-4 mb-2">
+              {section.section}
+            </p>
+
+            <ul className="space-y-2">
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <li key={item.id}>
+                    <div
+                      className={`flex items-center rounded-xl p-3 cursor-pointer transition-all
+                        ${
+                          item.active
+                            ? "bg-blue-50 text-blue-600 font-semibold"
+                            : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                        }`}
+                    >
+                      <Icon className="mr-4 text-xl" />
+                      {item.label}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-auto pt-6 border-t border-gray-100">
+        <div className="px-2">
+          <span className="text-[11px] font-bold text-gray-500 uppercase">
+            Badminton Court System
+          </span>
+          <p className="text-[10px] text-gray-400">
+            &copy; 2026 SmashBooking v1.0
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
