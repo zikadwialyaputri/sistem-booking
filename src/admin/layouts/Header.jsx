@@ -30,7 +30,7 @@ export default function Header() {
               className="flex items-center space-x-3 text-white"
             >
               <span id="profile-text" className="text-sm hidden lg:block">
-                Hello, <span className="font-bold">Zika Dwi Alya Putri</span>
+                Hello, <span className="font-bold">Anggota kelompok 5</span>
               </span>
               <div className="items-center flex">
                 <span className="w-12 h-12 text-sm text-white bg-gray-200 inline-flex items-center justify-center rounded-full">
