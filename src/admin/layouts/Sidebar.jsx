@@ -1,118 +1,80 @@
-import { AiOutlineUser, AiOutlineCalendar } from "react-icons/ai";
 import {
   MdSpaceDashboard,
-  MdOutlineSportsTennis,
-  MdOutlineAnalytics,
+  MdSportsTennis,
+  MdBarChart
 } from "react-icons/md";
-import { HiOutlineDocumentReport } from "react-icons/hi";
 
-const menuItems = [
-  {
-    section: "Main Menu",
-    items: [
-      {
-        id: "dashboard",
-        label: "Dashboard",
-        icon: MdSpaceDashboard,
-        active: true,
-      },
-      {
-        id: "booking",
-        label: "Daftar Booking",
-        icon: AiOutlineCalendar,
-      },
-    ],
-  },
-  {
-    section: "Manajemen",
-    items: [
-      {
-        id: "customers",
-        label: "Data Pelanggan",
-        icon: AiOutlineUser,
-      },
-      {
-        id: "court",
-        label: "Status Lapangan",
-        icon: MdOutlineSportsTennis,
-      },
-    ],
-  },
-  {
-    section: "Monitoring (Owner)",
-    items: [
-      {
-        id: "reports",
-        label: "Laporan Bulanan",
-        icon: HiOutlineDocumentReport,
-      },
-      {
-        id: "stats",
-        label: "Statistik Ramai",
-        icon: MdOutlineAnalytics,
-      },
-    ],
-  },
-];
+import {
+  AiOutlineUnorderedList,
+  AiOutlineUser
+} from "react-icons/ai";
+
+import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
+  const menuClass = ({ isActive }) =>
+    `flex items-center p-3 rounded-lg transition-all ${
+      isActive
+        ? "bg-blue-100 text-blue-600 font-semibold"
+        : "text-gray-500 hover:bg-blue-50 hover:text-blue-600"
+    }`;
+
   return (
-    <div className="flex min-h-screen w-72 flex-col bg-white p-6 shadow-xl border-r border-gray-100">
+    <div className="w-64 bg-white shadow-lg p-6 flex flex-col min-h-screen">
+      
       {/* Logo */}
-      <div className="flex flex-col px-4 mb-8">
-        <div className="flex items-center space-x-3">
-          <MdOutlineSportsTennis className="text-3xl text-blue-600" />
-          <div className="font-bold text-xl text-slate-800">
-            Smash<span className="text-blue-600">Booking</span>
-          </div>
-        </div>
-        <span className="text-[10px] mt-2 font-bold text-gray-400 uppercase tracking-widest">
-          Manajemen Lapangan
-        </span>
+      <div className="mb-10">
+        <h1 className="text-xl font-bold text-blue-600">SmashBooking</h1>
+        <p className="text-sm text-gray-400">Manajemen Lapangan</p>
       </div>
 
-      {/* Menu */}
-      <div className="flex-grow">
-        {menuItems.map((section, index) => (
-          <div key={index} className="mt-6">
-            <p className="text-[10px] font-bold text-gray-400 uppercase px-4 mb-2">
-              {section.section}
-            </p>
+      {/* MAIN MENU */}
+      <div className="mb-6">
+        <p className="text-xs text-gray-400 mb-2">MAIN MENU</p>
 
-            <ul className="space-y-2">
-              {section.items.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <li key={item.id}>
-                    <div
-                      className={`flex items-center rounded-xl p-3 cursor-pointer transition-all
-                        ${
-                          item.active
-                            ? "bg-blue-50 text-blue-600 font-semibold"
-                            : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
-                        }`}
-                    >
-                      <Icon className="mr-4 text-xl" />
-                      {item.label}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+        <NavLink to="/admin/dashboard" className={menuClass}>
+          <MdSpaceDashboard className="mr-3" />
+          Dashboard
+        </NavLink>
+
+        <NavLink to="/admin/bookings" className={menuClass}>
+          <AiOutlineUnorderedList className="mr-3" />
+          Daftar Booking
+        </NavLink>
       </div>
 
-      {/* Footer */}
-      <div className="mt-auto pt-6 border-t border-gray-100">
-        <div className="px-2">
-          <span className="text-[11px] font-bold text-gray-500 uppercase">
-            Badminton Court System
-          </span>
-          <p className="text-[10px] text-gray-400">
-            &copy; 2026 SmashBooking v1.0
-          </p>
-        </div>
+      {/* MANAJEMEN */}
+      <div className="mb-6">
+        <p className="text-xs text-gray-400 mb-2">MANAJEMEN</p>
+
+        <NavLink to="/admin/customers" className={menuClass}>
+          <AiOutlineUser className="mr-3" />
+          Data Pelanggan
+        </NavLink>
+
+        <NavLink to="/admin/lapangan" className={menuClass}>
+          <MdSportsTennis className="mr-3" />
+          Status Lapangan
+        </NavLink>
+      </div>
+
+      {/* MONITORING */}
+      <div>
+        <p className="text-xs text-gray-400 mb-2">MONITORING</p>
+
+        <NavLink to="/admin/laporan" className={menuClass}>
+          <MdBarChart className="mr-3" />
+          Laporan Bulanan
+        </NavLink>
+
+        <NavLink to="/admin/statistik" className={menuClass}>
+          <MdBarChart className="mr-3" />
+          Statistik Ramai
+        </NavLink>
+      </div>
+
+      <div className="mt-auto text-xs text-gray-400">
+        © 2025 SmashBooking
       </div>
     </div>
   );
