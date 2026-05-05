@@ -1,23 +1,15 @@
-import {
-  MdSpaceDashboard,
-  MdSportsTennis,
-  MdBarChart
-} from "react-icons/md";
-
-import {
-  AiOutlineUnorderedList,
-  AiOutlineUser
-} from "react-icons/ai";
-
-import { NavLink } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function Sidebar() {
-  const menuClass = ({ isActive }) =>
-    `flex items-center p-3 rounded-lg transition-all ${
-      isActive
-        ? "bg-blue-100 text-blue-600 font-semibold"
-        : "text-gray-500 hover:bg-blue-50 hover:text-blue-600"
-    }`;
+  const { pathname } = useLocation();
+
+  const menu = [
+    { name: "Dashboard", path: "/admin" },
+    { name: "Daftar Booking", path: "/admin/bookings" },
+    { name: "Status Lapangan", path: "/admin/lapangan" },
+    { name: "Laporan", path: "/admin/laporan" },
+    { name: "Statistik", path: "/admin/statistik" },
+  ];
 
   const menus = [
     {
@@ -68,14 +60,10 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="w-64 bg-white shadow-lg p-6 flex flex-col min-h-screen">
-      
-      {/* Logo */}
-      <div className="mb-10">
-        <h1 className="text-xl font-bold text-blue-600">SmashBooking</h1>
-        <p className="text-sm text-gray-400">Manajemen Lapangan</p>
-      </div>
+    <div className="w-64 bg-white shadow-md p-4">
+      <h1 className="text-xl font-bold mb-6">SmashBooking</h1>
 
+<<<<<<< HEAD
       {/* Menu */}
       {menus.map((section, index) => (
         <div key={index} className="mb-6">
@@ -96,6 +84,21 @@ export default function Sidebar() {
       <div className="mt-auto text-xs text-gray-400">
         © 2025 SmashBooking
       </div>
+=======
+      {menu.map((item) => (
+        <Link
+          key={item.path}
+          to={item.path}
+          className={`block p-3 rounded-lg mb-2 ${
+            pathname === item.path
+              ? "bg-blue-500 text-white"
+              : "text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          {item.name}
+        </Link>
+      ))}
+>>>>>>> e3b00a9a6abd8dcd48ca9b13a99a413c1ee41b69
     </div>
   );
 }
