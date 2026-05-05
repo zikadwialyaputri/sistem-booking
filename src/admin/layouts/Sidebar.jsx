@@ -19,6 +19,54 @@ export default function Sidebar() {
         : "text-gray-500 hover:bg-blue-50 hover:text-blue-600"
     }`;
 
+  const menus = [
+    {
+      title: "MAIN MENU",
+      items: [
+        {
+          name: "Dashboard",
+          icon: <MdSpaceDashboard />,
+          path: "/admin/dashboard",
+        },
+        {
+          name: "Daftar Booking",
+          icon: <AiOutlineUnorderedList />,
+          path: "/admin/orders", // ✅ sesuai Orders.jsx
+        },
+      ],
+    },
+    {
+      title: "MANAJEMEN",
+      items: [
+        {
+          name: "Data Pelanggan",
+          icon: <AiOutlineUser />,
+          path: "/admin/customers",
+        },
+        {
+          name: "Status Lapangan",
+          icon: <MdSportsTennis />,
+          path: "/admin/status-lapangan", // ✅ konsisten
+        },
+      ],
+    },
+    {
+      title: "MONITORING",
+      items: [
+        {
+          name: "Laporan Bulanan",
+          icon: <MdBarChart />,
+          path: "/admin/reports", // ✅ dari Reports.jsx
+        },
+        {
+          name: "Statistik Ramal",
+          icon: <MdBarChart />,
+          path: "/admin/statistik",
+        },
+      ],
+    },
+  ];
+
   return (
     <div className="w-64 bg-white shadow-lg p-6 flex flex-col min-h-screen">
       
@@ -28,51 +76,23 @@ export default function Sidebar() {
         <p className="text-sm text-gray-400">Manajemen Lapangan</p>
       </div>
 
-      {/* MAIN MENU */}
-      <div className="mb-6">
-        <p className="text-xs text-gray-400 mb-2">MAIN MENU</p>
+      {/* Menu */}
+      {menus.map((section, index) => (
+        <div key={index} className="mb-6">
+          <p className="text-xs text-gray-400 mb-2">
+            {section.title}
+          </p>
 
-        <NavLink to="/admin/dashboard" className={menuClass}>
-          <MdSpaceDashboard className="mr-3" />
-          Dashboard
-        </NavLink>
+          {section.items.map((item, i) => (
+            <NavLink key={i} to={item.path} className={menuClass}>
+              <span className="mr-3 text-lg">{item.icon}</span>
+              {item.name}
+            </NavLink>
+          ))}
+        </div>
+      ))}
 
-        <NavLink to="/admin/bookings" className={menuClass}>
-          <AiOutlineUnorderedList className="mr-3" />
-          Daftar Booking
-        </NavLink>
-      </div>
-
-      {/* MANAJEMEN */}
-      <div className="mb-6">
-        <p className="text-xs text-gray-400 mb-2">MANAJEMEN</p>
-
-        <NavLink to="/admin/customers" className={menuClass}>
-          <AiOutlineUser className="mr-3" />
-          Data Pelanggan
-        </NavLink>
-
-        <NavLink to="/admin/lapangan" className={menuClass}>
-          <MdSportsTennis className="mr-3" />
-          Status Lapangan
-        </NavLink>
-      </div>
-
-      {/* MONITORING */}
-      <div>
-        <p className="text-xs text-gray-400 mb-2">MONITORING</p>
-
-        <NavLink to="/admin/laporan" className={menuClass}>
-          <MdBarChart className="mr-3" />
-          Laporan Bulanan
-        </NavLink>
-
-        <NavLink to="/admin/statistik" className={menuClass}>
-          <MdBarChart className="mr-3" />
-          Statistik Ramai
-        </NavLink>
-      </div>
-
+      {/* Footer */}
       <div className="mt-auto text-xs text-gray-400">
         © 2025 SmashBooking
       </div>

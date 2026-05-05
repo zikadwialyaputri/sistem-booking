@@ -2,49 +2,48 @@ import { FaSearch } from "react-icons/fa";
 
 export default function Header() {
   return (
-    <nav
-      id="header-container"
-      className="absolute top-0 left-0 w-full z-10 bg-transparent md:flex-row md:flex-nowrap md:justify-start flex items-center p-4"
-    >
-      <div className="w-full mx-autp items-center flex justify-between md:flex-nowrap flex-wrap md:px-10 px-4">
-        {/* Search Bar & Profile Section */}
-        <div className="flex flex-row flex-wrap items-center lg:ml-auto mr-3">
-          <form className="md:flex hidden flex-row flex-wrap items-center lg:ml-auto mr-3">
-            <div className="relative flex w-full flex-wrap items-stretch">
-              <span className="z-10 h-full leading-snug font-normal absolute text-center text-gray-400 absolute bg-transparent rounded text-base items-center justify-center w-8 pl-3 py-3">
-                <FaSearch />
-              </span>
-              <input
-                id="search-input"
-                type="text"
-                placeholder="Search here..."
-                className="border-0 px-3 py-3 placeholder-gray-400 text-gray-600 relative bg-white rounded text-sm shadow outline-none focus:outline-none focus:ring w-full pl-10"
-              />
-            </div>
-          </form>
+    <nav className="w-full z-10 bg-white/10 backdrop-blur-md border-b border-white/20">
 
-          {/* Profile Section */}
-          <ul className="flex-col md:flex-row list-none items-center hidden md:flex">
-            <div
-              id="profile-container"
-              className="flex items-center space-x-3 text-white"
-            >
-              <span id="profile-text" className="text-sm hidden lg:block">
-                Hello, <span className="font-bold">Anggota kelompok 5</span>
-              </span>
-              <div className="items-center flex">
-                <span className="w-12 h-12 text-sm text-white bg-gray-200 inline-flex items-center justify-center rounded-full">
-                  <img
-                    id="profile-avatar"
-                    alt="..."
-                    className="w-full rounded-full align-middle border-none shadow-lg"
-                    src="/img/pp.jpg"
-                  />
-                </span>
-              </div>
-            </div>
-          </ul>
+      <div className="flex items-center justify-between px-6 md:px-10 py-4">
+
+        {/* SEARCH */}
+        <div className="hidden md:flex items-center w-1/3">
+          <div className="relative w-full">
+
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+
+            <input
+              type="text"
+              placeholder="Cari booking, customer..."
+              className="w-full pl-10 pr-4 py-2 rounded-lg bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+
+          </div>
         </div>
+
+        {/* TITLE MOBILE */}
+        <div className="md:hidden text-white font-bold text-lg">
+          SmashBooking
+        </div>
+
+        {/* PROFILE */}
+        <div className="flex items-center gap-3 text-black">
+
+          <div className="hidden sm:block text-right">
+            <p className="text-xs opacity-80">Welcome</p>
+            <p className="text-sm font-bold">Kelompok 5</p>
+          </div>
+
+          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md">
+            <img
+              src="/img/pp.jpg"
+              alt="profile"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+        </div>
+
       </div>
     </nav>
   );
