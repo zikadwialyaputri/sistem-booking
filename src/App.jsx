@@ -4,7 +4,6 @@ import { Routes, Route } from "react-router-dom";
 
 import Orders from "./admin/pages/Orders.jsx";
 import Dashboard from "./admin/pages/Dashboard.jsx";
-import Customers from "./admin/pages/Customers.jsx";
 import StatusLapangan from "./admin/pages/StatusLapangan.jsx";
 import Laporan from "./admin/pages/Laporan.jsx";
 import Statistik from "./admin/pages/Statistik.jsx";
@@ -20,7 +19,6 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/orders" element={<Orders />} />
-            <Route path="/customers" element={<Customers />} />
             <Route path="/lapangan" element={<StatusLapangan />} />
             <Route path="/laporan" element={<Laporan />} />
             <Route path="/statistik" element={<Statistik />} />
