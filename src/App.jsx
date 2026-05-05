@@ -2,6 +2,7 @@
 // import Header from "./admin/layouts/Header";
 // import { Routes, Route } from "react-router-dom";
 
+<<<<<<< HEAD
 // import Orders from "./admin/pages/Orders.jsx";
 // import Dashboard from "./admin/pages/Dashboard.jsx";
 // import Customers from "./admin/pages/Customers.jsx";
@@ -12,10 +13,22 @@
 //   return (
 //     <div className="bg-gray-100 min-h-screen flex">
 //       <Sidebar />
+=======
+import Orders from "./admin/pages/Orders.jsx";
+import Dashboard from "./admin/pages/Dashboard.jsx";
+import StatusLapangan from "./admin/pages/StatusLapangan.jsx";
+import Laporan from "./admin/pages/Laporan.jsx";
+import Statistik from "./admin/pages/Statistik.jsx";
+export default function App() {
+  return (
+    <div className="bg-gray-100 min-h-screen flex">
+      <Sidebar />
+>>>>>>> e118cc1325f716bf76a645d8a905818a91b6ae07
 
 //       <div className="flex-1">
 //         <Header />
 
+<<<<<<< HEAD
 //         <div className="p-6 mt-16">
 //           <Routes>
 //             <Route path="/" element={<Dashboard />} />
@@ -30,3 +43,18 @@
 //     </div>
 //   );
 // }
+=======
+        <div className="p-6 mt-16">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/lapangan" element={<StatusLapangan />} />
+            <Route path="/laporan" element={<Laporan />} />
+            <Route path="/statistik" element={<Statistik />} />
+          </Routes>
+        </div>
+      </div>
+    </div>
+  );
+}
+>>>>>>> e118cc1325f716bf76a645d8a905818a91b6ae07
