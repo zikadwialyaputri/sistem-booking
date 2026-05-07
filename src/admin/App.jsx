@@ -1,41 +1,37 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
-import Sidebar from "./layouts/Sidebar";
-import Header from "./layouts/Header";
+// Layouts
+import MainLayout from "./layouts/MainLayout";
+import AuthLayout from "./layouts/AuthLayout";
 
+// Main Pages
 import Dashboard from "./pages/Dashboard";
 import Orders from "./pages/Orders";
 import Customers from "./pages/Customers";
-import StatusLapangan from "./pages/StatusLapangan";
-import Laporan from "./pages/Reports";
-import Statistik from "./pages/Statistik";
+
+// Auth Pages
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Forgot from "./pages/auth/Forgot";
 
 export default function App() {
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <Routes>
 
-      <Sidebar />
+      {/* Main Layout */}
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/customers" element={<Customers />} />
+      </Route>
 
-      <div className="flex flex-col flex-1">
-        <Header />
-        <main className="flex-1 p-4 md:p-6 overflow-auto">
+      {/* Auth Layout */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot" element={<Forgot />} />
+      </Route>
 
-          <Routes>
-            <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
-
-            <Route path="/admin/dashboard" element={<Dashboard />} />
-            <Route path="/admin/orders" element={<Orders />} />
-            <Route path="/admin/customers" element={<Customers />} />
-            <Route path="/admin/status-lapangan" element={<StatusLapangan />} />
-            <Route path="/admin/reports" element={<Laporan />} />
-            <Route path="/admin/statistik" element={<Statistik />} />
-
-            <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
-
-          </Routes>
-
-        </main>
-      </div>
-    </div>
+    </Routes>
   );
 }
