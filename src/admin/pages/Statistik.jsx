@@ -3,15 +3,6 @@ import PageHeader from "../components/PageHeader";
 export default function Statistik() {
 
   const data = [
-    { jam: "06:00", level: 20 },
-    { jam: "07:00", level: 40 },
-    { jam: "08:00", level: 80 },
-    { jam: "09:00", level: 60 },
-    { jam: "10:00", level: 50 },
-    { jam: "11:00", level: 30 },
-    { jam: "12:00", level: 70 },
-    { jam: "13:00", level: 90 },
-    { jam: "14:00", level: 60 },
     { jam: "15:00", level: 85 },
     { jam: "16:00", level: 95 },
     { jam: "17:00", level: 100 },
@@ -65,7 +56,7 @@ export default function Statistik() {
 
           <div className="bg-white p-6 rounded-xl shadow-lg border-b-4 border-green-500">
             <p className="text-gray-400 text-sm">Jam Sepi</p>
-            <h2 className="text-2xl font-bold">06:00</h2>
+            <h2 className="text-2xl font-bold">15:00</h2>
           </div>
 
         </div>

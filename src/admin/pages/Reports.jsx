@@ -20,37 +20,31 @@ export default function Laporan() {
       : laporan.filter((l) => l.bulan === selectedMonth);
 
   const totalBooking = filtered.reduce((acc, cur) => acc + cur.totalBooking, 0);
-  const totalPendapatan = filtered.reduce((acc, cur) => acc + cur.pendapatan, 0);
+  const totalPendapatan = filtered.reduce(
+    (acc, cur) => acc + cur.pendapatan,
+    0,
+  );
 
-  const formatRupiah = (num) =>
-    "Rp " + num.toLocaleString("id-ID");
+  const formatRupiah = (num) => "Rp " + num.toLocaleString("id-ID");
 
   return (
     <div className="relative bg-gray-100 min-h-screen">
-
       {/* BACKGROUND */}
       <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
-        <img
-          src="/img/badminton.jpg"
-          className="w-full h-full object-cover"
-        />
+        <img src="/img/badminton.jpg" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-blue-700/80 via-blue-500/60 to-indigo-600/80"></div>
       </div>
 
       {/* CONTENT */}
       <div className="relative z-10 p-5 md:p-10">
-
-        <PageHeader
-          title="Laporan Bulanan"
-          breadcrumb={["Admin", "Laporan"]}
-        />
+        <PageHeader title="Laporan Bulanan" breadcrumb={["Admin", "Laporan"]} />
 
         {/* FILTER */}
         <div className="mt-6 mb-6">
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="px-4 py-2 rounded-lg shadow outline-none"
+            className="px-4 py-2 rounded-lg shadow outline-none bg-white text-gray-700 border border-gray-200 focus:ring-2 focus:ring-blue-400"
           >
             <option>Semua</option>
             {laporan.map((l, i) => (
@@ -61,7 +55,6 @@ export default function Laporan() {
 
         {/* SUMMARY CARDS */}
         <div className="grid md:grid-cols-3 gap-4 mb-6">
-
           <div className="bg-white p-6 rounded-xl shadow-lg flex justify-between items-center border-b-4 border-blue-500">
             <div>
               <p className="text-gray-400 text-sm">Total Booking</p>
@@ -91,7 +84,6 @@ export default function Laporan() {
             </div>
             <FaChartLine className="text-purple-500 text-2xl" />
           </div>
-
         </div>
 
         {/* TABLE */}
@@ -119,10 +111,8 @@ export default function Laporan() {
                 </tr>
               ))}
             </tbody>
-
           </table>
         </div>
-
       </div>
     </div>
   );

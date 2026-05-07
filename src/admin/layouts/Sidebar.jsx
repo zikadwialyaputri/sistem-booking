@@ -35,7 +35,7 @@ export default function Sidebar() {
         {
           name: "Daftar Booking",
           icon: <AiOutlineUnorderedList />,
-          path: "/admin/orders", // ✅ sesuai Orders.jsx
+          path: "/admin/orders",
         },
       ],
     },
@@ -50,7 +50,7 @@ export default function Sidebar() {
         {
           name: "Status Lapangan",
           icon: <MdSportsTennis />,
-          path: "/admin/status-lapangan", // ✅ konsisten
+          path: "/admin/status-lapangan", 
         },
       ],
     },
@@ -60,7 +60,7 @@ export default function Sidebar() {
         {
           name: "Laporan Bulanan",
           icon: <MdBarChart />,
-          path: "/admin/reports", // ✅ dari Reports.jsx
+          path: "/admin/reports", 
         },
         {
           name: "Statistik Ramal",

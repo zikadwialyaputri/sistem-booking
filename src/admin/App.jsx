@@ -14,21 +14,13 @@ export default function App() {
   return (
     <div className="flex min-h-screen bg-gray-100">
 
-      {/* SIDEBAR */}
       <Sidebar />
 
-      {/* CONTENT AREA */}
       <div className="flex flex-col flex-1">
-
-        {/* HEADER */}
         <Header />
-
-        {/* PAGE CONTENT */}
         <main className="flex-1 p-4 md:p-6 overflow-auto">
 
           <Routes>
-
-            {/* default redirect */}
             <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
 
             <Route path="/admin/dashboard" element={<Dashboard />} />
@@ -38,7 +30,6 @@ export default function App() {
             <Route path="/admin/reports" element={<Laporan />} />
             <Route path="/admin/statistik" element={<Statistik />} />
 
-            {/* fallback kalau URL salah */}
             <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
 
           </Routes>
