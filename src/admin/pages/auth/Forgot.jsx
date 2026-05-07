@@ -1,32 +1,29 @@
 export default function Forgot() {
     return (
         <div>
-            {/* Title */}
+            {/* Heading */}
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-800">
                     Lupa Password?
                 </h2>
 
-
                 <p className="text-gray-500 mt-2 text-sm leading-relaxed">
-                    Masukkan email admin yang terdaftar untuk menerima
-                    link reset password akun SmashBooking.
+                    Masukkan email akun kamu untuk menerima
+                    link reset password SmashBooking.
                 </p>
             </div>
 
-
             {/* Form */}
             <form className="space-y-5">
-               
+
                 {/* Email */}
                 <div>
                     <label
                         htmlFor="email"
                         className="block text-sm font-semibold text-gray-700 mb-2"
                     >
-                        Email Admin
+                        Email
                     </label>
-
 
                     <input
                         type="email"
@@ -46,7 +43,6 @@ export default function Forgot() {
                     />
                 </div>
 
-
                 {/* Button */}
                 <button
                     type="submit"
@@ -62,7 +58,6 @@ export default function Forgot() {
                 </button>
             </form>
 
-
             {/* Back Login */}
             <div className="text-center mt-6">
                 <a
@@ -72,6 +67,11 @@ export default function Forgot() {
                     ← Kembali ke Login
                 </a>
             </div>
+
+            {/* Footer */}
+            <p className="text-center text-sm text-gray-400 mt-6">
+                SmashBooking - Sistem Booking Lapangan Badminton
+            </p>
         </div>
     );
 }
