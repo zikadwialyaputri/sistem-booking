@@ -8,12 +8,16 @@ import Loading from "./components/Loading";
 import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 
-// Lazy Pages
+// Pages
 const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 const Orders = React.lazy(() => import("./pages/Orders"));
 const Customers = React.lazy(() => import("./pages/Customers"));
+const Reports = React.lazy(() => import("./pages/Reports"));
+const Statistik = React.lazy(() => import("./pages/Statistik"));
+const StatusLapangan = React.lazy(() => import("./pages/StatusLapangan"));
 const NotFound = React.lazy(() => import("./pages/NotFound"));
 
+// Auth Pages
 const Login = React.lazy(() => import("./pages/auth/Login"));
 const Register = React.lazy(() => import("./pages/auth/Register"));
 const Forgot = React.lazy(() => import("./pages/auth/Forgot"));
@@ -23,18 +27,28 @@ export default function App() {
         <Suspense fallback={<Loading />}>
             <Routes>
 
-                {/* Main Layout */}
-                <Route element={<MainLayout />}>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/orders" element={<Orders />} />
-                    <Route path="/customers" element={<Customers />} />
+                {/* Admin Layout */}
+                <Route path="/admin" element={<MainLayout />}>
+
+                    {/* Dashboard */}
+                    <Route index element={<Dashboard />} />
+
+                    {/* Pages */}
+                    <Route path="orders" element={<Orders />} />
+                    <Route path="customers" element={<Customers />} />
+                    <Route path="reports" element={<Reports />} />
+                    <Route path="statistik" element={<Statistik />} />
+                    <Route path="status-lapangan" element={<StatusLapangan />} />
+
                 </Route>
 
                 {/* Auth Layout */}
                 <Route element={<AuthLayout />}>
+
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/forgot" element={<Forgot />} />
+
                 </Route>
 
                 {/* 404 */}

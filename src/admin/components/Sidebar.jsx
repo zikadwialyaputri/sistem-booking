@@ -1,27 +1,17 @@
-import {
-  MdSpaceDashboard,
-  MdSportsTennis,
-  MdBarChart
-} from "react-icons/md";
+import { MdSpaceDashboard, MdSportsTennis, MdBarChart } from "react-icons/md";
 
-
-import {
-  AiOutlineUnorderedList,
-  AiOutlineUser
-} from "react-icons/ai";
-
+import { AiOutlineUnorderedList, AiOutlineUser } from "react-icons/ai";
 
 import { NavLink } from "react-router-dom";
 
-
 export default function Sidebar() {
   const menuClass = ({ isActive }) =>
-    `flex items-center p-3 rounded-lg transition-all ${
+    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium
+    ${
       isActive
-        ? "bg-blue-100 text-blue-600 font-semibold"
-        : "text-gray-500 hover:bg-blue-50 hover:text-blue-600"
+        ? "bg-blue-100 text-blue-600 shadow-sm"
+        : "text-gray-600 hover:bg-blue-50 hover:text-blue-600"
     }`;
-
 
   const menus = [
     {
@@ -29,12 +19,12 @@ export default function Sidebar() {
       items: [
         {
           name: "Dashboard",
-          icon: <MdSpaceDashboard />,
-          path: "/admin/dashboard",
+          icon: <MdSpaceDashboard size={22} />,
+          path: "/admin",
         },
         {
           name: "Daftar Booking",
-          icon: <AiOutlineUnorderedList />,
+          icon: <AiOutlineUnorderedList size={22} />,
           path: "/admin/orders",
         },
       ],
@@ -44,13 +34,13 @@ export default function Sidebar() {
       items: [
         {
           name: "Data Pelanggan",
-          icon: <AiOutlineUser />,
+          icon: <AiOutlineUser size={22} />,
           path: "/admin/customers",
         },
         {
           name: "Status Lapangan",
-          icon: <MdSportsTennis />,
-          path: "/admin/status-lapangan", 
+          icon: <MdSportsTennis size={22} />,
+          path: "/admin/status-lapangan",
         },
       ],
     },
@@ -59,52 +49,59 @@ export default function Sidebar() {
       items: [
         {
           name: "Laporan Bulanan",
-          icon: <MdBarChart />,
-          path: "/admin/reports", 
+          icon: <MdBarChart size={22} />,
+          path: "/admin/reports",
         },
         {
           name: "Statistik Ramal",
-          icon: <MdBarChart />,
+          icon: <MdBarChart size={22} />,
           path: "/admin/statistik",
         },
       ],
     },
   ];
 
-
   return (
-    <div className="w-64 bg-white shadow-lg p-6 flex flex-col min-h-screen">
-     
+    <aside className="w-64 min-h-screen bg-white border-r border-gray-100 shadow-sm flex flex-col">
       {/* Logo */}
-      <div className="mb-10">
-        <h1 className="text-xl font-bold text-blue-600">SmashBooking</h1>
-        <p className="text-sm text-gray-400">Manajemen Lapangan</p>
-      </div>
+      <div className="px-6 py-8 border-b border-gray-100">
+        <h1 className="text-2xl font-bold text-blue-600">SmashBooking</h1>
 
+        <p className="text-sm text-gray-400 mt-1">Manajemen Lapangan</p>
+      </div>
 
       {/* Menu */}
-      {menus.map((section, index) => (
-        <div key={index} className="mb-6">
-          <p className="text-xs text-gray-400 mb-2">
-            {section.title}
-          </p>
+      <div className="flex-1 px-4 py-6 overflow-y-auto">
+        {menus.map((section, index) => (
+          <div key={index} className="mb-8">
+            {/* Section Title */}
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">
+              {section.title}
+            </p>
 
+            {/* Menu Items */}
+            <div className="space-y-2">
+              {section.items.map((item, i) => (
+                <NavLink
+                  key={i}
+                  to={item.path}
+                  end={item.path === "/admin"}
+                  className={menuClass}
+                >
+                  {item.icon}
 
-          {section.items.map((item, i) => (
-            <NavLink key={i} to={item.path} className={menuClass}>
-              <span className="mr-3 text-lg">{item.icon}</span>
-              {item.name}
-            </NavLink>
-          ))}
-        </div>
-      ))}
-
+                  <span>{item.name}</span>
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Footer */}
-      <div className="mt-auto text-xs text-gray-400">
+      <div className="px-6 py-4 border-t border-gray-100 text-xs text-gray-400">
         © 2025 SmashBooking
       </div>
-    </div>
+    </aside>
   );
 }
-
