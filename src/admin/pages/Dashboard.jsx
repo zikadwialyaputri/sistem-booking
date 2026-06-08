@@ -5,9 +5,24 @@ import {
   FaWallet,
 } from "react-icons/fa";
 import PageHeader from "../components/PageHeader";
-
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 export default function Dashboard() {
-
+  const bookingData = [
+    { bulan: "Jan", booking: 15 },
+    { bulan: "Feb", booking: 22 },
+    { bulan: "Mar", booking: 18 },
+    { bulan: "Apr", booking: 30 },
+    { bulan: "Mei", booking: 27 },
+    { bulan: "Jun", booking: 35 },
+  ];
   const stats = [
     {
       title: "Total Booking",
@@ -64,7 +79,6 @@ export default function Dashboard() {
 
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
-
       {/* GLOW BACKGROUND */}
       <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-400/20 blur-3xl rounded-full"></div>
       <div className="absolute top-40 right-0 w-96 h-96 bg-indigo-400/20 blur-3xl rounded-full"></div>
@@ -81,7 +95,6 @@ export default function Dashboard() {
 
       {/* CONTENT */}
       <div className="relative z-10 p-5 md:p-10">
-
         {/* HEADER */}
         <div className="animate-fadeIn">
           <PageHeader
@@ -93,7 +106,6 @@ export default function Dashboard() {
 
         {/* STATS */}
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5 mt-8">
-
           {stats.map((item, index) => {
             const c = colorMap[item.color];
 
@@ -107,10 +119,8 @@ export default function Dashboard() {
                   hover:-translate-y-2 hover:shadow-2xl
                 `}
               >
-
                 {/* ICON */}
                 <div className="flex justify-between items-start">
-
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-wider">
                       {item.title}
@@ -130,23 +140,18 @@ export default function Dashboard() {
                   >
                     {item.icon}
                   </div>
-
                 </div>
 
                 {/* glow hover effect */}
                 <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-10 bg-gradient-to-r from-blue-400 to-indigo-400 transition"></div>
-
               </div>
             );
           })}
-
         </div>
 
         {/* CHART */}
         <div className="mt-10 bg-white rounded-2xl shadow-xl border border-gray-100 p-6 transition hover:shadow-2xl">
-
           <div className="flex items-center justify-between mb-6">
-
             <h3 className="font-bold text-gray-700 text-lg">
               Grafik Okupansi Lapangan
             </h3>
@@ -154,22 +159,20 @@ export default function Dashboard() {
             <button className="text-blue-600 text-sm font-semibold hover:underline hover:scale-105 transition">
               Lihat Laporan Lengkap →
             </button>
-
           </div>
 
-          <div className="h-72 rounded-xl border border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-gray-400 italic relative overflow-hidden">
-
-            {/* animated pulse dot */}
-            <div className="absolute w-3 h-3 bg-blue-500 rounded-full animate-ping"></div>
-
-            <span className="z-10">
-              [ Grafik Booking Bulanan Akan Ditampilkan di Sini ]
-            </span>
-
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={bookingData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="bulan" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="booking" fill="#2563eb" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
-
         </div>
-
       </div>
     </div>
   );

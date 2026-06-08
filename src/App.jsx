@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Loading from "./admin/components/Loading";
-
+import StatusJadwal from "./Petugas/pages/StatusJadwal";
 // Layouts
 import MainLayout from "./admin/layouts/MainLayout";
 import AuthLayout from "./admin/layouts/AuthLayout";
@@ -12,7 +12,6 @@ import GuestLayout from "./guest/layouts/GuestLayout";
 import PetugasLayout from "./petugas/layouts/PetugasLayout";
 import KelolaBooking from "./petugas/pages/KelolaBooking";
 import PetugasDashboard from "./petugas/pages/Dashboard";
-import PageHeader from "../components/PageHeader";
 
 // Admin Pages
 const AdminDashboard = React.lazy(() => import("./admin/pages/Dashboard"));
@@ -50,11 +49,12 @@ export default function App() {
     <Suspense fallback={<Loading />}>
       <Routes>
         {/* Guest */}
-        <Route element={<GuestLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/booking" element={<Booking />} />
-          <Route path="/lapangan/:id" element={<DetailLapangan />} />
-          <Route path="/about" element={<About />} />
+        {/* Guest */}
+        <Route path="/guest" element={<GuestLayout />}>
+          <Route index element={<Home />} />
+          <Route path="booking" element={<Booking />} />
+          <Route path="lapangan/:id" element={<DetailLapangan />} />
+          <Route path="about" element={<About />} />
         </Route>
 
         {/* Admin */}
@@ -74,6 +74,7 @@ export default function App() {
 
           <Route path="booking" element={<KelolaBooking />} />
           <Route path="dashboard" element={<PetugasDashboard />} />
+          <Route path="jadwal" element={<StatusJadwal />} />
         </Route>
 
         {/* Auth */}

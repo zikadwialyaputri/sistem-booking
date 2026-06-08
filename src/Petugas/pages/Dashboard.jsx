@@ -2,7 +2,6 @@ import {
   FaCalendarCheck,
   FaClock,
   FaTimesCircle,
-  FaWallet,
 } from "react-icons/fa";
 
 import PageHeader from "../components/PageHeader";
@@ -16,10 +15,16 @@ export default function Dashboard() {
       color: "blue",
     },
     {
-      title: "Menunggu",
+      title: "Menunggu Konfirmasi",
       value: 12,
       icon: <FaClock size={18} />,
       color: "orange",
+    },
+    {
+      title: "Booking Hari Ini",
+      value: 28,
+      icon: <FaCalendarCheck size={18} />,
+      color: "green",
     },
     {
       title: "Dibatalkan",
@@ -27,36 +32,22 @@ export default function Dashboard() {
       icon: <FaTimesCircle size={18} />,
       color: "red",
     },
-    {
-      title: "Pendapatan",
-      value: "Rp 4.5jt",
-      icon: <FaWallet size={18} />,
-      color: "green",
-    },
   ];
 
   const colorMap = {
     blue: {
-      bg: "bg-blue-50",
-      text: "text-blue-600",
       border: "border-blue-500",
       iconBg: "bg-blue-500",
     },
     orange: {
-      bg: "bg-orange-50",
-      text: "text-orange-600",
       border: "border-orange-500",
       iconBg: "bg-orange-500",
     },
     red: {
-      bg: "bg-red-50",
-      text: "text-red-600",
       border: "border-red-500",
       iconBg: "bg-red-500",
     },
     green: {
-      bg: "bg-green-50",
-      text: "text-green-600",
       border: "border-green-500",
       iconBg: "bg-green-500",
     },
@@ -65,42 +56,40 @@ export default function Dashboard() {
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
 
-      {/* BACKGROUND EFFECT */}
+      {/* Background */}
       <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-400/20 blur-3xl rounded-full"></div>
       <div className="absolute top-40 right-0 w-96 h-96 bg-indigo-400/20 blur-3xl rounded-full"></div>
 
-      {/* HEADER IMAGE */}
+      {/* Header Image */}
       <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
         <img
           src="/img/badminton.jpg"
           alt="badminton"
-          className="w-full h-full object-cover scale-110"
+          className="w-full h-full object-cover"
         />
+
         <div className="absolute inset-0 bg-gradient-to-r from-blue-800/80 via-blue-600/60 to-indigo-600/80"></div>
       </div>
 
-      {/* CONTENT */}
+      {/* Content */}
       <div className="relative z-10 p-5 md:p-10">
 
-        {/* HEADER */}
         <PageHeader
           title="Dashboard Overview"
           breadcrumb={["Petugas", "Dashboard"]}
           actionLabel="Tambah Booking"
         />
 
-        {/* STATS */}
+        {/* Statistik */}
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5 mt-8">
-
           {stats.map((item, index) => {
             const c = colorMap[item.color];
 
             return (
               <div
                 key={index}
-                className={`group relative bg-white rounded-2xl p-6 shadow-md border-l-4 ${c.border} hover:-translate-y-2 transition`}
+                className={`bg-white rounded-2xl p-6 shadow-md border-l-4 ${c.border}`}
               >
-
                 <div className="flex justify-between items-start">
 
                   <div>
@@ -108,25 +97,161 @@ export default function Dashboard() {
                       {item.title}
                     </p>
 
-                    <h3 className="text-3xl font-bold text-gray-800 mt-2 group-hover:scale-110 transition">
+                    <h3 className="text-3xl font-bold text-gray-800 mt-2">
                       {item.value}
                     </h3>
                   </div>
 
                   <div
-                    className={`w-11 h-11 flex items-center justify-center rounded-xl text-white shadow-lg ${c.iconBg}`}
+                    className={`w-11 h-11 flex items-center justify-center rounded-xl text-white ${c.iconBg}`}
                   >
                     {item.icon}
                   </div>
 
                 </div>
-
-                {/* hover glow */}
-                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-10 bg-gradient-to-r from-blue-400 to-indigo-400 transition"></div>
-
               </div>
             );
           })}
+        </div>
+
+        {/* Booking Menunggu + Status Lapangan */}
+        <div className="grid lg:grid-cols-2 gap-6 mt-8">
+
+          {/* Booking Menunggu */}
+          <div className="bg-white rounded-2xl shadow-md p-6">
+            <h3 className="text-xl font-bold mb-5">
+              Booking Menunggu Konfirmasi
+            </h3>
+
+            <div className="space-y-4">
+
+              <div className="flex justify-between items-center border-b pb-3">
+                <div>
+                  <p className="font-semibold">Andi</p>
+                  <p className="text-sm text-gray-500">
+                    Lapangan A • 17:00 - 19:00
+                  </p>
+                </div>
+
+                <span className="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full text-sm">
+                  Menunggu
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center border-b pb-3">
+                <div>
+                  <p className="font-semibold">Budi</p>
+                  <p className="text-sm text-gray-500">
+                    Lapangan B • 19:00 - 21:00
+                  </p>
+                </div>
+
+                <span className="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full text-sm">
+                  Menunggu
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold">Citra</p>
+                  <p className="text-sm text-gray-500">
+                    Lapangan C • 20:00 - 22:00
+                  </p>
+                </div>
+
+                <span className="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full text-sm">
+                  Menunggu
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Status Lapangan */}
+          <div className="bg-white rounded-2xl shadow-md p-6">
+            <h3 className="text-xl font-bold mb-5">
+              Status Lapangan
+            </h3>
+
+            <div className="space-y-4">
+
+              <div className="flex justify-between">
+                <span>Lapangan A</span>
+                <span className="text-red-500 font-semibold">
+                  Dipakai
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Lapangan B</span>
+                <span className="text-green-500 font-semibold">
+                  Tersedia
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Lapangan C</span>
+                <span className="text-red-500 font-semibold">
+                  Dipakai
+                </span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Lapangan D</span>
+                <span className="text-green-500 font-semibold">
+                  Tersedia
+                </span>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        {/* Jadwal Hari Ini */}
+        <div className="bg-white rounded-2xl shadow-md p-6 mt-8">
+
+          <h3 className="text-xl font-bold mb-5">
+            Jadwal Hari Ini
+          </h3>
+
+          <div className="overflow-x-auto">
+
+            <table className="w-full">
+
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3">Lapangan</th>
+                  <th className="text-left py-3">Jam</th>
+                  <th className="text-left py-3">Pelanggan</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                <tr className="border-b">
+                  <td className="py-3">Lapangan A</td>
+                  <td>08:00 - 10:00</td>
+                  <td>Andi</td>
+                </tr>
+
+                <tr className="border-b">
+                  <td className="py-3">Lapangan B</td>
+                  <td>10:00 - 12:00</td>
+                  <td>Budi</td>
+                </tr>
+
+                <tr>
+                  <td className="py-3">Lapangan C</td>
+                  <td>17:00 - 19:00</td>
+                  <td>Citra</td>
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
 
         </div>
 
