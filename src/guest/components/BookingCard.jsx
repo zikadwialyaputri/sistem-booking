@@ -28,7 +28,7 @@ export default function BookingCard({
           </h3>
 
           <span className="text-blue-600 font-semibold">
-            Rp {(price || 0).toLocaleString("id-ID")} / jam
+            Rp {price.toLocaleString("id-ID")} / jam
           </span>
         </div>
 
