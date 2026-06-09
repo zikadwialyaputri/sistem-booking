@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "nama": "Lapangan 1",
+    "harga": 35000,
+    "gambar": "/img/detail1.jpg",
+    "ukuran": "13,40 meter x 6,10 meter",
+    "kapasitas": "4 Pemain",
+    "jam_operasional": "15.00 - 20.00",
+    "fasilitas": [
+      "Lampu LED",
+      "Tempat Duduk Penonton",
+      "Kamar Mandi",
+      "Musholla",
+      "Area Parkir"
+    ]
+  },
+  {
+    "id": 2,
+    "nama": "Lapangan 2",
+    "harga": 35000,
+    "gambar": "/img/detail2.jpg",
+    "ukuran": "13,40 meter x 6,10 meter",
+    "kapasitas": "4 Pemain",
+    "jam_operasional": "15.00 - 20.00",
+    "fasilitas": [
+      "Lampu LED",
+      "Tempat Duduk Penonton",
+      "Kamar Mandi",
+      "Musholla",
+      "Area Parkir"
+    ]
+  }
+]
