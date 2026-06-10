@@ -3,16 +3,24 @@ export default function PageHeader({
   breadcrumb = [],
   actionLabel,
   onActionClick,
+  backgroundImage,
 }) {
   return (
-    <div className="flex items-center justify-between p-6 bg-transparent">
-     
+    <div
+      className="flex items-center justify-between p-10 rounded-3xl overflow-hidden min-h-[220px]"
+      style={{
+        backgroundImage: backgroundImage
+          ? `url(${backgroundImage})`
+          : "linear-gradient(to right, #1d4ed8, #2563eb)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       {/* LEFT */}
       <div className="flex flex-col">
         <span className="text-3xl font-bold text-white">
           {title}
         </span>
-
 
         <div className="flex items-center text-sm font-medium space-x-2 mt-2">
           {breadcrumb.map((item, index) => (
@@ -27,7 +35,6 @@ export default function PageHeader({
                 {item}
               </span>
 
-
               {index < breadcrumb.length - 1 && (
                 <span className="text-blue-100 opacity-50">/</span>
               )}
@@ -35,7 +42,6 @@ export default function PageHeader({
           ))}
         </div>
       </div>
-
 
       {/* RIGHT */}
       {actionLabel && (
@@ -52,5 +58,3 @@ export default function PageHeader({
     </div>
   );
 }
-
-

@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Loading from "./admin/components/Loading";
-import StatusJadwal from "./Petugas/pages/StatusJadwal";
+
 // Layouts
 import MainLayout from "./admin/layouts/MainLayout";
 import AuthLayout from "./admin/layouts/AuthLayout";
@@ -12,6 +12,7 @@ import GuestLayout from "./guest/layouts/GuestLayout";
 import PetugasLayout from "./petugas/layouts/PetugasLayout";
 import KelolaBooking from "./petugas/pages/KelolaBooking";
 import PetugasDashboard from "./petugas/pages/Dashboard";
+import StatusJadwal from "./petugas/pages/StatusJadwal";
 
 // Admin Pages
 const AdminDashboard = React.lazy(() => import("./admin/pages/Dashboard"));
@@ -19,6 +20,8 @@ const AdminDashboard = React.lazy(() => import("./admin/pages/Dashboard"));
 const Orders = React.lazy(() => import("./admin/pages/Orders"));
 
 const Customers = React.lazy(() => import("./admin/pages/Customers"));
+
+const CustomerDetail = React.lazy(() => import("./admin/pages/CustomerDetail"));
 
 const Reports = React.lazy(() => import("./admin/pages/Reports"));
 
@@ -49,7 +52,6 @@ export default function App() {
     <Suspense fallback={<Loading />}>
       <Routes>
         {/* Guest */}
-        {/* Guest */}
         <Route path="/guest" element={<GuestLayout />}>
           <Route index element={<Home />} />
           <Route path="booking" element={<Booking />} />
@@ -60,27 +62,38 @@ export default function App() {
         {/* Admin */}
         <Route path="/admin" element={<MainLayout />}>
           <Route index element={<AdminDashboard />} />
+
           <Route path="orders" element={<Orders />} />
+
           <Route path="customers" element={<Customers />} />
+
+          {/* Detail Pelanggan */}
+          <Route path="customers/:id" element={<CustomerDetail />} />
+
           <Route path="reports" element={<Reports />} />
+
           <Route path="statistik" element={<Statistik />} />
+
           <Route path="status-lapangan" element={<StatusLapangan />} />
         </Route>
 
         {/* Petugas */}
         <Route path="/petugas" element={<PetugasLayout />}>
-          {/* default page → dashboard */}
           <Route index element={<PetugasDashboard />} />
 
-          <Route path="booking" element={<KelolaBooking />} />
           <Route path="dashboard" element={<PetugasDashboard />} />
+
+          <Route path="booking" element={<KelolaBooking />} />
+
           <Route path="jadwal" element={<StatusJadwal />} />
         </Route>
 
         {/* Auth */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
+
           <Route path="/register" element={<Register />} />
+
           <Route path="/forgot" element={<Forgot />} />
         </Route>
 
