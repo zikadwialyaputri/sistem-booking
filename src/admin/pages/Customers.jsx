@@ -37,7 +37,7 @@ export default function Customers() {
   return (
     <div className="relative bg-gray-100 min-h-screen">
 
-      {/* BACKGROUND (SAMA KAYA STATUS LAPLANGAN) */}
+      
       <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
         <img
           src="/img/badminton.jpg"
