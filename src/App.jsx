@@ -55,7 +55,7 @@ export default function App() {
     <Suspense fallback={<Loading />}>
       <Routes>
         {/* Guest */}
-        <Route path="/guest" element={<GuestLayout />}>
+        <Route path="/" element={<GuestLayout />}>
           <Route index element={<Home />} />
           <Route path="booking" element={<Booking />} />
           <Route path="lapangan/:id" element={<DetailLapangan />} />

@@ -70,7 +70,6 @@ export default function Sidebar() {
       <div className="px-6 py-8 border-b border-gray-100">
         {" "}
         <h1 className="text-2xl font-bold text-blue-600">SmashBooking </h1>
-        ```
         <p className="text-sm text-gray-400 mt-1">Manajemen Lapangan</p>
       </div>
       <div className="flex-1 px-4 py-6 overflow-y-auto">
