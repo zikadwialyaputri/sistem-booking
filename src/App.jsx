@@ -31,6 +31,9 @@ const StatusLapangan = React.lazy(() => import("./admin/pages/StatusLapangan"));
 
 const NotFound = React.lazy(() => import("./admin/pages/NotFound"));
 
+const ReportDetail = React.lazy(() => import("./admin/pages/ReportDetail"));
+
+const Users = React.lazy(() => import("./admin/pages/Users"));
 // Auth
 const Login = React.lazy(() => import("./admin/pages/auth/Login"));
 
@@ -67,6 +70,11 @@ export default function App() {
 
           <Route path="customers" element={<Customers />} />
 
+          <Route path="reports" element={<Reports />} />
+
+          <Route path="reports/:bulan" element={<ReportDetail />} />
+
+          <Route path="users" element={<Users />} />
           {/* Detail Pelanggan */}
           <Route path="customers/:id" element={<CustomerDetail />} />
 

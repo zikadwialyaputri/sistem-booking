@@ -40,6 +40,11 @@ export default function Sidebar() {
           icon: <MdSportsTennis size={22} />,
           path: "/admin/status-lapangan",
         },
+        {
+          name: "Kelola Pengguna",
+          icon: <AiOutlineUser size={22} />,
+          path: "/admin/users",
+        },
       ],
     },
     {
