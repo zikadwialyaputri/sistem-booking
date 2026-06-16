@@ -2,9 +2,7 @@ import {
   MdSpaceDashboard,
   MdSportsTennis,
   MdHistory,
-  MdNotifications,
 } from "react-icons/md";
-import { AiOutlineUser } from "react-icons/ai";
 import { NavLink } from "react-router-dom";
 
 export default function Sidebar() {
@@ -37,31 +35,17 @@ export default function Sidebar() {
         },
       ],
     },
-    {
-      title: "AKUN",
-      items: [
-        {
-          name: "Profil Saya",
-          icon: <AiOutlineUser size={22} />,
-          path: "/pelanggan/profile",
-        },
-        {
-          name: "Notifikasi",
-          icon: <MdNotifications size={22} />,
-          path: "/pelanggan/notifikasi",
-        },
-      ],
-    },
   ];
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-gray-100 shadow-sm flex flex-col">
+    <aside className="w-64 h-screen sticky top-0 bg-white border-r border-gray-100 shadow-sm flex flex-col">
 
       {/* HEADER */}
       <div className="px-6 py-8 border-b border-gray-100">
         <h1 className="text-2xl font-bold text-blue-600">
           SmashBooking
         </h1>
+
         <p className="text-sm text-gray-400 mt-1">
           Portal Pelanggan
         </p>
@@ -95,7 +79,7 @@ export default function Sidebar() {
       </div>
 
       {/* FOOTER */}
-      <div className="px-6 py-4 border-t border-gray-100 text-xs text-gray-400">
+      <div className="mt-auto px-6 py-4 border-t border-gray-100 text-xs text-gray-400 bg-white">
         © 2025 SmashBooking
       </div>
 
