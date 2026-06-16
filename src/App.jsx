@@ -14,6 +14,16 @@ import KelolaBooking from "./petugas/pages/KelolaBooking";
 import PetugasDashboard from "./petugas/pages/Dashboard";
 import StatusJadwal from "./petugas/pages/StatusJadwal";
 
+// Pelanggan
+import PelangganLayout from "./pelanggan/layouts/PelangganLayout";
+import DashboardPelanggan from "./pelanggan/pages/Dashboard";
+import BookingSaya from "./pelanggan/pages/Booking";
+import Profile from "./pelanggan/pages/Profile";
+import RiwayatBooking from "./pelanggan/pages/RiwayatBooking";
+import Notifikasi from "./pelanggan/pages/Notifikasi";
+import BookingForm from "./pelanggan/pages/BookingForm";
+
+
 // Admin Pages
 const AdminDashboard = React.lazy(() => import("./admin/pages/Dashboard"));
 
@@ -34,6 +44,7 @@ const NotFound = React.lazy(() => import("./admin/pages/NotFound"));
 const ReportDetail = React.lazy(() => import("./admin/pages/ReportDetail"));
 
 const Users = React.lazy(() => import("./admin/pages/Users"));
+
 // Auth
 const Login = React.lazy(() => import("./admin/pages/auth/Login"));
 
@@ -94,6 +105,17 @@ export default function App() {
           <Route path="booking" element={<KelolaBooking />} />
 
           <Route path="jadwal" element={<StatusJadwal />} />
+        </Route>
+
+        {/* Pelanggan */}
+        <Route path="/pelanggan" element={<PelangganLayout />}>
+          <Route index element={<DashboardPelanggan />} />
+          <Route path="booking" element={<Booking/>} />
+          <Route path="riwayat" element={<RiwayatBooking />} />
+          <Route path="booking/:id" element={<BookingForm />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="notifikasi" element={<Notifikasi />} />
+          
         </Route>
 
         {/* Auth */}

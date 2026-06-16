@@ -46,8 +46,9 @@ export default function Login() {
     setError("");
 
     try {
+      // URL sudah diubah dari dummyjson ke API lokal proyekmu
       const response = await axios.post(
-        "https://dummyjson.com/auth/login",
+        "http://localhost:8000/api/login",
         {
           username: dataForm.username,
           password: dataForm.password,
@@ -60,6 +61,11 @@ export default function Login() {
       );
 
       console.log(response.data);
+
+      // Jika backend kamu mengirimkan token atau data user, simpan di sini:
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
 
       // redirect jika login berhasil
       navigate("/");
@@ -75,7 +81,7 @@ export default function Login() {
 
       // server tidak merespon
       else if (err.request) {
-        setError("Tidak dapat terhubung ke server");
+        setError("Tidak dapat terhubung ke server backend");
       }
 
       // error lainnya

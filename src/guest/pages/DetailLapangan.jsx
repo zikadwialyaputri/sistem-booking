@@ -1,10 +1,11 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Loading from "../components/Loading";
 import lapanganData from "../data/lapangan.json";
 
 export default function DetailLapangan() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [court, setCourt] = useState(null);
   const [error, setError] = useState(null);
@@ -20,6 +21,14 @@ export default function DetailLapangan() {
     setCourt(data);
   }, [id]);
 
+  const handleBooking = () => {
+    // nanti bisa diganti API booking
+    alert("Booking berhasil dibuat 🎉");
+
+    // redirect ke riwayat booking
+    navigate("/pelanggan/riwayat");
+  };
+
   if (error) {
     return <div className="text-red-600 text-center py-10">{error}</div>;
   }
@@ -30,7 +39,9 @@ export default function DetailLapangan() {
 
   return (
     <div className="max-w-5xl mx-auto py-20 px-6">
+
       <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+
         <img
           src={court.gambar}
           alt={court.nama}
@@ -38,12 +49,15 @@ export default function DetailLapangan() {
         />
 
         <div className="p-8">
-          <h1 className="text-4xl font-bold mb-6">{court.nama}</h1>
+
+          <h1 className="text-4xl font-bold mb-6">
+            {court.nama}
+          </h1>
 
           <div className="space-y-3 text-lg">
             <p>
-              <strong>Harga :</strong> Rp {court.harga.toLocaleString("id-ID")}{" "}
-              / jam
+              <strong>Harga :</strong>{" "}
+              Rp {court.harga.toLocaleString("id-ID")} / jam
             </p>
 
             <p>
@@ -59,8 +73,11 @@ export default function DetailLapangan() {
             </p>
           </div>
 
+          {/* FASILITAS */}
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-4">Fasilitas</h2>
+            <h2 className="text-2xl font-bold mb-4">
+              Fasilitas
+            </h2>
 
             <ul className="list-disc list-inside space-y-2 text-gray-700">
               {court.fasilitas.map((item, index) => (
@@ -68,6 +85,17 @@ export default function DetailLapangan() {
               ))}
             </ul>
           </div>
+
+          {/* BUTTON BOOKING */}
+          <div className="mt-10">
+            <button
+              onClick={() => navigate(`/pelanggan/booking/${id}`)}
+              className="w-full bg-green-600 text-white py-4 rounded-2xl font-semibold text-lg hover:bg-green-700 transition"
+            >
+              Booking Sekarang
+            </button>
+          </div>
+
         </div>
       </div>
     </div>

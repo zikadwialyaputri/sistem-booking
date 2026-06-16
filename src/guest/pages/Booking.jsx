@@ -3,14 +3,22 @@ import BookingCard from "../components/BookingCard";
 import lapanganData from "../data/lapangan.json";
 
 export default function Booking() {
+  const [showPopup, setShowPopup] = useState(false);
   const [courts, setCourts] = useState([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const handleBookingSuccess = () => {
+    setShowPopup(true);
+
+    setTimeout(() => {
+      setShowPopup(false);
+    }, 3000);
+  };
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       const filteredData = lapanganData.filter((court) =>
-        court.nama.toLowerCase().includes(query.toLowerCase())
+        court.nama.toLowerCase().includes(query.toLowerCase()),
       );
 
       setCourts(filteredData);
@@ -45,9 +53,7 @@ export default function Booking() {
 
         {/* Loading */}
         {loading ? (
-          <div className="text-center py-10 text-lg">
-            Loading...
-          </div>
+          <div className="text-center py-10 text-lg">Loading...</div>
         ) : courts.length === 0 ? (
           <div className="text-center py-10 text-gray-500">
             Lapangan tidak ditemukan
