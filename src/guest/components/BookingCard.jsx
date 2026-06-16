@@ -37,7 +37,7 @@ export default function BookingCard({
         </p>
 
         <Link
-          to={`/guest/lapangan/${id}`}
+          to={`/lapangan/${id}`}
           className="inline-block bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition"
         >
           Lihat Detail

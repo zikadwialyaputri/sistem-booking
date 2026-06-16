@@ -44,7 +44,7 @@ const Forgot = React.lazy(() => import("./admin/pages/auth/Forgot"));
 // Guest Pages
 const Home = React.lazy(() => import("./guest/pages/Home"));
 
-const Booking = React.lazy(() => import("./guest/pages/Booking"));
+const Booking = React.lazy(() => import("./guest/pages/Booking.jsx"));
 
 const About = React.lazy(() => import("./guest/pages/About"));
 
