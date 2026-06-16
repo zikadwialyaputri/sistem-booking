@@ -1,39 +1,39 @@
-import {
-  FaCalendarCheck,
-  FaClock,
-  FaTimesCircle,
-} from "react-icons/fa";
+import { FaCalendarCheck, FaClock, FaTimesCircle } from "react-icons/fa";
 
 import PageHeader from "../components/PageHeader";
-
+import { useNavigate } from "react-router-dom";
 export default function Dashboard() {
+  const navigate = useNavigate();
   const stats = [
     {
       title: "Total Booking",
       value: 350,
       icon: <FaCalendarCheck size={18} />,
       color: "blue",
+      path: "/petugas/booking",
     },
     {
       title: "Menunggu Konfirmasi",
       value: 12,
       icon: <FaClock size={18} />,
       color: "orange",
+      path: "/petugas/booking",
     },
     {
       title: "Booking Hari Ini",
       value: 28,
       icon: <FaCalendarCheck size={18} />,
       color: "green",
+      path: "/petugas/jadwal",
     },
     {
       title: "Dibatalkan",
       value: 40,
       icon: <FaTimesCircle size={18} />,
       color: "red",
+      path: "/petugas/booking",
     },
   ];
-
   const colorMap = {
     blue: {
       border: "border-blue-500",
@@ -55,7 +55,6 @@ export default function Dashboard() {
 
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
-
       {/* Background */}
       <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-400/20 blur-3xl rounded-full"></div>
       <div className="absolute top-40 right-0 w-96 h-96 bg-indigo-400/20 blur-3xl rounded-full"></div>
@@ -73,11 +72,9 @@ export default function Dashboard() {
 
       {/* Content */}
       <div className="relative z-10 p-5 md:p-10">
-
         <PageHeader
           title="Dashboard Overview"
           breadcrumb={["Petugas", "Dashboard"]}
-          actionLabel="Tambah Booking"
         />
 
         {/* Statistik */}
@@ -88,10 +85,11 @@ export default function Dashboard() {
             return (
               <div
                 key={index}
-                className={`bg-white rounded-2xl p-6 shadow-md border-l-4 ${c.border}`}
+                onClick={() => navigate(item.path)}
+                className={`bg-white rounded-2xl p-6 shadow-md border-l-4 ${c.border}
+                cursor-pointer hover:scale-105 hover:shadow-xl transition duration-300`}
               >
                 <div className="flex justify-between items-start">
-
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-wider">
                       {item.title}
@@ -107,7 +105,6 @@ export default function Dashboard() {
                   >
                     {item.icon}
                   </div>
-
                 </div>
               </div>
             );
@@ -116,7 +113,6 @@ export default function Dashboard() {
 
         {/* Booking Menunggu + Status Lapangan */}
         <div className="grid lg:grid-cols-2 gap-6 mt-8">
-
           {/* Booking Menunggu */}
           <div className="bg-white rounded-2xl shadow-md p-6">
             <h3 className="text-xl font-bold mb-5">
@@ -124,7 +120,6 @@ export default function Dashboard() {
             </h3>
 
             <div className="space-y-4">
-
               <div className="flex justify-between items-center border-b pb-3">
                 <div>
                   <p className="font-semibold">Andi</p>
@@ -150,75 +145,33 @@ export default function Dashboard() {
                   Menunggu
                 </span>
               </div>
-
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-semibold">Citra</p>
-                  <p className="text-sm text-gray-500">
-                    Lapangan C • 20:00 - 22:00
-                  </p>
-                </div>
-
-                <span className="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full text-sm">
-                  Menunggu
-                </span>
-              </div>
-
             </div>
           </div>
 
           {/* Status Lapangan */}
           <div className="bg-white rounded-2xl shadow-md p-6">
-            <h3 className="text-xl font-bold mb-5">
-              Status Lapangan
-            </h3>
+            <h3 className="text-xl font-bold mb-5">Status Lapangan</h3>
 
             <div className="space-y-4">
-
               <div className="flex justify-between">
                 <span>Lapangan A</span>
-                <span className="text-red-500 font-semibold">
-                  Dipakai
-                </span>
+                <span className="text-red-500 font-semibold">Dipakai</span>
               </div>
 
               <div className="flex justify-between">
                 <span>Lapangan B</span>
-                <span className="text-green-500 font-semibold">
-                  Tersedia
-                </span>
+                <span className="text-green-500 font-semibold">Tersedia</span>
               </div>
-
-              <div className="flex justify-between">
-                <span>Lapangan C</span>
-                <span className="text-red-500 font-semibold">
-                  Dipakai
-                </span>
-              </div>
-
-              <div className="flex justify-between">
-                <span>Lapangan D</span>
-                <span className="text-green-500 font-semibold">
-                  Tersedia
-                </span>
-              </div>
-
             </div>
           </div>
-
         </div>
 
         {/* Jadwal Hari Ini */}
         <div className="bg-white rounded-2xl shadow-md p-6 mt-8">
-
-          <h3 className="text-xl font-bold mb-5">
-            Jadwal Hari Ini
-          </h3>
+          <h3 className="text-xl font-bold mb-5">Jadwal Hari Ini</h3>
 
           <div className="overflow-x-auto">
-
             <table className="w-full">
-
               <thead>
                 <tr className="border-b">
                   <th className="text-left py-3">Lapangan</th>
@@ -228,33 +181,21 @@ export default function Dashboard() {
               </thead>
 
               <tbody>
-
                 <tr className="border-b">
                   <td className="py-3">Lapangan A</td>
-                  <td>08:00 - 10:00</td>
+                  <td>15:00 - 17:00</td>
                   <td>Andi</td>
                 </tr>
 
                 <tr className="border-b">
                   <td className="py-3">Lapangan B</td>
-                  <td>10:00 - 12:00</td>
+                  <td>19:00 - 21:00</td>
                   <td>Budi</td>
                 </tr>
-
-                <tr>
-                  <td className="py-3">Lapangan C</td>
-                  <td>17:00 - 19:00</td>
-                  <td>Citra</td>
-                </tr>
-
               </tbody>
-
             </table>
-
           </div>
-
         </div>
-
       </div>
     </div>
   );
