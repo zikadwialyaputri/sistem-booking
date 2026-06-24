@@ -1,32 +1,41 @@
 import { useState, useEffect } from "react";
 import BookingCard from "../components/BookingCard";
-import lapanganData from "../data/lapangan.json";
+import { supabase } from "../../lib/supabase";
 
 export default function Booking() {
-  const [showPopup, setShowPopup] = useState(false);
   const [courts, setCourts] = useState([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const handleBookingSuccess = () => {
-    setShowPopup(true);
-
-    setTimeout(() => {
-      setShowPopup(false);
-    }, 3000);
-  };
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      const filteredData = lapanganData.filter((court) =>
-        court.nama.toLowerCase().includes(query.toLowerCase()),
-      );
+    getLapangan();
+  }, []);
 
-      setCourts(filteredData);
+  const getLapangan = async () => {
+    try {
+      setLoading(true);
+
+      const { data, error } = await supabase
+        .from("lapangan")
+        .select("*")
+        .order("id", { ascending: true });
+
+      if (error) {
+        console.error("Error ambil data lapangan:", error);
+        return;
+      }
+
+      setCourts(data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
+  };
 
-    return () => clearTimeout(timeout);
-  }, [query]);
+  const filteredCourts = courts.filter((court) =>
+    court.nama.toLowerCase().includes(query.toLowerCase()),
+  );
 
   return (
     <div className="min-h-screen bg-[#f5f7fb]">
@@ -54,13 +63,13 @@ export default function Booking() {
         {/* Loading */}
         {loading ? (
           <div className="text-center py-10 text-lg">Loading...</div>
-        ) : courts.length === 0 ? (
+        ) : filteredCourts.length === 0 ? (
           <div className="text-center py-10 text-gray-500">
             Lapangan tidak ditemukan
           </div>
         ) : (
           <div className="grid lg:grid-cols-2 gap-10">
-            {courts.map((court) => (
+            {filteredCourts.map((court) => (
               <BookingCard
                 key={court.id}
                 id={court.id}
