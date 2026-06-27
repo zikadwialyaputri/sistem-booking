@@ -1,10 +1,16 @@
+import { useEffect, useState } from "react";
 import {
   FaCalendarCheck,
   FaClock,
   FaTimesCircle,
   FaWallet,
+  FaUserCircle,
+  FaSignOutAlt,
 } from "react-icons/fa";
+
 import PageHeader from "../components/PageHeader";
+import { supabase } from "../../services/supabase";
+
 import {
   ResponsiveContainer,
   BarChart,
@@ -14,79 +20,151 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
-import bookings from "../data/bookings.json";
+
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const totalBooking = bookings.length;
+  const [stats, setStats] = useState([]);
+  const [bookingData, setBookingData] = useState([]);
+  const [openProfile, setOpenProfile] = useState(false);
 
-  const pendingBooking = bookings.filter(
-    (item) => item.status === "pending"
-  ).length;
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
 
-  const rejectedBooking = bookings.filter(
-    (item) => item.status === "rejected"
-  ).length;
+  const profile = {
+    name: user?.username || "Admin",
+    foto:
+      user?.foto ||
+      "https://i.pravatar.cc/100?img=12",
+  };
 
-  const income = bookings
-    .filter((item) => item.status === "accepted")
-    .reduce((total, item) => total + item.price, 0);
+  const hargaBooking = 35000;
 
-  const bookingData = [
-    { bulan: "Jan", booking: 15 },
-    { bulan: "Feb", booking: 22 },
-    { bulan: "Mar", booking: 18 },
-    { bulan: "Apr", booking: 30 },
-    { bulan: "Mei", booking: 27 },
-    { bulan: "Jun", booking: 35 },
-  ];
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
-  const stats = [
-    {
-      title: "Total Booking",
-      value: totalBooking,
-      route: "/admin/orders",
-      icon: <FaCalendarCheck size={18} />,
-      color: "blue",
-    },
-    {
-      title: "Menunggu Konfirmasi",
-      value: pendingBooking,
-      route: "/admin/orders?status=pending",
-      icon: <FaClock size={18} />,
-      color: "orange",
-    },
-    {
-      title: "Dibatalkan",
-      value: rejectedBooking,
-      route: "/admin/orders?status=rejected",
-      icon: <FaTimesCircle size={18} />,
-      color: "red",
-    },
-    {
-      title: "Pendapatan Bulan Ini",
-      value: `Rp ${income.toLocaleString("id-ID")}`,
-      route: "/admin/reports",
-      icon: <FaWallet size={18} />,
-      color: "green",
-    },
-  ];
+  const fetchDashboard = async () => {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("*");
+
+    if (error) {
+      console.log(error);
+      return;
+    }
+
+    const totalBooking = data.length;
+
+    const pendingBooking = data.filter(
+      (x) => x.status === "pending"
+    ).length;
+
+    const rejectedBooking = data.filter(
+      (x) => x.status === "rejected"
+    ).length;
+
+    const income = data
+      .filter(
+        (x) => x.status === "approved"
+      )
+      .reduce(
+        (total) => total + hargaBooking,
+        0
+      );
+
+    setStats([
+      {
+        title: "Total Booking",
+        value: totalBooking,
+        route: "/admin/orders",
+        icon: (
+          <FaCalendarCheck size={18} />
+        ),
+        color: "blue",
+      },
+
+      {
+        title:
+          "Menunggu Konfirmasi",
+        value: pendingBooking,
+        route:
+          "/admin/orders?status=pending",
+        icon: <FaClock size={18} />,
+        color: "orange",
+      },
+
+      {
+        title: "Dibatalkan",
+        value: rejectedBooking,
+        route:
+          "/admin/orders?status=rejected",
+        icon: (
+          <FaTimesCircle size={18} />
+        ),
+        color: "red",
+      },
+
+      {
+        title:
+          "Pendapatan Bulan Ini",
+        value: `Rp ${income.toLocaleString(
+          "id-ID"
+        )}`,
+        route: "/admin/reports",
+        icon: <FaWallet size={18} />,
+        color: "green",
+      },
+    ]);
+
+    const grouped = {};
+
+    data.forEach((item) => {
+      if (!item.tanggal) return;
+
+      const bulan = new Date(
+        item.tanggal
+      ).toLocaleString(
+        "id-ID",
+        {
+          month: "short",
+        }
+      );
+
+      grouped[bulan] =
+        (grouped[bulan] || 0) + 1;
+    });
+
+    const result =
+      Object.entries(grouped).map(
+        ([bulan, booking]) => ({
+          bulan,
+          booking,
+        })
+      );
+
+    setBookingData(result);
+  };
 
   const colorMap = {
     blue: {
       border: "border-blue-500",
       iconBg: "bg-blue-500",
     },
+
     orange: {
       border: "border-orange-500",
       iconBg: "bg-orange-500",
     },
+
     red: {
       border: "border-red-500",
       iconBg: "bg-red-500",
     },
+
     green: {
       border: "border-green-500",
       iconBg: "bg-green-500",
@@ -95,103 +173,180 @@ export default function Dashboard() {
 
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
-      {/* Glow */}
-      <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-400/20 blur-3xl rounded-full"></div>
-      <div className="absolute top-40 right-0 w-96 h-96 bg-indigo-400/20 blur-3xl rounded-full"></div>
 
-      {/* Background */}
+      {/* Header Background */}
       <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
         <img
           src="/img/badminton.jpg"
-          alt="badminton"
-          className="w-full h-full object-cover scale-110 transition-transform duration-700 hover:scale-125"
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-800/80 via-blue-600/60 to-indigo-600/80"></div>
+
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-800/80 via-blue-600/60 to-indigo-600/80"/>
       </div>
 
-      {/* Content */}
       <div className="relative z-10 p-5 md:p-10">
-        <PageHeader
-          title="Dashboard Overview"
-          breadcrumb={["Admin", "Dashboard"]}
-        />
+
+        {/* Header + Profile */}
+        <div className="flex justify-between items-center">
+
+          <PageHeader
+            title="Dashboard Overview"
+            breadcrumb={[
+              "Admin",
+              "Dashboard",
+            ]}
+          />
+
+          <div className="relative">
+
+            <button
+              onClick={() =>
+                setOpenProfile(
+                  !openProfile
+                )
+              }
+              className="bg-white rounded-xl px-4 py-2 shadow flex items-center gap-3"
+            >
+
+              <img
+                src={profile.foto}
+                className="w-10 h-10 rounded-full"
+              />
+
+              <div>
+
+                <p className="font-semibold">
+                  {profile.name}
+                </p>
+
+                <p className="text-xs text-gray-500">
+                  Admin
+                </p>
+
+              </div>
+
+            </button>
+
+            {openProfile && (
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl">
+
+                <button
+                  onClick={() =>
+                    navigate(
+                      "/admin/profile"
+                    )
+                  }
+                  className="w-full p-3 hover:bg-gray-100 text-left"
+                >
+                  <div className="flex gap-2 items-center">
+                    <FaUserCircle />
+                    Edit Profile
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    localStorage.removeItem(
+                      "user"
+                    );
+
+                    localStorage.removeItem(
+                      "token"
+                    );
+
+                    navigate(
+                      "/login"
+                    );
+                  }}
+                  className="w-full p-3 hover:bg-red-100 text-red-500 text-left"
+                >
+                  <div className="flex gap-2 items-center">
+                    <FaSignOutAlt />
+                    Logout
+                  </div>
+                </button>
+
+              </div>
+            )}
+
+          </div>
+
+        </div>
 
         {/* Statistik */}
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5 mt-8">
-          {stats.map((item, index) => {
-            const c = colorMap[item.color];
 
-            return (
-              <div
-                key={index}
-                onClick={() => navigate(item.route)}
-                className={`
-                  cursor-pointer
-                  group relative bg-white rounded-2xl p-6 shadow-md
-                  border-l-4 ${c.border}
-                  transition-all duration-300
-                  hover:-translate-y-2 hover:shadow-2xl
-                `}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="text-xs text-gray-400 uppercase tracking-wider">
-                      {item.title}
-                    </p>
+          {stats.map(
+            (item, index) => {
+              const c =
+                colorMap[
+                  item.color
+                ];
 
-                    <h3 className="text-3xl font-bold text-gray-800 mt-2">
-                      {item.value}
-                    </h3>
+              return (
+                <div
+                  key={index}
+                  onClick={() =>
+                    navigate(
+                      item.route
+                    )
+                  }
+                  className={`bg-white rounded-2xl p-6 shadow border-l-4 ${c.border} cursor-pointer hover:scale-105 transition`}
+                >
+
+                  <div className="flex justify-between">
+
+                    <div>
+                      <p className="text-xs text-gray-400">
+                        {item.title}
+                      </p>
+
+                      <h2 className="text-3xl font-bold mt-2">
+                        {item.value}
+                      </h2>
+                    </div>
+
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-white ${c.iconBg}`}>
+                      {item.icon}
+                    </div>
+
                   </div>
 
-                  <div
-                    className={`
-                      w-11 h-11 flex items-center justify-center
-                      rounded-xl text-white shadow-lg
-                      ${c.iconBg}
-                    `}
-                  >
-                    {item.icon}
-                  </div>
                 </div>
+              );
+            }
+          )}
 
-                <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-10 bg-gradient-to-r from-blue-400 to-indigo-400 transition"></div>
-              </div>
-            );
-          })}
         </div>
 
         {/* Grafik */}
-        <div className="mt-10 bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-gray-700 text-lg">
-              Grafik Okupansi Lapangan
-            </h3>
+        <div className="mt-10 bg-white rounded-2xl shadow-xl p-6">
 
-            <button
-              onClick={() => navigate("/admin/reports")}
-              className="text-blue-600 text-sm font-semibold hover:underline"
-            >
-              Lihat Laporan Lengkap →
-            </button>
-          </div>
+          <h3 className="font-bold text-lg mb-6">
+            Grafik Booking Bulanan
+          </h3>
 
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={bookingData}>
+
+            <ResponsiveContainer>
+              <BarChart
+                data={bookingData}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="bulan" />
-                <YAxis />
-                <Tooltip />
+                <XAxis dataKey="bulan"/>
+                <YAxis/>
+                <Tooltip/>
                 <Bar
                   dataKey="booking"
                   fill="#2563eb"
-                  radius={[8, 8, 0, 0]}
                 />
               </BarChart>
             </ResponsiveContainer>
+
           </div>
+
         </div>
+
       </div>
     </div>
   );

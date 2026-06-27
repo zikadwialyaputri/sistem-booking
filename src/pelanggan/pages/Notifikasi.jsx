@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { supabase } from "../../services/supabase";
 import {
   FaBell,
   FaCheckCircle,
@@ -6,184 +8,185 @@ import {
 } from "react-icons/fa";
 
 export default function Notifikasi() {
-  const notifications = [
-    {
-      id: 1,
-      pesan: "Booking Anda Disetujui",
-      tanggal: "20 Juni 2026",
-      status: "success",
-    },
-    {
-      id: 2,
-      pesan: "Booking Anda Ditolak",
-      tanggal: "18 Juni 2026",
-      status: "danger",
-    },
-    {
-      id: 3,
-      pesan: "Booking Berhasil dibuat",
-      tanggal: "17 Juni 2026",
-      status: "info",
-    },
-  ];
+  const [notifications, setNotifications] = useState([]);
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  const approved = notifications.filter(
-    (n) => n.status === "success"
-  );
+  // =========================
+  // FETCH DATA
+  // =========================
+useEffect(() => {
+  const fetchNotif = async () => {
+    try {
+      const user = JSON.parse(
+        localStorage.getItem("user")
+      );
 
-  const rejected = notifications.filter(
-    (n) => n.status === "danger"
-  );
+      if (!user) return;
 
+      const { data, error } = await supabase
+        .from("bookings")
+        .select(`
+          id,
+          tanggal,
+          status,
+          users(nama),
+          lapangan(nama)
+        `)
+        .eq("user_id", user.id)
+        .order("id", { ascending: false });
+
+      if (error) {
+        console.log(error);
+        return;
+      }
+
+      const formatted = (data || []).map((b) => {
+
+        let pesan = "";
+        let notifStatus = "";
+
+        if (b.status === "approved") {
+          pesan = `Booking ${b.lapangan?.nama || ""} disetujui`;
+          notifStatus = "success";
+        }
+
+        else if (b.status === "rejected") {
+          pesan = `Booking ${b.lapangan?.nama || ""} ditolak`;
+          notifStatus = "danger";
+        }
+
+        else {
+          pesan = `Booking ${b.lapangan?.nama || ""} sedang diproses`;
+          notifStatus = "info";
+        }
+
+        return {
+          id: b.id,
+          pesan,
+          tanggal: new Date(
+            b.tanggal
+          ).toLocaleDateString("id-ID"),
+          status: notifStatus,
+        };
+      });
+
+      setNotifications(formatted);
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  fetchNotif();
+
+}, []);
+  // =========================
+  // FILTER
+  // =========================
+  const approved = notifications.filter((n) => n.status === "success");
+  const rejected = notifications.filter((n) => n.status === "danger");
+
+  const statusConfig = {
+    success: {
+      label: "Disetujui",
+      icon: <FaCheckCircle />,
+      class: "bg-green-100 text-green-700",
+      iconClass: "bg-green-100 text-green-600",
+    },
+    danger: {
+      label: "Ditolak",
+      icon: <FaTimesCircle />,
+      class: "bg-red-100 text-red-700",
+      iconClass: "bg-red-100 text-red-600",
+    },
+    info: {
+      label: "Info",
+      icon: <FaCalendarCheck />,
+      class: "bg-blue-100 text-blue-700",
+      iconClass: "bg-blue-100 text-blue-600",
+    },
+  };
+
+  // =========================
+  // UI
+  // =========================
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
 
       {/* BACKGROUND */}
       <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-400/20 blur-3xl rounded-full"></div>
-
       <div className="absolute top-40 right-0 w-96 h-96 bg-indigo-400/20 blur-3xl rounded-full"></div>
 
-      {/* HEADER IMAGE */}
-      <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
-        <img
-          src="/img/badminton.jpg"
-          className="w-full h-full object-cover"
-          alt=""
-        />
-
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-800/80 via-blue-600/60 to-indigo-600/80"></div>
-      </div>
-
-      {/* CONTENT */}
       <div className="relative z-10 p-5 md:p-10">
 
-        {/* JUDUL */}
+        {/* HEADER */}
         <div className="text-white mb-10">
           <h1 className="text-4xl font-bold flex items-center gap-3">
             <FaBell />
             Notifikasi
           </h1>
-
-          <p className="text-blue-100 mt-2">
-            Informasi terbaru booking lapangan Anda
-          </p>
         </div>
 
-        {/* STATISTIK */}
+        {/* STAT */}
         <div className="grid md:grid-cols-3 gap-4 mb-8">
 
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <FaBell className="text-blue-500 text-2xl mb-2"/>
-
-            <p className="text-gray-500 text-sm">
-              Total Notifikasi
-            </p>
-
-            <h2 className="text-3xl font-bold text-blue-600">
-              {notifications.length}
-            </h2>
+          <div className="bg-white rounded-xl p-5 shadow">
+            <p>Total</p>
+            <h2 className="text-3xl font-bold">{notifications.length}</h2>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <FaCheckCircle className="text-green-500 text-2xl mb-2"/>
-
-            <p className="text-gray-500 text-sm">
-              Disetujui
-            </p>
-
-            <h2 className="text-3xl font-bold text-green-600">
-              {approved.length}
-            </h2>
+          <div className="bg-white rounded-xl p-5 shadow">
+            <p>Disetujui</p>
+            <h2 className="text-3xl font-bold text-green-600">{approved.length}</h2>
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <FaTimesCircle className="text-red-500 text-2xl mb-2"/>
-
-            <p className="text-gray-500 text-sm">
-              Ditolak
-            </p>
-
-            <h2 className="text-3xl font-bold text-red-600">
-              {rejected.length}
-            </h2>
+          <div className="bg-white rounded-xl p-5 shadow">
+            <p>Ditolak</p>
+            <h2 className="text-3xl font-bold text-red-600">{rejected.length}</h2>
           </div>
 
         </div>
 
-        {/* LIST NOTIFIKASI */}
+        {/* LIST */}
         <div className="bg-white rounded-2xl shadow-md p-6">
 
-          <h2 className="text-xl font-bold text-blue-600 mb-6">
+          <h2 className="text-xl font-bold mb-6">
             Daftar Notifikasi
           </h2>
 
-          <div className="space-y-4">
+          {notifications.length === 0 ? (
+            <p className="text-center text-gray-400">
+              Belum ada notifikasi
+            </p>
+          ) : (
+            notifications.map((n) => {
+              const config = statusConfig[n.status];
 
-            {notifications.map((n) => (
-
-              <div
-                key={n.id}
-                className="border rounded-xl p-5 hover:shadow-md transition flex justify-between items-center"
-              >
-
-                <div className="flex items-center gap-4">
-
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center
-                    ${
-                      n.status === "success"
-                        ? "bg-green-100 text-green-600"
-                        : n.status === "danger"
-                        ? "bg-red-100 text-red-600"
-                        : "bg-blue-100 text-blue-600"
-                    }`}
-                  >
-                    {n.status === "success" ? (
-                      <FaCheckCircle />
-                    ) : n.status === "danger" ? (
-                      <FaTimesCircle />
-                    ) : (
-                      <FaCalendarCheck />
-                    )}
-                  </div>
-
-                  <div>
-                    <p className="font-semibold">
-                      {n.pesan}
-                    </p>
-
-                    <p className="text-gray-500 text-sm">
-                      {n.tanggal}
-                    </p>
-                  </div>
-
-                </div>
-
-                <span
-                  className={`px-3 py-1 rounded-full text-xs
-                  ${
-                    n.status === "success"
-                      ? "bg-green-100 text-green-700"
-                      : n.status === "danger"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-blue-100 text-blue-700"
-                  }`}
+              return (
+                <div
+                  key={n.id}
+                  className="border rounded-xl p-4 flex justify-between items-center mb-3"
                 >
-                  {n.status === "success"
-                    ? "Disetujui"
-                    : n.status === "danger"
-                    ? "Ditolak"
-                    : "Info"}
-                </span>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 flex items-center justify-center rounded-full ${config.iconClass}`}>
+                      {config.icon}
+                    </div>
 
-              </div>
+                    <div>
+                      <p className="font-semibold">{n.pesan}</p>
+                      <p className="text-sm text-gray-500">{n.tanggal}</p>
+                    </div>
+                  </div>
 
-            ))}
-
-          </div>
+                  <span className={`px-3 py-1 text-xs rounded-full ${config.class}`}>
+                    {config.label}
+                  </span>
+                </div>
+              );
+            })
+          )}
 
         </div>
-
       </div>
     </div>
   );

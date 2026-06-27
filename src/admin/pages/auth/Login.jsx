@@ -1,19 +1,18 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { BsFillExclamationDiamondFill } from "react-icons/bs";
 import { ImSpinner2 } from "react-icons/im";
 
+import { supabase } from "../../../services/supabase";
+
 export default function Login() {
-  /* navigate */
   const navigate = useNavigate();
 
-  /* state */
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [dataForm, setDataForm] = useState({
-    username: "",
+    email: "",
     password: "",
   });
 
@@ -26,74 +25,84 @@ export default function Login() {
       [name]: value,
     });
 
-    // hapus error saat user mulai mengetik
     if (error) {
       setError("");
     }
   };
 
   /* process login */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    // validasi form kosong
-    if (!dataForm.username || !dataForm.password) {
-      setError("Username dan password harus diisi");
-      return;
+  if (!dataForm.email || !dataForm.password) {
+    setError("Email dan password harus diisi");
+    return;
+  }
+
+  setLoading(true);
+  setError("");
+
+  try {
+
+    // cek email dan password dari tabel users
+   // cek user
+const { data, error } = await supabase
+  .from("users")
+  .select("*")
+  .eq("email", dataForm.email)
+  .eq("password", dataForm.password)
+  .single();
+
+if (error || !data) {
+  throw new Error("Email atau password salah");
+}
+
+// simpan login history
+const { error: historyError } = await supabase
+  .from("login_history")
+  .insert([
+    {
+      user_id: data.id,
+      nama: data.nama,
+      email: data.email,
+      login_at: new Date()
+    }
+  ]);
+
+if (historyError) {
+  console.log(historyError);
+}
+
+// simpan session
+localStorage.setItem(
+  "user",
+  JSON.stringify(data)
+);
+    // redirect sesuai role
+    if (data.role === "admin") {
+      navigate("/admin");
     }
 
-    setLoading(true);
-    setError("");
-
-    try {
-      // URL sudah diubah dari dummyjson ke API lokal proyekmu
-      const response = await axios.post(
-        "http://localhost:8000/api/login",
-        {
-          username: dataForm.username,
-          password: dataForm.password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      console.log(response.data);
-
-      // Jika backend kamu mengirimkan token atau data user, simpan di sini:
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-      }
-
-      // redirect jika login berhasil
-      navigate("/");
-    } catch (err) {
-      console.log(err);
-
-      // error dari API
-      if (err.response) {
-        setError(
-          err.response.data.message || "Username atau password salah"
-        );
-      }
-
-      // server tidak merespon
-      else if (err.request) {
-        setError("Tidak dapat terhubung ke server backend");
-      }
-
-      // error lainnya
-      else {
-        setError("Terjadi kesalahan");
-      }
-    } finally {
-      setLoading(false);
+    else if (data.role === "petugas") {
+      navigate("/petugas");
     }
-  };
 
-  /* error info */
+    else {
+      navigate("/pelanggan");
+    }
+
+  } catch (err) {
+    console.log(err);
+
+    setError(
+      err.message || "Login gagal"
+    );
+
+  } finally {
+    setLoading(false);
+  }
+};
+
   const errorInfo = error ? (
     <div className="bg-red-100 border border-red-200 mb-5 p-4 text-sm text-red-600 rounded-xl flex items-center">
       <BsFillExclamationDiamondFill className="mr-2 text-lg" />
@@ -101,7 +110,6 @@ export default function Login() {
     </div>
   ) : null;
 
-  /* loading info */
   const loadingInfo = loading ? (
     <div className="bg-gray-100 border border-gray-200 mb-5 p-4 text-sm text-gray-600 rounded-xl flex items-center">
       <ImSpinner2 className="mr-2 animate-spin" />
@@ -111,7 +119,9 @@ export default function Login() {
 
   return (
     <div>
+
       {/* Heading */}
+
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-800">
           Selamat Datang 👋
@@ -122,49 +132,47 @@ export default function Login() {
         </p>
       </div>
 
-      {/* Error */}
       {errorInfo}
-
-      {/* Loading */}
       {loadingInfo}
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Username */}
+
+        {/* Email */}
+
         <div>
           <label
-            htmlFor="username"
+            htmlFor="email"
             className="block text-sm font-semibold text-gray-700 mb-2"
           >
-            Username
+            Email
           </label>
 
           <input
-            type="text"
-            id="username"
-            name="username"
-            value={dataForm.username}
+            type="email"
+            id="email"
+            name="email"
+            value={dataForm.email}
             onChange={handleChange}
-            placeholder="Masukkan username"
+            placeholder="Masukkan email"
             disabled={loading}
             className="
-              w-full px-4 py-3
-              border border-gray-300
-              rounded-xl
-              bg-gray-50
-              focus:outline-none
-              focus:ring-2
-              focus:ring-blue-500
-              focus:border-blue-500
-              transition
-              disabled:bg-gray-100
+            w-full px-4 py-3
+            border border-gray-300
+            rounded-xl
+            bg-gray-50
+            focus:outline-none
+            focus:ring-2
+            focus:ring-blue-500
             "
           />
         </div>
 
         {/* Password */}
+
         <div>
+
           <div className="flex items-center justify-between mb-2">
+
             <label
               htmlFor="password"
               className="text-sm font-semibold text-gray-700"
@@ -174,10 +182,11 @@ export default function Login() {
 
             <Link
               to="/forgot"
-              className="text-sm text-blue-600 hover:text-blue-700"
+              className="text-sm text-blue-600"
             >
               Lupa Password?
             </Link>
+
           </div>
 
           <input
@@ -189,73 +198,74 @@ export default function Login() {
             placeholder="Masukkan password"
             disabled={loading}
             className="
-              w-full px-4 py-3
-              border border-gray-300
-              rounded-xl
-              bg-gray-50
-              focus:outline-none
-              focus:ring-2
-              focus:ring-blue-500
-              focus:border-blue-500
-              transition
-              disabled:bg-gray-100
+            w-full px-4 py-3
+            border border-gray-300
+            rounded-xl
+            bg-gray-50
+            focus:outline-none
+            focus:ring-2
+            focus:ring-blue-500
             "
           />
+
         </div>
 
-        {/* Remember Me */}
-        <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm text-gray-600">
-            <input
-              type="checkbox"
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            Ingat saya
-          </label>
+        {/* Remember */}
+
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <input type="checkbox"/>
+          Ingat Saya
         </div>
 
         {/* Button */}
+
         <button
           type="submit"
           disabled={loading}
           className="
-            w-full py-3 rounded-xl
-            bg-blue-600 hover:bg-blue-700
-            text-white font-semibold
-            transition duration-300
-            shadow-md hover:shadow-lg
-            disabled:opacity-50
-            disabled:cursor-not-allowed
+          w-full py-3
+          rounded-xl
+          bg-blue-600
+          hover:bg-blue-700
+          text-white
+          font-semibold
           "
         >
+
           {loading ? (
             <span className="flex justify-center items-center">
-              <ImSpinner2 className="animate-spin mr-2" />
+              <ImSpinner2 className="animate-spin mr-2"/>
               Loading...
             </span>
           ) : (
             "Login Sekarang"
           )}
+
         </button>
+
       </form>
 
-      {/* Register Link */}
       <div className="text-center mt-6">
+
         <p className="text-sm text-gray-500">
+
           Belum punya akun?{" "}
+
           <Link
             to="/register"
-            className="text-blue-600 hover:text-blue-700 font-semibold"
+            className="text-blue-600 font-semibold"
           >
             Daftar sekarang
           </Link>
+
         </p>
+
       </div>
 
-      {/* Footer */}
       <p className="text-center text-sm text-gray-400 mt-6">
         SmashBooking - Sistem Booking Lapangan Badminton
       </p>
+
     </div>
   );
 }

@@ -1,247 +1,450 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
-import { FaCheck, FaTimes } from "react-icons/fa";
+import {
+  FaCheck,
+  FaTimes,
+} from "react-icons/fa";
 
-export default function KelolaBooking() {
+import bookingService from "../../services/bookingService";
+
+export default function Orders() {
+
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [bookings, setBookings] = useState([]);
 
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      name: "Andi Saputra",
-      phone: "081234567890",
-      court: "Lapangan 1",
-      date: "2026-06-14",
-      time: "15:00 - 16:00",
-      price: 35000,
-      payment: "Lunas",
-      status: "pending",
-    },
-    {
-      id: 2,
-      name: "Budi Santoso",
-      phone: "082345678901",
-      court: "Lapangan 2",
-      date: "2026-06-14",
-      time: "16:00 - 17:00",
-      price: 35000,
-      payment: "Lunas",
-      status: "accepted",
-    },
-    {
-      id: 3,
-      name: "Citra Dewi",
-      phone: "083456789012",
-      court: "Lapangan 1",
-      date: "2026-06-15",
-      time: "18:00 - 19:00",
-      price: 35000,
-      payment: "Belum Bayar",
-      status: "rejected",
-    },
-  ]);
+  useEffect(() => {
 
-  const updateStatus = (id, status) => {
-    setBookings((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status } : item
-      )
+    loadBooking();
+
+    // refresh otomatis tiap 1 menit
+    const interval = setInterval(() => {
+      loadBooking();
+    }, 60000);
+
+    return () => clearInterval(interval);
+
+  }, []);
+
+  async function loadBooking() {
+
+    try {
+
+      setLoading(true);
+
+      let data =
+        await bookingService.getBookings();
+
+      const now = new Date();
+
+      // ======================
+      // AUTO DONE
+      // ======================
+
+      for (const item of data) {
+
+        if (
+          item.status === "approved" &&
+          item.tanggal &&
+          item.jam_selesai
+        ) {
+
+          const bookingSelesai =
+            new Date(
+              `${item.tanggal}T${item.jam_selesai}`
+            );
+
+          // jika waktu sekarang sudah lewat
+          if (now >= bookingSelesai) {
+
+            await bookingService.updateStatus(
+              item.id,
+              "done"
+            );
+
+            item.status = "done";
+          }
+        }
+      }
+
+      // ambil data terbaru lagi
+      data =
+        await bookingService.getBookings();
+
+      setBookings(data || []);
+
+    } catch (err) {
+
+      console.log(err);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  }
+
+  async function updateStatus(
+    id,
+    status
+  ) {
+
+    try {
+
+      await bookingService.updateStatus(
+        id,
+        status
+      );
+
+      loadBooking();
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert(
+        "Gagal update status"
+      );
+    }
+  }
+
+  const filtered =
+    bookings.filter(
+      (item) =>
+        item.users?.nama
+          ?.toLowerCase()
+          .includes(
+            search.toLowerCase()
+          ) || !search
     );
+
+  const pending =
+    filtered.filter(
+      (x) =>
+        x.status === "pending"
+    );
+
+  const approved =
+    filtered.filter(
+      (x) =>
+        x.status === "approved"
+    );
+
+  const rejected =
+    filtered.filter(
+      (x) =>
+        x.status === "rejected"
+    );
+
+  const done =
+    filtered.filter(
+      (x) =>
+        x.status === "done"
+    );
+
+  const getStatusColor = (
+    status
+  ) => {
+
+    switch(status){
+
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+
+      case "approved":
+        return "bg-green-100 text-green-700";
+
+      case "rejected":
+        return "bg-red-100 text-red-700";
+
+      case "done":
+        return "bg-blue-100 text-blue-700";
+
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
   };
 
-  const formatRupiah = (num) =>
-    "Rp " + num.toLocaleString("id-ID");
-
-  const filtered = bookings.filter((b) =>
-    b.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const pending = filtered.filter((b) => b.status === "pending");
-  const accepted = filtered.filter((b) => b.status === "accepted");
-  const rejected = filtered.filter((b) => b.status === "rejected");
-
   return (
+
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
 
-      {/* BACKGROUND */}
+      {/* Background */}
       <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-400/20 blur-3xl rounded-full"></div>
+
       <div className="absolute top-40 right-0 w-96 h-96 bg-indigo-400/20 blur-3xl rounded-full"></div>
 
-      {/* HEADER IMAGE */}
+      {/* Header */}
       <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
+
         <img
           src="/img/badminton.jpg"
+          alt=""
           className="w-full h-full object-cover"
         />
+
         <div className="absolute inset-0 bg-gradient-to-r from-blue-800/80 via-blue-600/60 to-indigo-600/80"></div>
+
       </div>
 
-      {/* CONTENT */}
       <div className="relative z-10 p-5 md:p-10">
 
         <PageHeader
           title="Kelola Booking"
-          breadcrumb={["Admin", "Booking"]}
+          breadcrumb={[
+            "Admin",
+            "Kelola Booking"
+          ]}
         />
 
-        {/* STATISTIK */}
-        <div className="grid md:grid-cols-3 gap-4 mt-6 mb-8">
+        {/* CARD */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
 
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <p className="text-gray-500 text-sm">Menunggu</p>
+          <div className="bg-white rounded-2xl shadow-md p-5">
+
+            <p className="text-gray-500 text-sm">
+              Menunggu
+            </p>
+
             <h2 className="text-3xl font-bold text-orange-500">
               {pending.length}
             </h2>
+
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <p className="text-gray-500 text-sm">Diterima</p>
-            <h2 className="text-3xl font-bold text-green-600">
-              {accepted.length}
+          <div className="bg-white rounded-2xl shadow-md p-5">
+
+            <p className="text-gray-500 text-sm">
+              Disetujui
+            </p>
+
+            <h2 className="text-3xl font-bold text-green-500">
+              {approved.length}
             </h2>
+
           </div>
 
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <p className="text-gray-500 text-sm">Ditolak</p>
-            <h2 className="text-3xl font-bold text-red-600">
+          <div className="bg-white rounded-2xl shadow-md p-5">
+
+            <p className="text-gray-500 text-sm">
+              Ditolak
+            </p>
+
+            <h2 className="text-3xl font-bold text-red-500">
               {rejected.length}
             </h2>
+
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-md p-5">
+
+            <p className="text-gray-500 text-sm">
+              Selesai
+            </p>
+
+            <h2 className="text-3xl font-bold text-blue-500">
+              {done.length}
+            </h2>
+
           </div>
 
         </div>
 
         {/* SEARCH */}
-        <div className="mb-6">
+        <div className="mt-6">
+
           <input
             type="text"
-            placeholder="Cari nama pelanggan..."
+            placeholder="Cari pelanggan..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-96 px-4 py-3 rounded-xl shadow-md border bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e)=>
+              setSearch(
+                e.target.value
+              )
+            }
+            className="w-full md:w-96 px-4 py-3 rounded-xl shadow-md border bg-white"
           />
+
         </div>
 
-        {/* PENDING */}
-        <div className="bg-white rounded-2xl shadow-md p-6 mb-8">
-          <h2 className="text-lg font-bold text-orange-600 mb-4">
-            Menunggu Konfirmasi ({pending.length})
+        {/* TABLE */}
+        <div className="bg-white rounded-2xl shadow-md p-6 mt-6">
+
+          <h2 className="font-bold text-lg mb-5">
+
+            Daftar Booking
+
           </h2>
 
-          <div className="space-y-4">
-            {pending.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded-xl p-5 flex flex-col lg:flex-row lg:justify-between"
-              >
-                <div>
-                  <h3 className="font-bold">{item.name}</h3>
-                  <p className="text-gray-600">{item.phone}</p>
-                  <p className="text-gray-600">{item.court}</p>
-                  <p className="text-gray-600">
-                    {item.date} • {item.time}
-                  </p>
+          {loading ? (
 
-                  <p className="font-bold text-green-600 mt-2">
-                    {formatRupiah(item.price)}
-                  </p>
+            <div className="text-center py-10">
 
-                  <span
-                    className={`inline-block mt-2 px-3 py-1 rounded-full text-xs ${
-                      item.payment === "Lunas"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
+              Memuat data...
+
+            </div>
+
+          ) : (
+
+          <div className="overflow-x-auto">
+
+            <table className="w-full">
+
+              <thead>
+
+                <tr className="border-b">
+
+                  <th className="p-3 text-left">
+                    Pelanggan
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Lapangan
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Tanggal
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Jam
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Total
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Status
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Aksi
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                {filtered.length > 0 ? (
+
+                  filtered.map((item)=>(
+
+                  <tr
+                    key={item.id}
+                    className="border-b hover:bg-gray-50"
                   >
-                    {item.payment}
-                  </span>
-                </div>
 
-                {/* 🔥 BUTTON UPGRADE */}
-               <div className="mt-4 lg:mt-0 lg:flex lg:flex-col lg:justify-center lg:items-end w-full lg:w-auto">
+                    <td className="p-3">
+                      {item.users?.nama || "-"}
+                    </td>
 
-  <div className="flex gap-2 w-full lg:w-auto">
+                    <td className="p-3">
+                      {item.lapangan?.nama || "-"}
+                    </td>
 
-    <button
-      onClick={() => updateStatus(item.id, "accepted")}
-      className="flex-1 lg:flex-none inline-flex items-center justify-center gap-1 
-      px-4 py-2 rounded-lg text-xs font-medium
-      bg-green-500 hover:bg-green-600 text-white
-      active:scale-95 transition shadow-sm"
-    >
-      <FaCheck size={10} />
-      Terima
-    </button>
+                    <td className="p-3">
+                      {new Date(
+                        item.tanggal
+                      ).toLocaleDateString(
+                        "id-ID"
+                      )}
+                    </td>
 
-    <button
-      onClick={() => updateStatus(item.id, "rejected")}
-      className="flex-1 lg:flex-none inline-flex items-center justify-center gap-1 
-      px-4 py-2 rounded-lg text-xs font-medium
-      bg-red-500 hover:bg-red-600 text-white
-      active:scale-95 transition shadow-sm"
-    >
-      <FaTimes size={10} />
-      Tolak
-    </button>
+                    <td className="p-3">
+                      {item.jam_mulai} -
+                      {item.jam_selesai}
+                    </td>
 
-  </div>
+                    <td className="p-3 text-green-600 font-semibold">
+                      Rp {Number(
+                        item.total || 0
+                      ).toLocaleString("id-ID")}
+                    </td>
 
-</div>
-              </div>
-            ))}
+                    <td className="p-3">
+
+                      <span
+                      className={`px-3 py-1 rounded-full text-xs ${getStatusColor(item.status)}`}
+                      >
+                        {item.status}
+                      </span>
+
+                    </td>
+
+                    <td className="p-3 flex gap-2">
+
+                      {item.status==="pending" && (
+                        <>
+                          <button
+                          onClick={()=>updateStatus(
+                            item.id,
+                            "approved"
+                          )}
+                          className="bg-green-500 text-white p-2 rounded-lg"
+                          >
+                            <FaCheck/>
+                          </button>
+
+                          <button
+                          onClick={()=>updateStatus(
+                            item.id,
+                            "rejected"
+                          )}
+                          className="bg-red-500 text-white p-2 rounded-lg"
+                          >
+                            <FaTimes/>
+                          </button>
+                        </>
+                      )}
+
+                      {item.status==="approved" && (
+                        <span className="text-blue-600 text-sm">
+                          Menunggu selesai otomatis
+                        </span>
+                      )}
+
+                      {item.status==="done" && (
+                        <span className="text-green-600 text-sm">
+                          Booking selesai
+                        </span>
+                      )}
+
+                    </td>
+
+                  </tr>
+
+                  ))
+
+                ) : (
+
+                <tr>
+
+                  <td
+                    colSpan="7"
+                    className="text-center p-6 text-gray-500"
+                  >
+                    Data booking tidak ditemukan
+                  </td>
+
+                </tr>
+
+                )}
+
+              </tbody>
+
+            </table>
+
           </div>
-        </div>
 
-        {/* ACCEPTED */}
-        <div className="bg-white rounded-2xl shadow-md p-6 mb-8">
-          <h2 className="text-lg font-bold text-green-600 mb-4">
-            Diterima ({accepted.length})
-          </h2>
+          )}
 
-          <div className="space-y-4">
-            {accepted.map((item) => (
-              <div key={item.id} className="border rounded-xl p-5">
-                <h3 className="font-bold">{item.name}</h3>
-                <p>{item.phone}</p>
-                <p>{item.court}</p>
-                <p>{item.date} • {item.time}</p>
-                <p className="font-bold text-green-600 mt-2">
-                  {formatRupiah(item.price)}
-                </p>
-
-                <span className="inline-block mt-3 px-3 py-1 rounded-full text-sm bg-green-100 text-green-700">
-                  Diterima
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* REJECTED */}
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-lg font-bold text-red-600 mb-4">
-            Ditolak ({rejected.length})
-          </h2>
-
-          <div className="space-y-4">
-            {rejected.map((item) => (
-              <div key={item.id} className="border rounded-xl p-5">
-                <h3 className="font-bold">{item.name}</h3>
-                <p>{item.phone}</p>
-                <p>{item.court}</p>
-                <p>{item.date} • {item.time}</p>
-                <p className="font-bold text-green-600 mt-2">
-                  {formatRupiah(item.price)}
-                </p>
-
-                <span className="inline-block mt-3 px-3 py-1 rounded-full text-sm bg-red-100 text-red-700">
-                  Ditolak
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
 
       </div>
+
     </div>
   );
 }

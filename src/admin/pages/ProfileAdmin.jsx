@@ -9,7 +9,7 @@ import {
 
 import { supabase } from "../../services/supabase";
 
-export default function ProfilePetugas() {
+export default function ProfileAdmin() {
   const user = JSON.parse(
     localStorage.getItem("user")
   );
@@ -21,33 +21,34 @@ export default function ProfilePetugas() {
     useState(user?.foto || null);
 
   const [form, setForm] = useState({
-    name: user?.username || "",
+    name:
+      user?.nama ||
+      user?.username ||
+      "",
+
     email: user?.email || "",
+
     phone: user?.phone || "",
+
     password: "",
   });
-
-  // ======================
-  // GANTI FOTO
-  // ======================
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
 
     if (file) {
-      const reader = new FileReader();
+      const reader =
+        new FileReader();
 
       reader.onloadend = () => {
-        setProfileImage(reader.result);
+        setProfileImage(
+          reader.result
+        );
       };
 
       reader.readAsDataURL(file);
     }
   };
-
-  // ======================
-  // INPUT
-  // ======================
 
   const handleChange = (e) => {
     setForm({
@@ -57,65 +58,69 @@ export default function ProfilePetugas() {
     });
   };
 
-  // ======================
-  // SIMPAN
-  // ======================
+  const handleSave =
+    async () => {
+      try {
+        const updatedData = {
+          nama: form.name,
+          phone: form.phone,
+          foto: profileImage,
+        };
 
-  const handleSave = async () => {
-    try {
+        if (
+          form.password.trim() !==
+          ""
+        ) {
+          updatedData.password =
+            form.password;
+        }
 
-      const updatedData = {
-        username: form.name,
-        phone: form.phone,
-        foto: profileImage,
-      };
+        const { error } =
+          await supabase
+            .from("users")
+            .update(updatedData)
+            .eq(
+              "id",
+              user.id
+            );
 
-      if (
-        form.password.trim() !== ""
-      ) {
-        updatedData.password =
-          form.password;
-      }
+        if (error) {
+          console.log(error);
 
-      const { error } =
-        await supabase
-          .from("users")
-          .update(updatedData)
-          .eq("id", user.id);
+          alert(
+            "Gagal update: " +
+              error.message
+          );
 
-      if (error) {
-        console.log(error);
+          return;
+        }
 
-        alert(
-          "Gagal update : " +
-          error.message
+        const updatedUser = {
+          ...user,
+          ...updatedData,
+        };
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify(
+            updatedUser
+          )
         );
 
-        return;
+        alert(
+          "Profil admin berhasil diperbarui"
+        );
+
+        setIsEdit(false);
+
+      } catch (err) {
+        console.log(err);
+
+        alert(
+          "Terjadi kesalahan"
+        );
       }
-
-      // update localStorage
-      const updatedUser = {
-        ...user,
-        ...updatedData,
-      };
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify(updatedUser)
-      );
-
-      alert(
-        "Profil petugas berhasil diperbarui"
-      );
-
-      setIsEdit(false);
-
-    } catch (err) {
-      console.log(err);
-      alert("Terjadi kesalahan");
-    }
-  };
+    };
 
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
@@ -125,8 +130,8 @@ export default function ProfilePetugas() {
 
         <img
           src="/img/badminton.jpg"
-          alt="bg"
           className="w-full h-full object-cover"
+          alt=""
         />
 
         <div className="absolute inset-0 bg-gradient-to-r from-blue-800/80 via-blue-600/60 to-indigo-600/80"></div>
@@ -135,19 +140,16 @@ export default function ProfilePetugas() {
 
       <div className="relative z-10 p-5 md:p-10">
 
-        {/* JUDUL */}
         <div className="flex justify-between items-center text-white mb-10">
 
           <div>
-
             <h1 className="text-4xl font-bold">
-              Profil Petugas
+              Profil Admin
             </h1>
 
             <p className="text-blue-100">
-              Informasi akun petugas
+              Informasi akun admin
             </p>
-
           </div>
 
           <button
@@ -165,7 +167,6 @@ export default function ProfilePetugas() {
 
         </div>
 
-        {/* CARD */}
         <div className="bg-white rounded-3xl shadow-xl p-8 max-w-4xl mx-auto">
 
           {/* FOTO */}
@@ -177,13 +178,13 @@ export default function ProfilePetugas() {
 
                 <img
                   src={profileImage}
-                  alt="profile"
                   className="w-full h-full object-cover"
+                  alt=""
                 />
 
               ) : (
 
-                <div className="w-full h-full bg-blue-100 flex items-center justify-center text-blue-600 text-5xl">
+                <div className="w-full h-full bg-blue-100 flex justify-center items-center text-blue-600 text-5xl">
 
                   <FaUser />
 
@@ -192,7 +193,6 @@ export default function ProfilePetugas() {
               )}
 
               {isEdit && (
-
                 <label className="absolute bottom-1 right-1 bg-blue-600 text-white p-3 rounded-full cursor-pointer">
 
                   <FaCamera size={14} />
@@ -200,11 +200,12 @@ export default function ProfilePetugas() {
                   <input
                     type="file"
                     hidden
-                    onChange={handleImageChange}
+                    onChange={
+                      handleImageChange
+                    }
                   />
 
                 </label>
-
               )}
 
             </div>
@@ -213,27 +214,26 @@ export default function ProfilePetugas() {
               {form.name}
             </h2>
 
-            <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full mt-2 text-sm">
-              Petugas
-            </span>
-
           </div>
 
-          {/* FORM */}
           <div className="grid md:grid-cols-2 gap-6 mt-10">
 
             {/* Nama */}
             <div className="border rounded-xl p-4">
 
               <div className="flex gap-2 items-center mb-2">
+
                 <FaUser />
                 <p>Nama</p>
+
               </div>
 
               <input
                 name="name"
                 value={form.name}
-                onChange={handleChange}
+                onChange={
+                  handleChange
+                }
                 disabled={!isEdit}
                 className="w-full p-3 border rounded-lg"
               />
@@ -244,8 +244,10 @@ export default function ProfilePetugas() {
             <div className="border rounded-xl p-4">
 
               <div className="flex gap-2 items-center mb-2">
+
                 <FaEnvelope />
                 <p>Email</p>
+
               </div>
 
               <input
@@ -256,18 +258,22 @@ export default function ProfilePetugas() {
 
             </div>
 
-            {/* Nomor HP */}
+            {/* Phone */}
             <div className="border rounded-xl p-4 md:col-span-2">
 
               <div className="flex gap-2 items-center mb-2">
+
                 <FaPhone />
                 <p>Nomor HP</p>
+
               </div>
 
               <input
                 name="phone"
                 value={form.phone}
-                onChange={handleChange}
+                onChange={
+                  handleChange
+                }
                 disabled={!isEdit}
                 className="w-full p-3 border rounded-lg"
               />
@@ -280,15 +286,21 @@ export default function ProfilePetugas() {
               <div className="border rounded-xl p-4 md:col-span-2">
 
                 <div className="flex gap-2 items-center mb-2">
+
                   <FaLock />
                   <p>Password Baru</p>
+
                 </div>
 
                 <input
                   type="password"
                   name="password"
-                  value={form.password}
-                  onChange={handleChange}
+                  value={
+                    form.password
+                  }
+                  onChange={
+                    handleChange
+                  }
                   placeholder="Masukkan password baru"
                   className="w-full p-3 border rounded-lg"
                 />
@@ -302,6 +314,7 @@ export default function ProfilePetugas() {
         </div>
 
       </div>
+
     </div>
   );
 }

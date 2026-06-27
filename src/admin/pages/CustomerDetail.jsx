@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
-import users from "../data/users.json";
 import { useEffect, useState } from "react";
+import { supabase } from "../../services/supabase";
 
 export default function CustomerDetail() {
   const { id } = useParams();
@@ -8,8 +8,17 @@ export default function CustomerDetail() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const foundUser = users.find((u) => u.id === parseInt(id));
-    setUser(foundUser || null);
+    const fetchUser = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (!error) setUser(data);
+    };
+
+    fetchUser();
   }, [id]);
 
   if (!user) {
@@ -25,8 +34,8 @@ export default function CustomerDetail() {
 
       {/* FOTO */}
       <img
-        src={user.photo}
-        alt={user.name}
+        src={user.foto}
+        alt={user.nama}
         className="w-32 h-32 rounded-full mx-auto mb-6 object-cover border-4 border-blue-500"
       />
 
@@ -34,7 +43,7 @@ export default function CustomerDetail() {
       <div className="space-y-3 text-gray-700">
 
         <p>
-          <strong>Nama :</strong> {user.name}
+          <strong>Nama :</strong> {user.nama}
         </p>
 
         <p>
@@ -42,16 +51,24 @@ export default function CustomerDetail() {
         </p>
 
         <p>
-          <strong>Nomor HP :</strong> {user.phone}
+          <strong>Nomor HP :</strong> {user.phone || "-"}
         </p>
 
         <p>
-          <strong>Tanggal Registrasi :</strong> {user.registerDate}
+          <strong>Email :</strong> {user.email || "-"}</p>
+
+        <p>
+          <strong>Role :</strong> {user.role}</p>
+
+        <p>
+          <strong>Tanggal Registrasi :</strong>{" "}
+          {user.created_at
+            ? new Date(user.created_at).toLocaleString()
+            : "-"}
         </p>
 
       </div>
 
-      {/* NANTI KAMU TAMBAH INI */}
       <hr className="my-6" />
 
       <p className="font-semibold text-gray-600">

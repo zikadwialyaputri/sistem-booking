@@ -1,287 +1,420 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
+import {
+  FaCheck,
+  FaTimes,
+} from "react-icons/fa";
+
+import bookingService from "../../services/bookingService";
 
 export default function Orders() {
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [bookings, setBookings] = useState([]);
 
-  const [bookings, setBookings] = useState([
-    {
-      id: 1,
-      name: "Andi Saputra",
-      phone: "081234567890",
-      court: "Lapangan 1",
-      date: "2025-06-14",
-      time: "15:00 - 16:00",
-      price: 35000,
-      payment: "Lunas",
-      status: "pending",
-    },
-    {
-      id: 2,
-      name: "Budi Santoso",
-      phone: "082345678901",
-      court: "Lapangan 2",
-      date: "2025-06-14",
-      time: "16:00 - 17:00",
-      price: 35000,
-      payment: "Lunas",
-      status: "accepted",
-    },
-    {
-      id: 3,
-      name: "Citra Dewi",
-      phone: "083456789012",
-      court: "Lapangan 1",
-      date: "2025-06-15",
-      time: "18:00 - 19:00",
-      price: 35000,
-      payment: "Belum Bayar",
-      status: "rejected",
-    },
-    {
-      id: 4,
-      name: "Dewi Lestari",
-      phone: "084567890123",
-      court: "Lapangan 2",
-      date: "2025-06-16",
-      time: "20:00 - 21:00",
-      price: 35000,
-      payment: "Lunas",
-      status: "pending",
-    },
-  ]);
+  useEffect(() => {
+    loadBooking();
 
-  const updateStatus = (id, status) => {
-    setBookings((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status } : item
-      )
-    );
+    // refresh tiap 1 menit supaya status done otomatis update
+    const interval = setInterval(() => {
+      loadBooking();
+    }, 60000);
+
+    return () => clearInterval(interval);
+
+  }, []);
+
+  async function loadBooking() {
+    try {
+      setLoading(true);
+
+      let data = await bookingService.getBookings();
+
+      const now = new Date();
+
+      // cek booking otomatis selesai
+      for (const item of data) {
+
+        if (
+          item.status === "approved" &&
+          item.tanggal &&
+          item.jam_selesai
+        ) {
+
+          const selesai = new Date(
+            `${item.tanggal}T${item.jam_selesai}`
+          );
+
+          if (now > selesai) {
+
+            await bookingService.updateStatus(
+              item.id,
+              "done"
+            );
+
+            item.status = "done";
+          }
+        }
+      }
+
+      // ambil data terbaru lagi
+      data = await bookingService.getBookings();
+
+      setBookings(data || []);
+
+    } catch (err) {
+
+      console.log(err);
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  }
+
+  async function updateStatus(id, status) {
+
+    try {
+
+      await bookingService.updateStatus(
+        id,
+        status
+      );
+
+      loadBooking();
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert(
+        "Gagal update status"
+      );
+    }
+  }
+
+  const filtered = bookings.filter(
+    (item) =>
+      item.users?.nama
+        ?.toLowerCase()
+        .includes(
+          search.toLowerCase()
+        ) || !search
+  );
+
+  const pending = filtered.filter(
+    (x) => x.status === "pending"
+  );
+
+  const approved = filtered.filter(
+    (x) => x.status === "approved"
+  );
+
+  const rejected = filtered.filter(
+    (x) => x.status === "rejected"
+  );
+
+  const done = filtered.filter(
+    (x) => x.status === "done"
+  );
+
+  const getStatusColor = (status) => {
+
+    switch(status){
+
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+
+      case "approved":
+        return "bg-green-100 text-green-700";
+
+      case "rejected":
+        return "bg-red-100 text-red-700";
+
+      case "done":
+        return "bg-blue-100 text-blue-700";
+
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
   };
-
-  const formatRupiah = (number) => {
-    return "Rp " + number.toLocaleString("id-ID");
-  };
-
-  const filtered = bookings.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const pendingBookings = filtered.filter(
-    (item) => item.status === "pending"
-  );
-
-  const acceptedBookings = filtered.filter(
-    (item) => item.status === "accepted"
-  );
-
-  const rejectedBookings = filtered.filter(
-    (item) => item.status === "rejected"
-  );
 
   return (
-    <div className="relative bg-gray-100 min-h-screen">
+
+    <div className="relative bg-gray-100 min-h-screen overflow-hidden">
+
       {/* Background */}
+      <div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-400/20 blur-3xl rounded-full"></div>
+
+      <div className="absolute top-40 right-0 w-96 h-96 bg-indigo-400/20 blur-3xl rounded-full"></div>
+
       <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
+
         <img
           src="/img/badminton.jpg"
-          alt="badminton"
           className="w-full h-full object-cover"
+          alt=""
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/80 via-blue-500/60 to-indigo-600/80"></div>
+
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-800/80 via-blue-600/60 to-indigo-600/80"></div>
+
       </div>
 
       <div className="relative z-10 p-5 md:p-10">
+
         <PageHeader
           title="Kelola Booking"
-          breadcrumb={["Admin", "Kelola Booking"]}
+          breadcrumb={[
+            "Admin",
+            "Kelola Booking"
+          ]}
         />
 
         {/* Statistik */}
-        <div className="grid md:grid-cols-3 gap-4 mt-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+
+          <div className="bg-white rounded-2xl shadow-md p-5">
             <p className="text-gray-500 text-sm">
-              Menunggu Konfirmasi
+              Menunggu
             </p>
+
             <h2 className="text-3xl font-bold text-orange-500">
-              {pendingBookings.length}
+              {pending.length}
             </h2>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-5">
+          <div className="bg-white rounded-2xl shadow-md p-5">
             <p className="text-gray-500 text-sm">
-              Booking Diterima
+              Disetujui
             </p>
-            <h2 className="text-3xl font-bold text-green-600">
-              {acceptedBookings.length}
+
+            <h2 className="text-3xl font-bold text-green-500">
+              {approved.length}
             </h2>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-5">
+          <div className="bg-white rounded-2xl shadow-md p-5">
             <p className="text-gray-500 text-sm">
-              Booking Ditolak
+              Ditolak
             </p>
-            <h2 className="text-3xl font-bold text-red-600">
-              {rejectedBookings.length}
+
+            <h2 className="text-3xl font-bold text-red-500">
+              {rejected.length}
             </h2>
           </div>
+
+          <div className="bg-white rounded-2xl shadow-md p-5">
+            <p className="text-gray-500 text-sm">
+              Selesai
+            </p>
+
+            <h2 className="text-3xl font-bold text-blue-500">
+              {done.length}
+            </h2>
+          </div>
+
         </div>
 
         {/* Search */}
-        <div className="mb-8">
+        <div className="mt-6">
+
           <input
             type="text"
-            placeholder="Cari nama pelanggan..."
+            placeholder="Cari pelanggan..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-96 px-4 py-3 rounded-xl shadow-md border border-gray-100 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e)=>
+              setSearch(
+                e.target.value
+              )
+            }
+            className="w-full md:w-96 px-4 py-3 rounded-xl shadow-md border bg-white"
           />
+
         </div>
 
-        {/* Pending */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <h2 className="text-xl font-bold text-orange-600 mb-4">
-            Menunggu Konfirmasi ({pendingBookings.length})
+        {/* Table */}
+        <div className="bg-white rounded-2xl shadow-md p-6 mt-6">
+
+          <h2 className="font-bold text-lg mb-5">
+
+            Daftar Booking
+
           </h2>
 
-          <div className="space-y-4">
-            {pendingBookings.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded-xl p-5 flex flex-col lg:flex-row lg:justify-between"
-              >
-                <div>
-                  <h3 className="font-bold text-lg">
-                    {item.name}
-                  </h3>
+          {loading ? (
 
-                  <p className="text-gray-600">
-                    {item.phone}
-                  </p>
+            <div className="text-center py-10">
 
-                  <p className="text-gray-600">
-                    {item.court}
-                  </p>
+              Memuat data...
 
-                  <p className="text-gray-600">
-                    {item.date}
-                  </p>
+            </div>
 
-                  <p className="text-gray-600">
-                    {item.time}
-                  </p>
+          ) : (
 
-                  <p className="font-bold text-green-600 mt-2">
-                    {formatRupiah(item.price)}
-                  </p>
+          <div className="overflow-x-auto">
 
-                  <span
-                    className={`inline-block mt-2 px-3 py-1 rounded-full text-xs ${
-                      item.payment === "Lunas"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
+            <table className="w-full">
+
+              <thead>
+
+                <tr className="border-b">
+
+                  <th className="p-3 text-left">
+                    Pelanggan
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Lapangan
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Tanggal
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Jam
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Total
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Status
+                  </th>
+
+                  <th className="p-3 text-left">
+                    Aksi
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                {filtered.length > 0 ? (
+
+                  filtered.map((item)=>(
+
+                  <tr
+                    key={item.id}
+                    className="border-b hover:bg-gray-50"
                   >
-                    {item.payment}
-                  </span>
-                </div>
 
-                <div className="flex gap-3 mt-5 lg:mt-0">
-                  <button
-                    onClick={() =>
-                      updateStatus(item.id, "accepted")
-                    }
-                    className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg"
-                  >
-                    Terima
-                  </button>
+                    <td className="p-3">
 
-                  <button
-                    onClick={() =>
-                      updateStatus(item.id, "rejected")
-                    }
-                    className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg"
+                      <p className="font-semibold">
+                        {item.users?.nama || "-"}
+                      </p>
+
+                    </td>
+
+                    <td className="p-3">
+                      {item.lapangan?.nama || "-"}
+                    </td>
+
+                    <td className="p-3">
+                      {new Date(
+                        item.tanggal
+                      ).toLocaleDateString(
+                        "id-ID"
+                      )}
+                    </td>
+
+                    <td className="p-3">
+                      {item.jam_mulai} -
+                      {item.jam_selesai}
+                    </td>
+
+                    <td className="p-3 text-green-600 font-semibold">
+                      Rp {Number(
+                        item.total || 0
+                      ).toLocaleString("id-ID")}
+                    </td>
+
+                    <td className="p-3">
+
+                      <span
+                      className={`px-3 py-1 rounded-full text-xs ${getStatusColor(item.status)}`}
+                      >
+                        {item.status}
+                      </span>
+
+                    </td>
+
+                    <td className="p-3 flex gap-2">
+
+                      {item.status==="pending" && (
+                        <>
+                          <button
+                          onClick={()=>updateStatus(
+                            item.id,
+                            "approved"
+                          )}
+                          className="bg-green-500 text-white p-2 rounded-lg"
+                          >
+                            <FaCheck/>
+                          </button>
+
+                          <button
+                          onClick={()=>updateStatus(
+                            item.id,
+                            "rejected"
+                          )}
+                          className="bg-red-500 text-white p-2 rounded-lg"
+                          >
+                            <FaTimes/>
+                          </button>
+                        </>
+                      )}
+
+                      {item.status==="approved" && (
+                        <span className="text-blue-600 text-sm">
+                          Menunggu selesai otomatis
+                        </span>
+                      )}
+
+                      {item.status==="done" && (
+                        <span className="text-green-600 text-sm">
+                          Booking selesai
+                        </span>
+                      )}
+
+                    </td>
+
+                  </tr>
+
+                  ))
+
+                ) : (
+
+                <tr>
+
+                  <td
+                  colSpan="7"
+                  className="text-center p-6 text-gray-500"
                   >
-                    Tolak
-                  </button>
-                </div>
-              </div>
-            ))}
+                    Data booking tidak ditemukan
+                  </td>
+
+                </tr>
+
+                )}
+
+              </tbody>
+
+            </table>
+
           </div>
+
+          )}
+
         </div>
 
-        {/* Accepted */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <h2 className="text-xl font-bold text-green-600 mb-4">
-            Booking Diterima ({acceptedBookings.length})
-          </h2>
-
-          <div className="space-y-4">
-            {acceptedBookings.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded-xl p-5"
-              >
-                <h3 className="font-bold text-lg">
-                  {item.name}
-                </h3>
-
-                <p>{item.phone}</p>
-
-                <p>{item.court}</p>
-
-                <p>{item.date}</p>
-
-                <p>{item.time}</p>
-
-                <p className="font-bold text-green-600 mt-2">
-                  {formatRupiah(item.price)}
-                </p>
-
-                <span className="inline-block mt-3 px-3 py-1 rounded-full text-sm bg-green-100 text-green-700">
-                  Diterima
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Rejected */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-red-600 mb-4">
-            Booking Ditolak ({rejectedBookings.length})
-          </h2>
-
-          <div className="space-y-4">
-            {rejectedBookings.map((item) => (
-              <div
-                key={item.id}
-                className="border rounded-xl p-5"
-              >
-                <h3 className="font-bold text-lg">
-                  {item.name}
-                </h3>
-
-                <p>{item.phone}</p>
-
-                <p>{item.court}</p>
-
-                <p>{item.date}</p>
-
-                <p>{item.time}</p>
-
-                <p className="font-bold text-green-600 mt-2">
-                  {formatRupiah(item.price)}
-                </p>
-
-                <span className="inline-block mt-3 px-3 py-1 rounded-full text-sm bg-red-100 text-red-700">
-                  Ditolak
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
+
     </div>
   );
 }

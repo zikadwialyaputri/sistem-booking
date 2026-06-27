@@ -1,108 +1,60 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
+import { supabase } from "../../services/supabase";
 
 export default function ReportDetail() {
   const { bulan } = useParams();
+  const [data, setData] = useState([]);
 
   const biayaPerBooking = 35000;
 
-  const bookingData = {
-    Januari: [
-      {
-        id: 1,
-        nama: "Andi Saputra",
-        lapangan: "Lapangan 1",
-        tanggal: "2025-01-05",
-        jam: "16:00",
-      },
-      {
-        id: 2,
-        nama: "Budi Santoso",
-        lapangan: "Lapangan 2",
-        tanggal: "2025-01-10",
-        jam: "18:00",
-      },
-      {
-        id: 3,
-        nama: "Citra Dewi",
-        lapangan: "Lapangan 1",
-        tanggal: "2025-01-18",
-        jam: "20:00",
-      },
-    ],
+  useEffect(() => {
+    fetchDetail();
+  }, [bulan]);
 
-    Februari: [
-      {
-        id: 4,
-        nama: "Dewi Lestari",
-        lapangan: "Lapangan 1",
-        tanggal: "2025-02-03",
-        jam: "15:00",
-      },
-      {
-        id: 5,
-        nama: "Eko Prasetyo",
-        lapangan: "Lapangan 2",
-        tanggal: "2025-02-12",
-        jam: "17:00",
-      },
-    ],
+  const fetchDetail = async () => {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        id,
+        tanggal,
+        jam_mulai,
+        jam_selesai,
+        status,
+        users(id, nama),
+        lapangan(id, nama)
+      `)
+      .eq("status", "approved");
 
-    Maret: [
-      {
-        id: 6,
-        nama: "Fajar Nugroho",
-        lapangan: "Lapangan 1",
-        tanggal: "2025-03-05",
-        jam: "18:00",
-      },
-      {
-        id: 7,
-        nama: "Gina Maharani",
-        lapangan: "Lapangan 2",
-        tanggal: "2025-03-20",
-        jam: "19:00",
-      },
-    ],
+    if (error) {
+      console.log("ERROR:", error);
+      return;
+    }
 
-    April: [
-      {
-        id: 8,
-        nama: "Hendra Wijaya",
-        lapangan: "Lapangan 1",
-        tanggal: "2025-04-08",
-        jam: "16:00",
-      },
-    ],
+    const filtered = (data || []).filter((item) => {
+      if (!item.tanggal) return false;
 
-    Mei: [
-      {
-        id: 9,
-        nama: "Indah Permata",
-        lapangan: "Lapangan 2",
-        tanggal: "2025-05-15",
-        jam: "17:00",
-      },
-    ],
+      const date = new Date(item.tanggal);
 
-    Juni: [
-      {
-        id: 10,
-        nama: "Joko Susilo",
-        lapangan: "Lapangan 1",
-        tanggal: "2025-06-11",
-        jam: "20:00",
-      },
-    ],
+      if (isNaN(date)) return false;
+
+      const bulanNama = date.toLocaleString("id-ID", {
+        month: "long",
+      });
+
+      return bulanNama === bulan;
+    });
+
+    setData(filtered);
   };
-
-  const data = bookingData[bulan] || [];
 
   const formatRupiah = (angka) =>
     "Rp " + angka.toLocaleString("id-ID");
 
   return (
-    <div className="p-6">
+    <div className="min-h-screen bg-gray-100 p-6">
+
       <PageHeader
         title={`Detail Booking ${bulan}`}
         breadcrumb={["Admin", "Laporan", bulan]}
@@ -116,7 +68,9 @@ export default function ReportDetail() {
       </Link>
 
       <div className="bg-white rounded-xl shadow overflow-hidden">
+
         <table className="w-full">
+
           <thead className="bg-gray-100">
             <tr>
               <th className="p-4 text-left">Nama</th>
@@ -128,20 +82,46 @@ export default function ReportDetail() {
           </thead>
 
           <tbody>
-            {data.map((item) => (
-              <tr key={item.id} className="border-t">
-                <td className="p-4">{item.nama}</td>
-                <td className="p-4">{item.lapangan}</td>
-                <td className="p-4">{item.tanggal}</td>
-                <td className="p-4">{item.jam}</td>
-                <td className="p-4 text-green-600 font-semibold">
-                  {formatRupiah(biayaPerBooking)}
+            {data.length > 0 ? (
+              data.map((item) => (
+                <tr key={item.id} className="border-t">
+
+                  <td className="p-4">
+                    {item.users?.nama || "-"}
+                  </td>
+
+                  {/* 🔥 FIX INI */}
+                  <td className="p-4">
+                    {item.lapangan?.nama || "-"}
+                  </td>
+
+                  <td className="p-4">
+                    {item.tanggal}
+                  </td>
+
+                  <td className="p-4">
+                    {item.jam_mulai} - {item.jam_selesai}
+                  </td>
+
+                  <td className="p-4 text-green-600 font-semibold">
+                    {formatRupiah(biayaPerBooking)}
+                  </td>
+
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="p-4 text-center text-gray-500">
+                  Tidak ada data booking approved di bulan ini
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
+
         </table>
+
       </div>
+
     </div>
   );
 }

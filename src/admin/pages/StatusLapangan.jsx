@@ -1,130 +1,168 @@
+import { useEffect, useState } from "react";
 import PageHeader from "../components/PageHeader";
+import { supabase } from "../../services/supabase";
 
 export default function StatusLapangan() {
-  const fields = [
-    {
-      id: 1,
-      lapangan: "Lapangan 1",
-      status: "Sedang Digunakan",
-      jam: "16:00 - 18:00",
-      user: "Andi Saputra",
-    },
+  const [lapangan, setLapangan] = useState([]);
 
-    {
-      id: 2,
-      lapangan: "Lapangan 1",
-      status: "Akan Digunakan",
-      jam: "18:00 - 20:00",
-      user: "Cici Amelia",
-    },
+  useEffect(() => {
+    fetchBooking();
+  }, []);
 
-    {
-      id: 3,
-      lapangan: "Lapangan 2",
-      status: "Sedang Digunakan",
-      jam: "15:00 - 17:00",
-      user: "Budi Santoso",
-    },
+  const fetchBooking = async () => {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`*, users(id, nama)`);
 
-    {
-      id: 4,
-      lapangan: "Lapangan 2",
-      status: "Akan Digunakan",
-      jam: "17:00 - 19:00",
-      user: "Dewi Lestari",
-    },
-  ];
+    if (error) {
+      console.log("ERROR:", error);
+      return;
+    }
+
+    const daftarLapangan = [
+      { id: 1, nama: "Lapangan 1", gambar: "/img/detail1.jpg" },
+      { id: 2, nama: "Lapangan 2", gambar: "/img/detail2.jpg" },
+    ];
+
+    const now = new Date();
+
+    const hasil = daftarLapangan.map((lap) => {
+      const bookings = data?.filter(
+        (item) => item.lapangan === lap.nama
+      );
+
+      if (!bookings || bookings.length === 0) {
+        return {
+          ...lap,
+          listBooking: [],
+        };
+      }
+
+      const listBooking = bookings
+        .map((b) => {
+          // ✅ FIX aman parsing tanggal
+          const mulai = new Date(`${b.tanggal}T${b.jam_mulai}`);
+          const selesai = new Date(`${b.tanggal}T${b.jam_selesai}`);
+
+          let status = "Tersedia";
+
+          // 🔴 sedang digunakan
+          if (now >= mulai && now <= selesai) {
+            status = "Sedang Digunakan";
+          }
+          // 🟡 akan digunakan (masa depan)
+          else if (mulai > now) {
+            status = "Akan Digunakan";
+          }
+
+          return {
+            ...b,
+            mulai,
+            selesai,
+            status,
+          };
+        })
+        // 🔥 urutkan dari yang paling dekat
+        .sort((a, b) => new Date(a.mulai) - new Date(b.mulai));
+
+      return {
+        ...lap,
+        listBooking,
+      };
+    });
+
+    setLapangan(hasil);
+  };
 
   const statusColor = (status) => {
-    if (status === "Tersedia")
-      return "bg-green-100 text-green-700 border-green-500";
-
-    if (status === "Sedang Digunakan")
-      return "bg-red-100 text-red-700 border-red-500";
-
-    if (status === "Akan Digunakan")
-      return "bg-yellow-100 text-yellow-700 border-yellow-500";
-
-    return "bg-gray-100 text-gray-700 border-gray-500";
+    switch (status) {
+      case "Sedang Digunakan":
+        return "bg-red-500";
+      case "Akan Digunakan":
+        return "bg-yellow-500";
+      default:
+        return "bg-green-500";
+    }
   };
 
   return (
     <div className="relative bg-gray-100 min-h-screen">
-      {/* BACKGROUND */}
+
+      {/* HEADER */}
       <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
         <img
           src="/img/badminton.jpg"
-          alt="Badminton"
           className="w-full h-full object-cover"
         />
-
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/80 via-blue-500/60 to-indigo-600/80"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/80 via-blue-500/60 to-indigo-600/80" />
       </div>
 
-      {/* CONTENT */}
       <div className="relative z-10 p-5 md:p-10">
+
         <PageHeader
           title="Status Lapangan"
           breadcrumb={["Admin", "Status Lapangan"]}
         />
 
-        {/* INFO STATUS */}
-        <div className="grid md:grid-cols-3 gap-4 mt-6 mb-8">
-          <div className="bg-green-100 text-green-700 p-4 rounded-xl shadow">
-            <h3 className="font-bold">Tersedia</h3>
-            <p className="text-sm">
-              Belum ada jadwal booking untuk lapangan.
-            </p>
-          </div>
+        <div className="grid md:grid-cols-2 gap-8 mt-10">
 
-          <div className="bg-red-100 text-red-700 p-4 rounded-xl shadow">
-            <h3 className="font-bold">Sedang Digunakan</h3>
-            <p className="text-sm">
-              Lapangan sedang digunakan pelanggan saat ini.
-            </p>
-          </div>
-
-          <div className="bg-yellow-100 text-yellow-700 p-4 rounded-xl shadow">
-            <h3 className="font-bold">Akan Digunakan</h3>
-            <p className="text-sm">
-              Booking berikutnya kurang dari 2 jam lagi.
-            </p>
-          </div>
-        </div>
-
-        {/* CARD STATUS */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {fields.map((field) => (
+          {lapangan.map((item) => (
             <div
-              key={field.id}
-              className="bg-white rounded-xl shadow-xl p-6 border-l-4 border-blue-500 hover:shadow-2xl transition"
+              key={item.id}
+              className="bg-white rounded-3xl overflow-hidden shadow-xl"
             >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800">
-                  {field.lapangan}
-                </h2>
 
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold border ${statusColor(
-                    field.status
-                  )}`}
-                >
-                  {field.status}
-                </span>
+              {/* IMAGE */}
+              <div className="relative">
+                <img
+                  src={item.gambar}
+                  className="w-full h-72 object-cover"
+                />
               </div>
 
-              <div className="space-y-3 text-sm text-gray-600">
-                <p>
-                  <span className="font-semibold">Jadwal :</span> {field.jam}
-                </p>
+              <div className="p-7">
 
-                <p>
-                  <span className="font-semibold">Pelanggan :</span>{" "}
-                  {field.user}
-                </p>
+                <h2 className="text-3xl font-bold">
+                  {item.nama}
+                </h2>
+
+                <div className="mt-5 border-t pt-4 space-y-4">
+
+                  {item.listBooking.length > 0 ? (
+                    item.listBooking.map((b, i) => (
+                      <div key={i} className="border-b pb-3">
+
+                        <p className="font-semibold">
+                          {b.status === "Sedang Digunakan" && "🔴"}
+                          {b.status === "Akan Digunakan" && "🟡"}
+                          {b.status === "Tersedia" && "🟢"}{" "}
+                          {b.status}
+                        </p>
+
+                        <p>
+                          <b>Tanggal:</b> {b.tanggal}
+                        </p>
+
+                        <p>
+                          <b>Jam:</b> {b.jam_mulai} - {b.jam_selesai}
+                        </p>
+
+                        <p>
+                          <b>Pelanggan:</b> {b.users?.nama || "-"}
+                        </p>
+
+                      </div>
+                    ))
+                  ) : (
+                    <p>🟢 Belum ada booking</p>
+                  )}
+
+                </div>
+
               </div>
             </div>
           ))}
+
         </div>
       </div>
     </div>
