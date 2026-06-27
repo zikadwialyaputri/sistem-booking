@@ -1,77 +1,122 @@
+import { useState } from "react";
+import { supabase } from "../../../services/supabase";
+import { BsFillExclamationDiamondFill } from "react-icons/bs";
+import { ImSpinner2 } from "react-icons/im";
+import { Link } from "react-router-dom";
+
 export default function Forgot() {
+    const [email, setEmail] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
+
+    const handleReset = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setMessage("");
+        setError("");
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: "http://localhost:3000/reset-password",
+        });
+
+        if (error) {
+            setError(error.message);
+        } else {
+            setMessage("Link reset password sudah dikirim ke email kamu!");
+        }
+
+        setLoading(false);
+    };
+
     return (
         <div>
-            {/* Heading */}
+
+            {/* HEADER (SAMA SEPERTI LOGIN) */}
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-800">
                     Lupa Password?
                 </h2>
 
-                <p className="text-gray-500 mt-2 text-sm leading-relaxed">
-                    Masukkan email akun kamu untuk menerima
-                    link reset password SmashBooking.
+                <p className="text-gray-500 mt-2 text-sm">
+                    Masukkan email untuk reset password akun kamu
                 </p>
             </div>
 
-            {/* Form */}
-            <form className="space-y-5">
+            {/* ERROR */}
+            {error && (
+                <div className="bg-red-100 border border-red-200 mb-5 p-4 text-sm text-red-600 rounded-xl flex items-center">
+                    <BsFillExclamationDiamondFill className="mr-2 text-lg" />
+                    {error}
+                </div>
+            )}
 
-                {/* Email */}
+            {/* MESSAGE */}
+            {message && (
+                <div className="bg-green-100 border border-green-200 mb-5 p-4 text-sm text-green-700 rounded-xl">
+                    {message}
+                </div>
+            )}
+
+            {/* FORM */}
+            <form onSubmit={handleReset} className="space-y-5">
+
+                {/* EMAIL */}
                 <div>
-                    <label
-                        htmlFor="email"
-                        className="block text-sm font-semibold text-gray-700 mb-2"
-                    >
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Email
                     </label>
 
                     <input
                         type="email"
-                        id="email"
-                        placeholder="Masukkan email anda"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Masukkan email"
+                        disabled={loading}
                         className="
-                            w-full px-4 py-3
-                            border border-gray-300
-                            rounded-xl
-                            bg-gray-50
-                            focus:outline-none
-                            focus:ring-2
-                            focus:ring-blue-500
-                            focus:border-blue-500
-                            transition
+                        w-full px-4 py-3
+                        border border-gray-300
+                        rounded-xl
+                        bg-gray-50
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-blue-500
                         "
                     />
                 </div>
 
-                {/* Button */}
+                {/* BUTTON */}
                 <button
                     type="submit"
+                    disabled={loading}
                     className="
-                        w-full py-3 rounded-xl
-                        bg-blue-600 hover:bg-blue-700
-                        text-white font-semibold
-                        transition duration-300
-                        shadow-md hover:shadow-lg
+                    w-full py-3
+                    rounded-xl
+                    bg-blue-600 hover:bg-blue-700
+                    text-white font-semibold
                     "
                 >
-                    Kirim Link Reset Password
+                    {loading ? (
+                        <span className="flex items-center justify-center">
+                            <ImSpinner2 className="animate-spin mr-2" />
+                            Loading...
+                        </span>
+                    ) : (
+                        "Kirim Link Reset Password"
+                    )}
                 </button>
             </form>
 
-            {/* Back Login */}
+            {/* BACK */}
             <div className="text-center mt-6">
-                <a
-                    href="/login"
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                <Link
+                    to="/login"
+                    className="text-sm text-blue-600 font-semibold"
                 >
                     ← Kembali ke Login
-                </a>
+                </Link>
             </div>
 
-            {/* Footer */}
-            <p className="text-center text-sm text-gray-400 mt-6">
-                SmashBooking - Sistem Booking Lapangan Badminton
-            </p>
         </div>
     );
 }

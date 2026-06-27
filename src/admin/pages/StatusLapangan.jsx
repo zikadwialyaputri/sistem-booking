@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import PageHeader from "../components/PageHeader";
 import { supabase } from "../../services/supabase";
 
 export default function StatusLapangan() {
@@ -12,156 +11,187 @@ export default function StatusLapangan() {
   const fetchBooking = async () => {
     const { data, error } = await supabase
       .from("bookings")
-      .select(`*, users(id, nama)`);
+      .select(`
+        id,
+        tanggal,
+        jam_mulai,
+        jam_selesai,
+        lapangan_id,
+        users:users(id, nama)
+      `);
 
     if (error) {
       console.log("ERROR:", error);
       return;
     }
 
-    const daftarLapangan = [
+    const now = new Date();
+
+    const masterLapangan = [
       { id: 1, nama: "Lapangan 1", gambar: "/img/detail1.jpg" },
       { id: 2, nama: "Lapangan 2", gambar: "/img/detail2.jpg" },
     ];
 
-    const now = new Date();
-
-    const hasil = daftarLapangan.map((lap) => {
-      const bookings = data?.filter(
-        (item) => item.lapangan === lap.nama
-      );
-
-      if (!bookings || bookings.length === 0) {
-        return {
-          ...lap,
-          listBooking: [],
-        };
-      }
+    const hasil = masterLapangan.map((lap) => {
+      const bookings = data.filter((item) => {
+        const selesai = new Date(`${item.tanggal}T${item.jam_selesai}`);
+        return item.lapangan_id === lap.id && selesai >= now;
+      });
 
       const listBooking = bookings
         .map((b) => {
-          // ✅ FIX aman parsing tanggal
           const mulai = new Date(`${b.tanggal}T${b.jam_mulai}`);
           const selesai = new Date(`${b.tanggal}T${b.jam_selesai}`);
 
           let status = "Tersedia";
 
-          // 🔴 sedang digunakan
-          if (now >= mulai && now <= selesai) {
-            status = "Sedang Digunakan";
-          }
-          // 🟡 akan digunakan (masa depan)
-          else if (mulai > now) {
-            status = "Akan Digunakan";
-          }
+          if (now >= mulai && now <= selesai) status = "Sedang Digunakan";
+          else if (mulai > now) status = "Akan Digunakan";
 
-          return {
-            ...b,
-            mulai,
-            selesai,
-            status,
-          };
+          return { ...b, mulai, selesai, status };
         })
-        // 🔥 urutkan dari yang paling dekat
-        .sort((a, b) => new Date(a.mulai) - new Date(b.mulai));
+        .sort((a, b) => a.mulai - b.mulai);
 
-      return {
-        ...lap,
-        listBooking,
-      };
+      return { ...lap, listBooking };
     });
 
     setLapangan(hasil);
   };
 
-  const statusColor = (status) => {
+  const statusBadge = (status) => {
     switch (status) {
       case "Sedang Digunakan":
-        return "bg-red-500";
+        return "bg-red-100 text-red-600";
       case "Akan Digunakan":
-        return "bg-yellow-500";
+        return "bg-yellow-100 text-yellow-700";
       default:
-        return "bg-green-500";
+        return "bg-green-100 text-green-600";
     }
   };
 
   return (
-    <div className="relative bg-gray-100 min-h-screen">
+    <div className="min-h-screen bg-gray-100">
 
-      {/* HEADER */}
-      <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
+      {/* HEADER SIMPLE */}
+      <div className="relative h-56 overflow-hidden">
         <img
           src="/img/badminton.jpg"
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/80 via-blue-500/60 to-indigo-600/80" />
+        <div className="absolute inset-0 bg-black/40" />
+
+        <div className="absolute bottom-5 left-6 text-white">
+          <h1 className="text-2xl font-bold">Status Lapangan</h1>
+          <p className="text-sm opacity-80">
+            Monitoring booking realtime
+          </p>
+        </div>
       </div>
 
-      <div className="relative z-10 p-5 md:p-10">
+      {/* CONTENT */}
+      <div className="p-6 md:p-10">
 
-        <PageHeader
-          title="Status Lapangan"
-          breadcrumb={["Admin", "Status Lapangan"]}
-        />
+        <div className="grid md:grid-cols-2 gap-6">
 
-        <div className="grid md:grid-cols-2 gap-8 mt-10">
+          {lapangan.map((item) => {
 
-          {lapangan.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-3xl overflow-hidden shadow-xl"
-            >
+            const aktif = item.listBooking.filter(
+              b => b.status === "Sedang Digunakan"
+            ).length;
 
-              {/* IMAGE */}
-              <div className="relative">
-                <img
-                  src={item.gambar}
-                  className="w-full h-72 object-cover"
-                />
-              </div>
+            const akan = item.listBooking.filter(
+              b => b.status === "Akan Digunakan"
+            ).length;
 
-              <div className="p-7">
+            return (
+              <div
+                key={item.id}
+                className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden"
+              >
 
-                <h2 className="text-3xl font-bold">
-                  {item.nama}
-                </h2>
+                {/* IMAGE */}
+                <div className="relative">
+                  <img
+                    src={item.gambar}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 
-                <div className="mt-5 border-t pt-4 space-y-4">
+                  <h2 className="absolute bottom-3 left-4 text-white font-semibold text-lg">
+                    {item.nama}
+                  </h2>
+                </div>
 
+                {/* CONTENT */}
+                <div className="p-5 space-y-4">
+
+                  {/* RINGKASAN */}
+                  <div className="flex gap-2 text-xs flex-wrap">
+
+                    <span className="px-2 py-1 rounded-full bg-red-100 text-red-600">
+                      🔴 {aktif} Aktif
+                    </span>
+
+                    <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700">
+                      🟡 {akan} Akan
+                    </span>
+
+                    <span className="px-2 py-1 rounded-full bg-green-100 text-green-600">
+                      🟢 {item.listBooking.length === 0 ? 1 : 0} Kosong
+                    </span>
+
+                  </div>
+
+                  {/* LIST BOOKING */}
                   {item.listBooking.length > 0 ? (
-                    item.listBooking.map((b, i) => (
-                      <div key={i} className="border-b pb-3">
+                    item.listBooking.slice(0, 3).map((b, i) => (
+                      <div
+                        key={i}
+                        className="border rounded-lg p-3 bg-gray-50"
+                      >
 
-                        <p className="font-semibold">
-                          {b.status === "Sedang Digunakan" && "🔴"}
-                          {b.status === "Akan Digunakan" && "🟡"}
-                          {b.status === "Tersedia" && "🟢"}{" "}
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${statusBadge(
+                            b.status
+                          )}`}
+                        >
                           {b.status}
-                        </p>
+                        </span>
 
-                        <p>
-                          <b>Tanggal:</b> {b.tanggal}
-                        </p>
+                        <div className="mt-2 text-sm text-gray-700 space-y-1">
+                          <p>
+                            <span className="font-medium">Tanggal:</span>{" "}
+                            {b.tanggal}
+                          </p>
 
-                        <p>
-                          <b>Jam:</b> {b.jam_mulai} - {b.jam_selesai}
-                        </p>
+                          <p>
+                            <span className="font-medium">Jam:</span>{" "}
+                            {b.jam_mulai} - {b.jam_selesai}
+                          </p>
 
-                        <p>
-                          <b>Pelanggan:</b> {b.users?.nama || "-"}
-                        </p>
+                          <p>
+                            <span className="font-medium">Pelanggan:</span>{" "}
+                            {b.users?.nama || "-"}
+                          </p>
+                        </div>
 
                       </div>
                     ))
                   ) : (
-                    <p>🟢 Belum ada booking</p>
+                    <div className="text-center py-6">
+                      <p className="text-green-600 font-semibold">
+                        🟢 Lapangan kosong
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Tidak ada booking aktif
+                      </p>
+                    </div>
                   )}
 
                 </div>
-
               </div>
-            </div>
-          ))}
+            );
+          })}
 
         </div>
       </div>

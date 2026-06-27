@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-
+import { supabase } from "../../../services/supabase";
 const authService = {
 
   async login(email, password) {

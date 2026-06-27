@@ -48,21 +48,14 @@ export default function Statistik() {
     });
 
     // booking tertinggi
-    const maxBooking = Math.max(
-      ...Object.values(grouped),
-      1
-    );
+    const maxBooking = Math.max(...Object.values(grouped), 1);
 
     // ubah ke persentase
-    const result = Object.entries(grouped).map(
-      ([jam, total]) => ({
-        jam,
-        total,
-        level: Math.round(
-          (total / maxBooking) * 100
-        ),
-      })
-    );
+    const result = Object.entries(grouped).map(([jam, total]) => ({
+      jam,
+      total,
+      level: Math.round((total / maxBooking) * 100),
+    }));
 
     setData(result);
   };
@@ -70,149 +63,182 @@ export default function Statistik() {
   // rata-rata
   const avg =
     data.length > 0
-      ? data.reduce(
-          (acc, cur) => acc + cur.level,
-          0
-        ) / data.length
+      ? data.reduce((acc, cur) => acc + cur.level, 0) / data.length
       : 0;
 
   // jam teramai
   const jamTeramai =
-    data.length > 0
-      ? data.reduce((a, b) =>
-          a.level > b.level ? a : b
-        )
-      : null;
+    data.length > 0 ? data.reduce((a, b) => (a.level > b.level ? a : b)) : null;
 
   // jam sepi (bisa lebih dari satu)
   const minLevel =
-    data.length > 0
-      ? Math.min(
-          ...data.map((item) => item.level)
-        )
-      : 0;
+    data.length > 0 ? Math.min(...data.map((item) => item.level)) : 0;
 
   const jamSepi =
     data.length > 0
       ? data
-          .filter(
-            (item) =>
-              item.level === minLevel
-          )
+          .filter((item) => item.level === minLevel)
           .map((item) => item.jam)
           .join(", ")
       : "-";
 
   const getColor = (level) => {
-    if (level >= 80)
-      return "bg-red-500";
+    if (level >= 80) return "bg-red-500";
 
-    if (level >= 50)
-      return "bg-yellow-400";
+    if (level >= 50) return "bg-yellow-400";
 
     return "bg-green-500";
   };
 
   return (
-    <div className="relative bg-gray-100 min-h-screen">
+    <div className="min-h-screen bg-slate-100">
+      {/* HERO */}
+      <div className="relative h-72 overflow-hidden rounded-b-[40px] shadow-lg">
+        <img src="/img/badminton.jpg" className="w-full h-full object-cover" />
 
-      {/* BACKGROUND */}
-      <div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 via-indigo-800/70 to-cyan-700/60" />
 
-        <img
-          src="/img/badminton.jpg"
-          className="w-full h-full object-cover"
-        />
+        <div className="absolute inset-0 flex flex-col justify-center px-8 md:px-14 text-white">
+          <p className="uppercase tracking-[5px] text-sm opacity-80">
+            Dashboard Analytics
+          </p>
 
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-700/80 via-blue-500/60 to-indigo-600/80" />
+          <h1 className="text-3xl md:text-5xl font-black mt-2">
+            Statistik Lapangan
+          </h1>
 
+          <p className="mt-3 text-sm md:text-lg opacity-90">
+            Analisis waktu booking paling ramai dan jam sepi
+          </p>
+        </div>
       </div>
 
       {/* CONTENT */}
-      <div className="relative z-10 p-5 md:p-10">
+      <div className="max-w-7xl mx-auto p-5 md:p-10 -mt-10 relative z-10">
+        {/* SUMMARY CARD */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-3xl p-6 shadow-lg">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-gray-400">Rata-rata Keramaian</p>
 
-        <PageHeader
-          title="Statistik Ramai"
-          breadcrumb={["Admin", "Statistik"]}
-        />
+                <h2 className="text-3xl font-bold text-blue-600 mt-2">
+                  {avg.toFixed(1)}%
+                </h2>
+              </div>
 
-        {/* SUMMARY */}
-        <div className="mt-6 grid md:grid-cols-3 gap-4">
-
-          <div className="bg-white p-6 rounded-xl shadow-lg border-b-4 border-blue-500">
-
-            <p className="text-gray-400 text-sm">
-              Rata-rata Keramaian
-            </p>
-
-            <h2 className="text-2xl font-bold">
-              {avg.toFixed(1)}%
-            </h2>
-
+              <div className="text-4xl">📊</div>
+            </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-lg border-b-4 border-red-500">
+          <div className="bg-white rounded-3xl p-6 shadow-lg">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-gray-400">Jam Teramai</p>
 
-            <p className="text-gray-400 text-sm">
-              Jam Teramai
-            </p>
+                <h2 className="text-3xl font-bold text-red-500 mt-2">
+                  {jamTeramai?.jam || "-"}
+                </h2>
+              </div>
 
-            <h2 className="text-2xl font-bold">
-              {jamTeramai?.jam || "-"}
-            </h2>
-
+              <div className="text-4xl">🔥</div>
+            </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-lg border-b-4 border-green-500">
+          <div className="bg-white rounded-3xl p-6 shadow-lg">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-gray-400">Jam Sepi</p>
 
-            <p className="text-gray-400 text-sm">
-              Jam Sepi
-            </p>
+                <h2 className="text-2xl font-bold text-green-500 mt-2">
+                  {jamSepi}
+                </h2>
+              </div>
 
-            <h2 className="text-2xl font-bold">
-              {jamSepi}
-            </h2>
-
+              <div className="text-4xl">🌙</div>
+            </div>
           </div>
+        </div>
+
+
+      {/* DETAIL JAM */}
+<div className="mt-8 bg-white rounded-3xl p-8 shadow-lg">
+
+  <div className="mb-6">
+    <h2 className="text-2xl font-bold text-gray-800">
+      ⏰ Statistik Jam Operasional
+    </h2>
+
+    <p className="text-gray-500 text-sm mt-1">
+      Tingkat penggunaan lapangan setiap jam
+    </p>
+  </div>
+
+  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-5">
+
+    {data.map((item, index) => (
+
+      <div
+        key={index}
+        className="bg-white rounded-2xl p-5 shadow-md border border-gray-100
+        hover:-translate-y-2 hover:shadow-xl transition duration-300"
+      >
+
+        <p className="text-gray-400 text-sm">
+          Jam
+        </p>
+
+        <h2 className="font-bold text-2xl mt-1 text-gray-800">
+          {item.jam}
+        </h2>
+
+        <div className="w-full bg-gray-200 rounded-full h-3 mt-5">
+
+          <div
+            className={`h-3 rounded-full
+            ${
+              item.level >= 80
+                ? "bg-red-500"
+                : item.level >= 50
+                ? "bg-yellow-400"
+                : "bg-green-500"
+            }`}
+            style={{
+              width: `${item.level}%`,
+            }}
+          />
 
         </div>
 
-        {/* HEATMAP */}
-        <div className="mt-8 bg-white p-6 rounded-xl shadow-xl">
+        <div className="flex justify-between mt-4">
 
-          <h3 className="font-bold text-gray-700 mb-4">
-            Grafik Jam Ramai
-          </h3>
+          <span className="text-sm text-gray-500">
+            {item.total} Booking
+          </span>
 
-          <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
-
-            {data.map((item, index) => (
-              <div
-                key={index}
-                className={`p-3 rounded-lg text-white text-center text-xs font-bold ${getColor(
-                  item.level
-                )}`}
-              >
-
-                <p>{item.jam}</p>
-
-                <p>
-                  {item.level}%
-                </p>
-
-                <p>
-                  {item.total} booking
-                </p>
-
-              </div>
-            ))}
-
-          </div>
+          <span
+            className={`font-bold
+            ${
+              item.level >= 80
+                ? "text-red-500"
+                : item.level >= 50
+                ? "text-yellow-500"
+                : "text-green-500"
+            }`}
+          >
+            {item.level}%
+          </span>
 
         </div>
 
       </div>
 
+    ))}
+
+  </div>
+
+</div>
+      </div>
     </div>
   );
 }

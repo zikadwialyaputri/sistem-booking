@@ -10,16 +10,16 @@ const bookingService = {
         *,
         users (
           id,
-          nama,
-          phone
+          nama
         ),
         lapangan (
           id,
-          nama
+          nama,
+          harga
         )
       `)
-      .order("tanggal", {
-        ascending: true
+      .order("created_at", {
+        ascending: false
       });
 
     if (error) {
@@ -40,8 +40,6 @@ const bookingService = {
       .eq("id", id);
 
     if (error) throw error;
-
-    return true;
   }
 
 };

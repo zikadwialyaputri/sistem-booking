@@ -1,60 +1,44 @@
-import { FaSearch } from "react-icons/fa";
-
+import { useEffect, useState } from "react";
+import { supabase } from "../../services/supabase";
 
 export default function Header() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    getUser();
+  }, []);
+
+  const getUser = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    setUser(user);
+  };
+
   return (
-    <nav className="w-full z-10 bg-white/10 backdrop-blur-md border-b border-white/20">
+    <nav className="sticky top-0 z-50 w-full bg-white/20 backdrop-blur-xl border-b border-white/30 shadow-sm">
+      
+      <div className="flex items-center justify-between px-6 md:px-10 py-3">
 
-
-      <div className="flex items-center justify-between px-6 md:px-10 py-4">
-
-
-        {/* SEARCH */}
-        <div className="hidden md:flex items-center w-1/3">
-          <div className="relative w-full">
-
-
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-
-
-            <input
-              type="text"
-              placeholder="Cari booking, customer..."
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-
-
-          </div>
+        {/* LOGO */}
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+          <h1 className="font-bold text-lg text-gray-800 tracking-wide">
+            SmashBooking
+          </h1>
         </div>
-
-
-        {/* TITLE MOBILE */}
-        <div className="md:hidden text-white font-bold text-lg">
-          SmashBooking
-        </div>
-
 
         {/* PROFILE */}
-        <div className="flex items-center gap-3 text-black">
-
-
-          <div className="hidden sm:block text-right">
-            <p className="text-xs opacity-80">Welcome</p>
-            <p className="text-sm font-bold">Kelompok 5</p>
-          </div>
-
-
-          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md">
+        <div className="relative">
+          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500 shadow-md hover:scale-105 transition">
             <img
               src="/img/pp.jpg"
               alt="profile"
               className="w-full h-full object-cover"
             />
           </div>
-
-
         </div>
-
 
       </div>
     </nav>

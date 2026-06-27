@@ -13,33 +13,49 @@ import { supabase } from "../../services/supabase";
 export default function Dashboard() {
   const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
-
+  const [notifications, setNotifications] = useState([]);
   const [bookings, setBookings] = useState([]);
   const user = JSON.parse(localStorage.getItem("user"));
-const [showNotif, setShowNotif] = useState(false);
-const [profile] = useState({
-  name: user?.username || "User",
-  foto: user?.foto || "https://i.pravatar.cc/100?img=12",
-});
+  const [showNotif, setShowNotif] = useState(false);
+  const [profile] = useState({
+    name: user?.username || "User",
+    foto: user?.foto || "https://i.pravatar.cc/100?img=12",
+  });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
+useEffect(() => {
+  const fetchData = async () => {
+    if (!user) return;
 
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("id", { ascending: false });
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("id", { ascending: false });
 
-      if (!error) setBookings(data || []);
-    };
+    if (!error) {
+      setBookings(data || []);
 
-    fetchData();
-  }, []);
+      const notifData = (data || []).map((item) => ({
+        id: item.id,
+        pesan:
+          item.status === "approved"
+            ? "✅ Booking Anda Disetujui"
+            : item.status === "rejected"
+            ? "❌ Booking Anda Ditolak"
+            : "⏳ Booking Anda Sedang Diproses",
+
+        tanggal: item.tanggal,
+      }));
+
+      setNotifications(notifData);
+    }
+  };
+
+  fetchData();
+}, []);
 
   const nextBooking = bookings.find(
-    (b) => b.status === "pending" || b.status === "approved"
+    (b) => b.status === "pending" || b.status === "approved",
   );
 
   const stats = [
@@ -111,100 +127,190 @@ const [profile] = useState({
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-100 via-white to-gray-200 overflow-hidden">
-
       {/* BACKGROUND */}
       <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-blue-300/30 blur-3xl rounded-full animate-pulse"></div>
       <div className="absolute top-40 right-0 w-[500px] h-[500px] bg-indigo-300/30 blur-3xl rounded-full animate-pulse"></div>
 
       {/* HEADER */}
       <div className="absolute top-0 left-0 w-full h-72 overflow-hidden">
-        <img
-          src="/img/badminton.jpg"
-          className="w-full h-full object-cover"
-        />
+        <img src="/img/badminton.jpg" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-blue-900/60 to-indigo-900/70"></div>
       </div>
 
       {/* TOP BAR */}
-      {/* TOP BAR */}
-<div className="absolute top-5 right-5 flex items-center gap-4 z-20">
+      <div className="absolute top-5 right-5 flex items-center gap-4 z-20">
+       {/* NOTIF */}
+<div className="relative">
 
-  {/* NOTIF */}
-  <div className="relative">
-    <FaBell
-      className="text-white text-xl cursor-pointer"
-      onClick={() => setShowNotif(!showNotif)}
-    />
+  {/* ICON BELL */}
+  <div
+    className="relative cursor-pointer"
+    onClick={() => setShowNotif(!showNotif)}
+  >
+    <FaBell className="text-white text-2xl hover:scale-110 transition" />
 
-    {showNotif && (
-      <div className="absolute right-0 mt-3 w-64 bg-white shadow-xl rounded-xl p-4">
-        <p className="font-bold mb-2">Notifikasi</p>
-        <p className="text-sm text-gray-500">
-          Belum ada notifikasi
-        </p>
-      </div>
+    {/* Badge jumlah notif */}
+    {notifications.length > 0 && (
+      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-pulse">
+        {notifications.length}
+      </span>
     )}
   </div>
 
-  {/* PROFILE */}
-{/* PROFILE */}
-<div className="relative">
-  <div
-    onClick={() => setShowProfile(!showProfile)}
-    className="flex items-center gap-2 bg-white/90 px-3 py-1 rounded-full shadow cursor-pointer"
-  >
-    <img src={profile.foto} className="w-8 h-8 rounded-full" />
-    <span className="text-sm font-semibold">{profile.name}</span>
-    👤
-  </div>
+  {/* POPUP */}
+  {showNotif && (
+    <div className="absolute right-0 mt-4 w-96 bg-white rounded-3xl shadow-2xl overflow-hidden z-50 animate-[fadeIn_.3s_ease]">
 
-  {showProfile && (
-    <div className="absolute right-0 mt-3 w-64 bg-white shadow-xl rounded-xl p-4 space-y-3 z-50">
+      {/* HEADER */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4 text-white">
 
-      {/* USER INFO */}
-      <div className="flex items-center gap-2">
-        <img src={profile.foto} className="w-10 h-10 rounded-full" />
-        <p className="font-bold">{profile.name}</p>
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold text-lg">
+            🔔 Notifikasi
+          </h2>
+
+          <span className="bg-white text-blue-600 px-2 py-1 rounded-full text-xs font-bold">
+            {notifications.length}
+          </span>
+        </div>
+
+        <p className="text-sm text-blue-100">
+          Update booking terbaru
+        </p>
+
       </div>
 
-      <hr />
+      {/* ISI */}
+      <div className="max-h-96 overflow-y-auto">
 
-      {/* EDIT PROFILE */}
-      <button
-        onClick={() => navigate("/pelanggan/profile")}
-        className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-      >
-        Edit Profile
-      </button>
+        {notifications.length > 0 ? (
+          notifications.map((notif) => {
 
-      {/* LOGOUT */}
-      <button
-        onClick={() => {
-          localStorage.removeItem("user");
-          navigate("/login");
-        }}
-        className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
-      >
-        Logout
-      </button>
+            const icon =
+              notif.pesan.includes("Disetujui")
+                ? "✅"
+                : notif.pesan.includes("Ditolak")
+                ? "❌"
+                : "⏳";
+
+            return (
+              <div
+                key={notif.id}
+                className="p-4 border-b hover:bg-gray-50 transition cursor-pointer"
+              >
+
+                <div className="flex gap-3">
+
+                  {/* Icon */}
+                  <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-xl">
+                    {icon}
+                  </div>
+
+                  {/* Isi */}
+                  <div className="flex-1">
+
+                    <p className="font-semibold text-gray-800">
+                      {notif.pesan}
+                    </p>
+
+                    <p className="text-sm text-gray-500 mt-1">
+                      📅 {notif.tanggal}
+                    </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+            );
+          })
+        ) : (
+          <div className="p-10 text-center">
+
+            <div className="text-5xl mb-3">
+              🔕
+            </div>
+
+            <p className="font-semibold text-gray-600">
+              Belum ada notifikasi
+            </p>
+
+            <p className="text-sm text-gray-400">
+              Notifikasi booking akan muncul di sini
+            </p>
+
+          </div>
+        )}
+
+      </div>
+
+      {/* FOOTER */}
+      <div className="bg-gray-50 p-3 text-center">
+
+        <button
+          onClick={() => navigate("/pelanggan/notifikasi")}
+          className="text-blue-600 font-semibold hover:underline"
+        >
+          Lihat Semua
+        </button>
+
+      </div>
 
     </div>
   )}
-</div>
 
 </div>
+
+        {/* PROFILE */}
+        <div className="relative">
+          <div
+            onClick={() => setShowProfile(!showProfile)}
+            className="flex items-center gap-2 bg-white/90 px-3 py-1 rounded-full shadow cursor-pointer"
+          >
+            <img src={profile.foto} className="w-8 h-8 rounded-full" />
+            <span className="text-sm font-semibold">{profile.name}</span>
+            👤
+          </div>
+
+          {showProfile && (
+            <div className="absolute right-0 mt-3 w-64 bg-white shadow-xl rounded-xl p-4 space-y-3 z-50">
+              {/* USER INFO */}
+              <div className="flex items-center gap-2">
+                <img src={profile.foto} className="w-10 h-10 rounded-full" />
+                <p className="font-bold">{profile.name}</p>
+              </div>
+
+              <hr />
+
+              {/* EDIT PROFILE */}
+              <button
+                onClick={() => navigate("/pelanggan/profile")}
+                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
+              >
+                Edit Profile
+              </button>
+
+              {/* LOGOUT */}
+              <button
+                onClick={() => {
+                  localStorage.removeItem("user");
+                  navigate("/login");
+                }}
+                className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* CONTENT */}
       <div className="relative z-10 p-5 md:p-10">
-
         {/* WELCOME */}
         <div className="text-white mb-10 mt-20">
-          <h1 className="text-4xl font-bold">
-            👋 Halo, {profile.name}
-          </h1>
-          <p className="text-blue-100">
-            Selamat datang kembali
-          </p>
+          <h1 className="text-4xl font-bold">👋 Halo, {profile.name}</h1>
+          <p className="text-blue-100">Selamat datang kembali</p>
         </div>
 
         {/* NEXT BOOKING */}
@@ -217,9 +323,13 @@ const [profile] = useState({
                 🏸 Lapangan {nextBooking.lapangan_id}
               </p>
               <p>📅 {nextBooking.tanggal}</p>
-              <p>🕒 {nextBooking.jam_mulai} - {nextBooking.jam_selesai}</p>
+              <p>
+                🕒 {nextBooking.jam_mulai} - {nextBooking.jam_selesai}
+              </p>
 
-              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border mt-2 ${getStatusColor(nextBooking.status)}`}>
+              <span
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border mt-2 ${getStatusColor(nextBooking.status)}`}
+              >
                 {getStatusLabel(nextBooking.status)}
               </span>
             </div>
@@ -255,7 +365,9 @@ const [profile] = useState({
                   <p className="text-sm text-gray-500">🕒 {item.jam}</p>
                 </div>
 
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(item.status)}`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(item.status)}`}
+                >
                   {getStatusLabel(item.status)}
                 </span>
               </div>
@@ -276,13 +388,14 @@ const [profile] = useState({
                 <p className="text-sm text-gray-500">📅 {item.tanggal}</p>
               </div>
 
-              <span className={`px-3 py-1 rounded-full text-xs border ${getStatusColor(item.status)}`}>
+              <span
+                className={`px-3 py-1 rounded-full text-xs border ${getStatusColor(item.status)}`}
+              >
                 {getStatusLabel(item.status)}
               </span>
             </div>
           ))}
         </div>
-
       </div>
     </div>
   );
