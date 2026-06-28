@@ -2,195 +2,200 @@ export default function Footer() {
   return (
     <footer
       id="footer"
-      className="relative overflow-hidden bg-[#0f1720] text-white pt-28"
+      className="relative overflow-hidden bg-[#0f172a] text-white pt-24"
     >
-      {/* Pattern Background */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="grid grid-cols-6 h-full">
-          {Array.from({ length: 24 }).map((_, index) => (
-            <div
-              key={index}
-              className="border border-white/10"
-            ></div>
+      {/* Background */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="grid grid-cols-8 h-full">
+          {Array.from({ length: 40 }).map((_, i) => (
+            <div key={i} className="border border-white/10"></div>
           ))}
         </div>
       </div>
 
-      {/* Blur Effect */}
-      <div className="absolute top-0 left-0 w-72 h-72 bg-blue-500 opacity-20 blur-3xl rounded-full"></div>
+      {/* Blur */}
+      <div className="absolute -top-24 -left-24 w-80 h-80 bg-blue-500/20 blur-3xl rounded-full"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/10 blur-3xl rounded-full"></div>
 
-      <div className="absolute bottom-0 right-0 w-80 h-80 bg-cyan-400 opacity-10 blur-3xl rounded-full"></div>
-
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-
-        {/* Top Footer */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-16 pb-20">
-
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
+        {/* TOP */}
+        <div className="grid lg:grid-cols-[2fr_1fr_1.2fr_1.4fr] gap-16 pb-20">
           {/* Brand */}
-          <div className="max-w-sm">
+          <div>
+            <h2 className="text-5xl font-black text-blue-400">SmashBooking</h2>
 
-            <h2 className="text-5xl font-black text-blue-400 leading-tight">
-              SmashBooking
-            </h2>
-
-            <p className="text-gray-300 leading-relaxed mt-6 text-[15px]">
-              Platform booking lapangan badminton modern
-              dengan sistem cepat, mudah, dan nyaman
-              untuk semua pemain badminton.
+            <p className="text-gray-300 mt-6 leading-8">
+              Platform booking resmi untuk
+              <span className="text-white font-semibold">
+                {" "}
+                GOR Badminton Gabus{" "}
+              </span>
+              di Kota Pekanbaru. Nikmati proses booking lapangan yang cepat,
+              praktis, dan dapat dilakukan kapan saja secara online.
             </p>
 
-            {/* Badge */}
-            <div className="mt-8 inline-flex items-center gap-3 bg-white/5 border border-white/10 px-5 py-3 rounded-full backdrop-blur-lg">
+            <div className="mt-8 bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-md">
+              <h4 className="font-semibold text-lg mb-2">
+                📍 GOR Badminton Gabus
+              </h4>
 
-              <span className="w-3 h-3 bg-blue-400 rounded-full"></span>
-
-              <span className="text-sm text-gray-200">
-                Premium Court Booking
-              </span>
-
+              <p className="text-gray-400 text-sm leading-7">
+                HC5P+GC7,
+                <br />
+                Jl. Kayangan Gg. Gabus,
+                <br />
+                Meranti Pandak, Rumbai,
+                <br />
+                Kota Pekanbaru,
+                <br />
+                Riau 28266
+              </p>
             </div>
-
           </div>
 
           {/* Navigation */}
           <div>
+            <h3 className="text-2xl font-bold mb-8">Navigation</h3>
 
-            <h3 className="text-2xl font-bold mb-8">
-              Navigation
-            </h3>
-
-            <ul className="space-y-4 text-gray-300 text-[15px]">
-
-              <li className="hover:text-blue-400 transition cursor-pointer">
-                Home
-              </li>
-
-              <li className="hover:text-blue-400 transition cursor-pointer">
-                Booking
-              </li>
-
-              <li className="hover:text-blue-400 transition cursor-pointer">
-                About
-              </li>
-
-              <li className="hover:text-blue-400 transition cursor-pointer">
-                Courts
-              </li>
-
-              <li className="hover:text-blue-400 transition cursor-pointer">
-                Contact
-              </li>
-
+            <ul className="space-y-5">
+              {[
+                ["Home", "#home"],
+                ["Booking", "#booking"],
+                ["About", "#about"],
+                ["Statistics", "#statistics"],
+                ["Contact", "#footer"],
+              ].map(([title, link]) => (
+                <li key={title}>
+                  <a
+                    href={link}
+                    className="group flex items-center gap-3 text-gray-300 hover:text-blue-400 transition"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-blue-500 group-hover:scale-150 transition"></span>
+                    {title}
+                  </a>
+                </li>
+              ))}
             </ul>
-
           </div>
 
           {/* Contact */}
           <div>
+            <h3 className="text-2xl font-bold mb-8">Contact</h3>
 
-            <h3 className="text-2xl font-bold mb-8">
-              Contact
-            </h3>
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <span className="text-xl">✉️</span>
 
-            <ul className="space-y-4 text-gray-300 text-[15px] leading-relaxed">
+                <div>
+                  <p className="text-gray-400 text-sm">Email</p>
 
-              <li className="hover:text-blue-400 transition">
-                support@smashbooking.com
-              </li>
+                  <a
+                    href="mailto:smashbooking.gorgabus@gmail.com"
+                    className="hover:text-blue-400 transition"
+                  >
+                    smashbooking.gorgabus@gmail.com
+                  </a>
+                </div>
+              </div>
 
-              <li className="hover:text-blue-400 transition">
-                +62 812 3456 7890
-              </li>
+              <div className="flex gap-4">
+                <span className="text-xl">☎️</span>
 
-              <li className="hover:text-blue-400 transition">
-                Pekanbaru, Indonesia
-              </li>
+                <div>
+                  <p className="text-gray-400 text-sm">Telepon</p>
 
-            </ul>
+                  <p>0812-3456-xxxx</p>
+                </div>
+              </div>
 
+              <div className="flex gap-4">
+                <span className="text-xl">🕒</span>
+
+                <div>
+                  <p className="text-gray-400 text-sm">Jam Operasional</p>
+
+                  <p>16.00 - 21.00 WIB</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Social */}
           <div>
+            <h3 className="text-2xl font-bold mb-8">Follow Us</h3>
 
-            <h3 className="text-2xl font-bold mb-8">
-              Social Media
-            </h3>
+            <div className="space-y-4">
+              <a
+                href="#"
+                className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-5 py-4 hover:bg-blue-600 hover:border-blue-600 transition"
+              >
+                <span>📷 Instagram</span>
 
-            <div className="flex flex-wrap gap-4">
+                <span className="text-sm">@gorgabus</span>
+              </a>
 
-              <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-full hover:bg-blue-500 hover:border-blue-500 transition cursor-pointer text-sm">
-                Instagram
-              </div>
+              <a
+                href="#"
+                className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-5 py-4 hover:bg-blue-600 hover:border-blue-600 transition"
+              >
+                <span>📘 Facebook</span>
 
-              <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-full hover:bg-blue-500 hover:border-blue-500 transition cursor-pointer text-sm">
-                Facebook
-              </div>
+                <span className="text-sm">GOR Gabus</span>
+              </a>
 
-              <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-full hover:bg-blue-500 hover:border-blue-500 transition cursor-pointer text-sm">
-                Twitter
-              </div>
+              <a
+                href="#"
+                className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-5 py-4 hover:bg-blue-600 hover:border-blue-600 transition"
+              >
+                <span>🎵 TikTok</span>
 
-              <div className="bg-white/5 border border-white/10 px-5 py-3 rounded-full hover:bg-blue-500 hover:border-blue-500 transition cursor-pointer text-sm">
-                TikTok
-              </div>
-
+                <span className="text-sm">@gorgabus</span>
+              </a>
             </div>
 
-            {/* Partners */}
-            <div className="mt-10">
+            <div className="mt-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl p-5">
+              <h4 className="font-bold text-lg">⭐ GOR Gabus</h4>
 
-              <h4 className="text-lg font-semibold text-white mb-5">
-                Partners
-              </h4>
-
-              <div className="flex flex-wrap gap-3">
-
-                <span className="text-sm text-gray-300 bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition cursor-pointer">
-                  Yonex
-                </span>
-
-                <span className="text-sm text-gray-300 bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition cursor-pointer">
-                  Li-Ning
-                </span>
-
-                <span className="text-sm text-gray-300 bg-white/5 px-4 py-2 rounded-full border border-white/10 hover:bg-blue-500 hover:border-blue-500 hover:text-white transition cursor-pointer">
-                  Victor
-                </span>
-
-              </div>
-
+              <p className="text-sm text-blue-100 mt-2 leading-6">
+                Lapangan badminton indoor dengan fasilitas lengkap, area parkir
+                luas, musholla, kamar mandi, serta pencahayaan LED standar
+                pertandingan.
+              </p>
             </div>
-
           </div>
-
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-white/10 py-8 flex flex-col md:flex-row items-center justify-between gap-5">
-
-          <p className="text-gray-400 text-sm text-center md:text-left">
-            © 2026 SmashBooking. All rights reserved.
+        <div className="border-t border-white/10 py-8 flex flex-col md:flex-row justify-between items-center gap-5">
+          <p className="text-gray-400 text-sm">
+            © 2026{" "}
+            <span className="text-white font-semibold">SmashBooking</span>.
+            Website Booking Resmi GOR Badminton Gabus Pekanbaru.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
-
-            <span className="hover:text-blue-400 transition cursor-pointer">
+          <div className="flex gap-8 text-sm">
+            <a
+              href="#"
+              className="text-gray-400 hover:text-blue-400 transition"
+            >
               Privacy Policy
-            </span>
+            </a>
 
-            <span className="hover:text-blue-400 transition cursor-pointer">
-              Terms & Conditions
-            </span>
+            <a
+              href="#"
+              className="text-gray-400 hover:text-blue-400 transition"
+            >
+              Terms
+            </a>
 
-            <span className="hover:text-blue-400 transition cursor-pointer">
+            <a
+              href="#footer"
+              className="text-gray-400 hover:text-blue-400 transition"
+            >
               Support
-            </span>
-
+            </a>
           </div>
-
         </div>
-
       </div>
     </footer>
   );

@@ -22,7 +22,6 @@ export default function Statistik() {
 
     // daftar jam operasional
     const jamOperasional = [
-      "15:00",
       "16:00",
       "17:00",
       "18:00",

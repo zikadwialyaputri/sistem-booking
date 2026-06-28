@@ -11,30 +11,29 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f7fb]">
-
-      <main className="flex-1">
-
+    <div className="min-h-screen bg-slate-50">
+      <main>
         {/* HERO */}
-        <Hero />
+        <section id="home">
+          <Hero />
+        </section>
 
-        {/* PILIH LAPANGAN */}
-        <section className="max-w-7xl mx-auto px-6 py-28">
+        {/* BOOKING */}
+        <section id="booking" className="max-w-7xl mx-auto px-6 py-20">
+          <div className="text-center mb-16">
+            <span className="inline-block px-5 py-2 rounded-full bg-blue-100 text-blue-600 font-medium mb-6">
+              Reservasi Lapangan
+            </span>
 
-          <div className="text-center mb-20">
-            <p className="text-blue-600 font-semibold uppercase tracking-[0.3em] mb-5">
-              Lapangan Badminton
-            </p>
-
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
+            <h2 className="text-5xl font-bold text-slate-900 mb-6">
               Pilih Lapangan
-              <br />
-              Favoritmu
+              <span className="text-blue-600"> Terbaik</span>
             </h2>
 
-            <p className="text-gray-500 max-w-2xl mx-auto text-lg">
-              Nikmati pengalaman bermain badminton dengan lapangan nyaman,
-              fasilitas lengkap, dan proses booking yang mudah.
+            <p className="text-slate-500 text-lg max-w-3xl mx-auto leading-relaxed">
+              SmashBooking memudahkan Anda melakukan reservasi lapangan
+              badminton di GOR Gabus Pekanbaru dengan proses cepat, jadwal yang
+              jelas, dan sistem booking yang praktis.
             </p>
           </div>
 
@@ -50,152 +49,122 @@ export default function Home() {
               />
             ))}
           </div>
-
         </section>
 
         {/* TENTANG */}
-        <section className="bg-white py-28">
-
+        <section id="about" className="bg-white py-28">
           <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
-
             <div className="relative">
+              <img
+                src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=1600"
+                alt="GOR Gabus"
+                className="w-full h-[600px] object-cover rounded-[36px] shadow-xl"
+              />
 
-              <div className="overflow-hidden rounded-[40px] shadow-xl">
-                <img
-                  src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=1600"
-                  alt=""
-                  className="w-full h-[650px] object-cover"
-                />
-              </div>
+              <div className="absolute -bottom-8 right-6 bg-white rounded-[24px] p-6 shadow-xl">
+                <h3 className="text-4xl font-bold text-blue-600">2</h3>
 
-              <div className="absolute -bottom-10 -right-5 bg-white p-8 rounded-[30px] shadow-xl w-72">
-
-                <h3 className="text-5xl font-bold text-blue-600 mb-3">
-                  2
-                </h3>
-
-                <p className="text-gray-500">
-                  Lapangan badminton tersedia setiap hari
+                <p className="text-slate-500 text-sm">
+                  Lapangan aktif setiap hari
                 </p>
-
               </div>
-
             </div>
 
             <div>
+              <span className="inline-block px-5 py-2 rounded-full bg-blue-100 text-blue-600 font-medium mb-6">
+                Tentang GOR Gabus
+              </span>
 
-              <p className="text-blue-600 font-semibold uppercase tracking-[0.3em] mb-5">
-                Tentang Kami
-              </p>
-
-              <h2 className="text-5xl font-bold text-gray-900 mb-8">
-                GOR Badminton Modern
+              <h2 className="text-5xl font-bold text-slate-900 mb-8">
+                Tempat Bermain
+                <br />
+                Badminton yang Nyaman
               </h2>
 
-              <p className="text-gray-500 text-lg leading-relaxed mb-10">
-                Kami menyediakan lapangan badminton yang nyaman
-                dengan fasilitas lengkap untuk mendukung
-                kegiatan olahraga dan latihan Anda.
+              <p className="text-slate-500 text-lg leading-relaxed mb-10">
+                GOR Gabus Pekanbaru menyediakan fasilitas olahraga badminton
+                yang nyaman untuk latihan, sparing, maupun pertandingan
+                persahabatan. Sistem SmashBooking hadir untuk mempermudah proses
+                reservasi lapangan secara online.
               </p>
 
-              <div className="space-y-5">
-
-                <div className="bg-[#f5f7fb] p-6 rounded-3xl">
-                  <h3 className="font-bold text-xl mb-2">
+              <div className="space-y-4">
+                <div className="bg-slate-50 p-6 rounded-3xl">
+                  <h3 className="font-semibold text-lg mb-2">
                     🏸 Lapangan Berkualitas
                   </h3>
 
-                  <p className="text-gray-500">
-                    Lapangan sesuai standar permainan badminton.
+                  <p className="text-slate-500">
+                    Permukaan lapangan terawat dan nyaman digunakan.
                   </p>
                 </div>
 
-                <div className="bg-[#f5f7fb] p-6 rounded-3xl">
-                  <h3 className="font-bold text-xl mb-2">
-                    ⚡ Booking Mudah
+                <div className="bg-slate-50 p-6 rounded-3xl">
+                  <h3 className="font-semibold text-lg mb-2">
+                    ⚡ Booking Online
                   </h3>
 
-                  <p className="text-gray-500">
-                    Proses pemesanan cepat dan praktis.
+                  <p className="text-slate-500">
+                    Reservasi lebih mudah tanpa harus datang langsung.
                   </p>
                 </div>
 
-                <div className="bg-[#f5f7fb] p-6 rounded-3xl">
-                  <h3 className="font-bold text-xl mb-2">
-                    🌟 Fasilitas Lengkap
+                <div className="bg-slate-50 p-6 rounded-3xl">
+                  <h3 className="font-semibold text-lg mb-2">
+                    🚗 Fasilitas Pendukung
                   </h3>
 
-                  <p className="text-gray-500">
-                    Area parkir, musholla, kamar mandi, dan tempat duduk.
+                  <p className="text-slate-500">
+                    Area parkir, ruang tunggu, toilet dan fasilitas umum
+                    lainnya.
                   </p>
                 </div>
-
               </div>
-
             </div>
-
           </div>
-
         </section>
 
         {/* STATISTIK */}
-        <section className="py-28 pb-32">
-
+        <section className="py-28">
           <div className="max-w-7xl mx-auto px-6">
-
-            <div className="text-center mb-20">
-
-              <p className="text-blue-600 font-semibold uppercase tracking-[0.3em] mb-5">
+            <div className="text-center mb-16">
+              <span className="inline-block px-5 py-2 rounded-full bg-blue-100 text-blue-600 font-medium mb-6">
                 Statistik
-              </p>
+              </span>
 
-              <h2 className="text-5xl font-bold text-gray-900 mb-5">
-                Informasi Lapangan
+              <h2 className="text-5xl font-bold text-slate-900">
+                Informasi GOR Gabus
               </h2>
-
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
+              <div className="bg-white rounded-[30px] p-10 text-center shadow-lg hover:-translate-y-2 transition-all duration-300">
+                <div className="text-5xl mb-4">🏸</div>
 
-              <div className="bg-white rounded-3xl p-12 shadow-sm text-center">
-                <h3 className="text-6xl font-bold text-blue-600 mb-4">
-                  2
-                </h3>
+                <h3 className="text-5xl font-bold text-blue-600 mb-3">2</h3>
 
-                <p className="text-gray-500">
-                  Lapangan Badminton
-                </p>
+                <p className="text-slate-500">Lapangan Badminton</p>
               </div>
 
-              <div className="bg-white rounded-3xl p-12 shadow-sm text-center">
-                <h3 className="text-6xl font-bold text-blue-600 mb-4">
-                  4
-                </h3>
+              <div className="bg-white rounded-[30px] p-10 text-center shadow-lg hover:-translate-y-2 transition-all duration-300">
+                <div className="text-5xl mb-4">👥</div>
 
-                <p className="text-gray-500">
-                  Pemain per Lapangan
-                </p>
+                <h3 className="text-5xl font-bold text-blue-600 mb-3">4</h3>
+
+                <p className="text-slate-500">Pemain per Lapangan</p>
               </div>
 
-              <div className="bg-white rounded-3xl p-12 shadow-sm text-center">
-                <h3 className="text-6xl font-bold text-blue-600 mb-4">
-                  5
-                </h3>
+              <div className="bg-white rounded-[30px] p-10 text-center shadow-lg hover:-translate-y-2 transition-all duration-300">
+                <div className="text-5xl mb-4">⏰</div>
 
-                <p className="text-gray-500">
-                  Jam Operasional
-                </p>
+                <h3 className="text-5xl font-bold text-blue-600 mb-3">5</h3>
+
+                <p className="text-slate-500">Jam Operasional</p>
               </div>
-
             </div>
-
           </div>
-
         </section>
-
       </main>
-
-
     </div>
   );
 }

@@ -1,160 +1,298 @@
 export default function About() {
+  const stats = [
+    { value: "2", label: "Lapangan Badminton" },
+    { value: "500+", label: "Pelanggan" },
+    { value: "24/7", label: "Booking Online" },
+  ];
+
+  const features = [
+    {
+      number: "01",
+      title: "Lapangan Berkualitas",
+      desc: "Lapangan indoor dengan standar pertandingan dan pencahayaan optimal untuk kenyamanan bermain.",
+    },
+    {
+      number: "02",
+      title: "Booking Online",
+      desc: "Reservasi lapangan lebih cepat dan praktis langsung dari website kapan saja.",
+    },
+    {
+      number: "03",
+      title: "Parkir Memadai",
+      desc: "Area parkir aman dan nyaman untuk kendaraan roda dua maupun roda empat.",
+    },
+    {
+      number: "04",
+      title: "Musholla Nyaman",
+      desc: "Fasilitas ibadah yang bersih dan terawat untuk seluruh pengunjung.",
+    },
+  ];
+
   return (
-    <div className="bg-[#f5f7fb] min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[70vh] flex items-center">
-        {/* Background */}
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1544717305-2782549b5136?q=80&w=1800"
-            alt="Badminton"
-            className="w-full h-full object-cover"
-          />
+    <div className="bg-white overflow-hidden">
+      {/* HERO */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2000"
+          alt="Badminton"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
 
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-black/70"></div>
-        </div>
+        <div className="absolute inset-0 bg-black/70" />
 
-        {/* Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6">
-          <p className="text-blue-400 font-semibold uppercase tracking-[0.3em] mb-5">
-            About SmashBooking
-          </p>
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-blue-500/20 blur-[150px] rounded-full" />
+        <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyan-400/20 blur-[150px] rounded-full" />
+        <div className="relative z-10 max-w-6xl mx-auto px-6 text-center">
+          <span className="inline-flex items-center px-5 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur-md text-white text-sm tracking-[0.2em] uppercase">
+            GOR Gabus Pekanbaru
+          </span>
 
-          <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight mb-8">
-            Tempat Booking <br />
-            Lapangan Badminton Modern
+          <h1 className="mt-8 text-5xl md:text-7xl lg:text-8xl font-black text-white leading-tight">
+            Main Badminton
+            <span className="block text-cyan-400">Lebih Mudah</span>
           </h1>
 
-          <p className="text-gray-200 text-lg max-w-2xl leading-relaxed">
-            SmashBooking hadir untuk memberikan pengalaman booking lapangan
-            badminton yang mudah, cepat, nyaman, dan premium.
+          <p className="mt-8 max-w-3xl mx-auto text-lg md:text-xl text-white/80 leading-relaxed">
+            Nikmati pengalaman booking lapangan badminton yang cepat, modern,
+            dan nyaman dengan fasilitas terbaik di Pekanbaru.
           </p>
+
+          <div className="mt-10 flex flex-wrap justify-center gap-4">
+            <a
+              href="/booking"
+              className="px-8 py-4 rounded-2xl bg-blue-500 text-white font-semibold hover:bg-blue-600 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(16,185,129,0.4)] transition-all duration-300"
+            >
+              Booking Sekarang
+            </a>
+
+            <a
+              href="#about"
+              className="px-8 py-4 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-md text-white hover:bg-white/20 transition-all duration-300"
+            >
+              Pelajari Lebih Lanjut
+            </a>
+          </div>
         </div>
       </section>
+      <section className="relative -mt-24 z-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6">
+            {stats.map((item, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-[32px] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.08)] border border-slate-100 hover:-translate-y-2 transition-all duration-500"
+              >
+                <h3 className="text-5xl font-black text-blue-600">
+                  {item.value}
+                </h3>
 
-      {/* About Section */}
-      <section className="max-w-7xl mx-auto px-6 py-24">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Image */}
-          <div className="relative">
-            <div className="overflow-hidden rounded-[35px] shadow-2xl">
+                <p className="mt-3 text-slate-500">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      {/* ABOUT */}
+      <section
+        id="about"
+        className="py-32 bg-gradient-to-b from-white via-slate-50 to-white"
+      >
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/30 to-green-400/30 rounded-[40px] blur-2xl opacity-50 group-hover:opacity-100 transition duration-700"></div>
+
               <img
-                src="https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?q=80&w=1600"
+                src="/img/about.jpg"
                 alt="Badminton Court"
-                className="w-full h-[600px] object-cover hover:scale-105 transition-all duration-700"
+                className="relative h-[650px] w-full object-cover rounded-[40px] shadow-2xl group-hover:scale-[1.03] transition duration-700"
               />
+
+              <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-xl px-6 py-4 rounded-3xl shadow-xl">
+                <h4 className="text-3xl font-black text-blue-600">2</h4>
+                <p>Lapangan Aktif</p>
+              </div>
             </div>
 
-            {/* Floating Card */}
-            <div className="absolute -bottom-10 -right-5 bg-white p-8 rounded-3xl shadow-xl w-72">
-              <h3 className="text-4xl font-bold text-blue-600 mb-2">5+</h3>
+            <div>
+              <span className="inline-flex px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-semibold tracking-widest text-xs uppercase">
+                Tentang Kami
+              </span>
 
-              <p className="text-gray-600 leading-relaxed">
-                Tahun pengalaman menyediakan lapangan badminton premium.
+              <h2 className="mt-8 text-5xl md:text-6xl font-black text-slate-900 leading-tight">
+                Tempat Bermain
+                <span className="block text-blue-600">Badminton Modern</span>
+              </h2>
+
+              <p className="mt-8 text-slate-600 text-lg leading-relaxed">
+                SmashBooking hadir untuk menghadirkan pengalaman reservasi
+                lapangan badminton yang lebih cepat, modern, dan efisien.
+              </p>
+
+              <p className="mt-6 text-slate-600 text-lg leading-relaxed">
+                Dengan fasilitas berkualitas, sistem digital yang mudah
+                digunakan, dan pelayanan profesional, kami ingin menjadi pilihan
+                utama pecinta badminton di Pekanbaru.
               </p>
             </div>
           </div>
+        </div>
+      </section>
+      {/* FITUR */}
+      <section className="relative py-32 overflow-hidden bg-slate-50">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full blur-[140px] opacity-40"></div>
 
-          {/* Content */}
-          <div>
-            <p className="text-blue-600 font-semibold uppercase tracking-widest mb-4">
-              Who We Are
-            </p>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-green-200 rounded-full blur-[140px] opacity-40"></div>
 
-            <h2 className="text-5xl font-bold text-gray-900 leading-tight mb-8">
-              Solusi Booking Lapangan Badminton Masa Kini
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-20">
+            <span className="inline-flex px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold tracking-widest uppercase">
+              Fasilitas Unggulan
+            </span>
+
+            <h2 className="mt-6 text-5xl md:text-6xl font-black text-slate-900">
+              Kenapa Memilih Kami?
             </h2>
+          </div>
 
-            <p className="text-gray-500 text-lg leading-relaxed mb-8">
-              SmashBooking menyediakan sistem booking lapangan badminton modern
-              dengan fasilitas premium, suasana nyaman, dan pelayanan terbaik.
-            </p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((item, index) => (
+              <div
+                key={index}
+                className="
+          group
+          relative
+          overflow-hidden
+          rounded-[32px]
+          border
+          border-white
+          bg-white/70
+          backdrop-blur-xl
+          p-8
+          shadow-[0_15px_40px_rgba(0,0,0,0.05)]
+          hover:-translate-y-4
+          hover:shadow-[0_30px_80px_rgba(16,185,129,0.12)]
+          transition-all
+          duration-700
+          "
+              >
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-100 rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition duration-700"></div>
 
-            <p className="text-gray-500 text-lg leading-relaxed mb-10">
-              Kami percaya bahwa pengalaman bermain badminton harus didukung
-              dengan tempat berkualitas, sistem booking praktis, dan fasilitas
-              modern.
-            </p>
+                <span className="text-5xl font-black text-blue-100">
+                  {item.number}
+                </span>
 
-            {/* Features */}
-            <div className="space-y-5">
-              <div className="flex items-start gap-5 bg-white p-6 rounded-3xl shadow-sm">
-                <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl">
-                  🏸
-                </div>
+                <h3 className="mt-8 text-2xl font-bold text-slate-900">
+                  {item.title}
+                </h3>
 
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Lapangan Premium
-                  </h3>
+                <p className="mt-4 text-slate-500 leading-relaxed">
+                  {item.desc}
+                </p>
 
-                  <p className="text-gray-500 leading-relaxed">
-                    Indoor badminton court dengan kualitas terbaik dan
-                    pencahayaan modern.
-                  </p>
-                </div>
+                <div className="mt-8 h-[3px] w-12 bg-blue-500 rounded-full group-hover:w-24 transition-all duration-500"></div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <div className="flex items-start gap-5 bg-white p-6 rounded-3xl shadow-sm">
-                <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl">
-                  ⚡
-                </div>
+      {/* VISI MISI */}
+      <section className="py-32 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-20">
+            <span className="inline-flex px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold tracking-widest uppercase">
+              Visi & Misi
+            </span>
 
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Booking Cepat
-                  </h3>
+            <h2 className="mt-6 text-5xl md:text-6xl font-black text-slate-900">
+              Komitmen Kami
+            </h2>
+          </div>
 
-                  <p className="text-gray-500 leading-relaxed">
-                    Sistem booking online yang mudah, cepat, dan praktis
-                    digunakan.
-                  </p>
-                </div>
-              </div>
+          <div className="grid lg:grid-cols-2 gap-10">
+            <div className="group relative overflow-hidden rounded-[40px] bg-gradient-to-br from-blue-500 to-blue-700 p-12 text-white shadow-2xl hover:-translate-y-3 transition duration-700">
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
 
-              <div className="flex items-start gap-5 bg-white p-6 rounded-3xl shadow-sm">
-                <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-3xl">
-                  🌟
-                </div>
+              <span className="text-white/50 text-sm tracking-[0.3em] uppercase">
+                Visi
+              </span>
 
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">
-                    Fasilitas Modern
-                  </h3>
+              <h3 className="mt-4 text-5xl font-black">Menjadi yang Terbaik</h3>
 
-                  <p className="text-gray-500 leading-relaxed">
-                    Area nyaman, ruang tunggu modern, dan suasana bermain
-                    terbaik.
-                  </p>
-                </div>
-              </div>
+              <p className="mt-8 text-lg leading-relaxed text-blue-50">
+                Menjadi pusat olahraga badminton terbaik di Pekanbaru yang
+                menggabungkan fasilitas modern, pelayanan profesional, dan
+                teknologi digital untuk memberikan pengalaman bermain yang
+                nyaman bagi semua kalangan.
+              </p>
+            </div>
+
+            <div className="group relative overflow-hidden rounded-[40px] bg-slate-950 p-12 text-white shadow-2xl hover:-translate-y-3 transition duration-700">
+              <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl"></div>
+
+              <span className="text-white/50 text-sm tracking-[0.3em] uppercase">
+                Misi
+              </span>
+
+              <h3 className="mt-4 text-5xl font-black">
+                Memberikan Pengalaman Terbaik
+              </h3>
+
+              <p className="mt-8 text-lg leading-relaxed text-slate-300">
+                Menyediakan lapangan berkualitas, sistem reservasi yang mudah
+                digunakan, serta fasilitas pendukung yang lengkap agar setiap
+                pemain dapat menikmati pengalaman olahraga yang lebih baik.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Statistics */}
-      <section className="bg-white py-24">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-[#f5f7fb] p-10 rounded-[35px] text-center">
-              <h2 className="text-6xl font-bold text-blue-600 mb-4">10+</h2>
+      {/* CTA */}
+      <section className="relative overflow-hidden py-32 bg-slate-950">
+        <div className="absolute inset-0">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-blue-500/10 rounded-full blur-[180px]"></div>
+        </div>
 
-              <p className="text-gray-600 text-lg">Lapangan Badminton</p>
-            </div>
+        <div className="relative z-10 max-w-4xl mx-auto text-center px-6">
+          <span className="inline-flex px-4 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md text-white text-sm tracking-widest uppercase">
+            Booking Sekarang
+          </span>
 
-            <div className="bg-[#f5f7fb] p-10 rounded-[35px] text-center">
-              <h2 className="text-6xl font-bold text-blue-600 mb-4">2K+</h2>
+          <h2 className="mt-8 text-5xl md:text-7xl font-black text-white leading-tight">
+            Siap Bermain
+            <span className="block text-blue-400">Hari Ini?</span>
+          </h2>
 
-              <p className="text-gray-600 text-lg">Pelanggan Aktif</p>
-            </div>
+          <p className="mt-8 text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            Nikmati pengalaman bermain badminton terbaik dengan fasilitas modern
+            dan sistem reservasi online yang cepat.
+          </p>
 
-            <div className="bg-[#f5f7fb] p-10 rounded-[35px] text-center">
-              <h2 className="text-6xl font-bold text-blue-600 mb-4">24/7</h2>
-
-              <p className="text-gray-600 text-lg">Online Booking</p>
-            </div>
+          <div className="mt-12">
+            <a
+              href="/booking"
+              className="
+        inline-flex
+        items-center
+        gap-3
+        px-10
+        py-5
+        rounded-2xl
+        bg-blue-500
+        text-white
+        font-semibold
+        hover:bg-blue-600
+        hover:scale-105
+        hover:shadow-[0_25px_60px_rgba(16,185,129,0.35)]
+        transition-all
+        duration-500
+        "
+            >
+              Booking Lapangan
+              <span>→</span>
+            </a>
           </div>
         </div>
       </section>
