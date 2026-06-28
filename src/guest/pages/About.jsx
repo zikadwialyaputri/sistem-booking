@@ -33,7 +33,7 @@ export default function About() {
       {/* HERO */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2000"
+          src="/img/gorgabus.jpg"
           alt="Badminton"
           className="absolute inset-0 h-full w-full object-cover"
         />

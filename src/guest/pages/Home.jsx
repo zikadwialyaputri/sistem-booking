@@ -56,7 +56,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
             <div className="relative">
               <img
-                src="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=1600"
+                src="/img/gor.jpg"
                 alt="GOR Gabus"
                 className="w-full h-[600px] object-cover rounded-[36px] shadow-xl"
               />
