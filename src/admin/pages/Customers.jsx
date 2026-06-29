@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import PageHeader from "../components/PageHeader";
 import { Link } from "react-router-dom";
 import { supabase } from "../../services/supabase";
 import {
@@ -11,8 +10,6 @@ import {
 } from "react-icons/fa";
 
 export default function Customers() {
-  const breadcrumb = ["Dashboard", "Daftar Pengguna"];
-
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState([]);
 
@@ -44,140 +41,144 @@ export default function Customers() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      {/* HEADER */}
-      <div className="relative h-[280px] overflow-hidden">
-        <img
-          src="/img/badminton.jpg"
-          alt="Banner Badminton"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 via-blue-700/70 to-indigo-700/80"></div>
-      </div>
+    <div className="w-full min-h-screen text-slate-700 font-sans antialiased">
+      <div className="space-y-6">
+        
+        {/* 1. HERO BANNER */}
+        <div className="relative rounded-[24px] overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white p-6 md:p-10 min-h-[170px] flex flex-col justify-end shadow-sm">
+          <img
+            src="/img/badminton.jpg"
+            alt="badminton"
+            className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none transform scale-100"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
 
-      <div className="relative -mt-28 px-5 md:px-10 max-w-7xl mx-auto pb-10">
-        {/* PAGE HEADER */}
-        <div className="mb-8 text-white">
-          <PageHeader title="Data Pelanggan" breadcrumb={breadcrumb} />
+          {/* Judul Utama Banner dengan Deskripsi Singkat */}
+          <div className="relative z-10">
+            <h1 className="text-2xl md:text-[32px] font-black tracking-tight text-white leading-tight">
+              Data Pelanggan
+            </h1>
+            <p className="text-slate-300 text-xs md:text-sm mt-1.5 opacity-90 font-medium max-w-xl">
+              Halaman pantauan data registrasi pengguna, kelola informasi profil pelanggan, serta lihat detail aktivitas akun.
+            </p>
+          </div>
         </div>
 
-        {/* INFO + SEARCH */}
-        <div className="grid lg:grid-cols-2 gap-5 mb-8">
-          {/* TOTAL */}
-          <div className="bg-white rounded-3xl p-6 shadow-md">
-            <div className="flex items-center gap-4">
-              <div className="bg-blue-100 p-4 rounded-2xl">
-                <FaUsers className="text-blue-600 text-2xl" />
+        {/* SUB-JUDUL DI LUAR BANNER */}
+        <div className="pt-2">
+          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Ringkasan Pengguna</h3>
+        </div>
+
+        {/* 2. BARIS KONTROL: TOTAL PELANGGAN & PENCARIAN (RAPID DAN SIMETRIS) */}
+        <div className="flex flex-col md:flex-row gap-4 items-stretch justify-between max-w-4xl">
+          
+          {/* TOTAL CARD */}
+          <div className="w-full md:w-72 bg-white rounded-2xl p-4 shadow-sm border border-slate-200/60 relative overflow-hidden transition-all duration-300 hover:shadow-md flex items-center shrink-0">
+            <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+            <div className="flex items-center gap-4 w-full">
+              <div className="bg-blue-50 p-3 rounded-xl text-blue-600 border border-blue-100/30 shrink-0">
+                <FaUsers size={18} />
               </div>
               <div>
-                <p className="text-gray-500">Total Pelanggan</p>
-                <h2 className="text-3xl font-bold">{filteredUsers.length}</h2>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Total Pelanggan</p>
+                <h2 className="text-2xl font-black text-slate-800 tracking-tight">{filteredUsers.length}</h2>
               </div>
             </div>
           </div>
 
-          {/* SEARCH */}
-          <div className="bg-white rounded-3xl p-5 shadow-md flex items-center">
-            <FaSearch className="text-gray-400 text-lg" />
+          {/* BAR PENCARIAN (Tinggi seimbang dengan total card, tidak kosong melompong) */}
+          <div className="relative w-full max-w-md shadow-sm rounded-2xl bg-white border border-slate-200 focus-within:ring-4 focus-within:ring-blue-100/70 focus-within:border-blue-500 transition-all duration-200 flex items-center py-2">
+            <FaSearch className="absolute left-4 text-slate-400 pointer-events-none" size={14} />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Cari nama atau username..."
-              className="ml-4 w-full outline-none"
+              placeholder="Cari nama atau username pelanggan..."
+              className="w-full bg-transparent pl-11 pr-4 outline-none text-slate-800 text-sm placeholder-slate-400 font-medium"
             />
           </div>
+
         </div>
 
-        {/* TABEL */}
-        <div className="bg-white rounded-3xl shadow-md overflow-hidden">
+        {/* 3. KONTAINER TABEL UTAMA */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b">
+            <table className="w-full border-collapse">
+              <thead className="bg-slate-50/70 border-b border-slate-200/60 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
                 <tr>
-                  <th className="px-6 py-5 text-center text-gray-500 text-sm font-semibold">
-                    <FaHashtag className="inline mr-2" /> No
+                  <th className="py-4 px-6 text-center font-bold w-20">
+                    <div className="flex items-center justify-center gap-1">
+                      <FaHashtag size={10} /> No
+                    </div>
                   </th>
-                  <th className="px-6 py-5 text-left text-gray-500 text-sm font-semibold">
-                    Nama Pelanggan
-                  </th>
-                  <th className="px-6 py-5 text-left text-gray-500 text-sm font-semibold">
-                    Username
-                  </th>
-                  <th className="px-6 py-5 text-left text-gray-500 text-sm font-semibold">
-                    Tanggal Registrasi
-                  </th>
-                  <th className="px-6 py-5 text-center text-gray-500 text-sm font-semibold">
-                    Aksi
-                  </th>
+                  <th className="py-4 px-6 text-left font-bold">Nama Pelanggan</th>
+                  <th className="py-4 px-6 text-left font-bold">Username</th>
+                  <th className="py-4 px-6 text-left font-bold">Tanggal Registrasi</th>
+                  <th className="py-4 px-6 text-center font-bold w-36">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100 text-slate-600 text-sm font-medium">
                 {filteredUsers.length > 0 ? (
                   filteredUsers.map((item, index) => (
                     <tr
                       key={item.id}
-                      className="hover:bg-blue-50/50 transition-colors duration-200"
+                      className="hover:bg-slate-50/50 transition-colors duration-150"
                     >
                       {/* NO */}
-                      <td className="px-6 py-5 text-center font-bold text-gray-400">
+                      <td className="py-5 px-6 text-center font-bold text-slate-400">
                         {index + 1}
                       </td>
 
-                      {/* NAMA */}
-                      <td className="px-6 py-5">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                      {/* NAMA PELANGGAN */}
+                      <td className="py-5 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-xs shadow-inner">
                             {item.nama?.charAt(0).toUpperCase() || "?"}
                           </div>
-                          <div>
-                            <h3 className="font-bold text-gray-800">
-                              {item.nama || "Tanpa Nama"}
-                            </h3>
-                          </div>
+                          <span className="font-semibold text-slate-800 tracking-tight">
+                            {item.nama || "Tanpa Nama"}
+                          </span>
                         </div>
                       </td>
 
                       {/* USERNAME */}
-                      <td className="px-6 py-5">
-                        <span className="bg-slate-100 px-3 py-1.5 rounded-xl text-sm font-medium text-slate-600">
+                      <td className="py-5 px-6">
+                        <span className="bg-slate-100/80 px-2.5 py-1 rounded-md text-xs font-mono font-bold tracking-wide text-slate-600 border border-slate-200/40">
                           @{item.username}
                         </span>
                       </td>
 
-                      {/* TANGGAL */}
-                      <td className="px-6 py-5 text-gray-500 text-sm">
+                      {/* TANGGAL REGISTRASI */}
+                      <td className="py-5 px-6 text-slate-600">
                         {item.created_at ? (
-                          <div className="flex items-center gap-2">
-                            <FaCalendarAlt className="text-gray-400" />
+                          <div className="flex items-center gap-1.5 text-slate-700 text-xs font-semibold">
+                            <FaCalendarAlt className="text-slate-400" size={11} />
                             {formatTanggal(item.created_at)}
                           </div>
                         ) : (
-                          "-"
+                          <span className="text-slate-400 font-normal">-</span>
                         )}
                       </td>
 
-                      {/* AKSI */}
-                      <td className="px-6 py-5 text-center">
+                      {/* AKSI TOMBOL DETAIL */}
+                      <td className="py-5 px-6 text-center">
                         <Link
                           to={`/admin/customers/${item.id}`}
-                          className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-colors duration-200"
+                          className="inline-flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-sm transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
                         >
-                          <FaEye /> Detail
+                          <FaEye size={12} /> Detail
                         </Link>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" className="py-20 text-center">
-                      <div className="flex flex-col items-center justify-center space-y-3">
-                        <div className="text-5xl animate-bounce">🔍</div>
-                        <h2 className="font-bold text-lg text-gray-700">
-                          Pelanggan tidak ditemukan
-                        </h2>
-                        <p className="text-gray-400 text-sm max-w-xs">
-                          Coba gunakan kata kunci lain atau periksa kembali ejaan Anda.
+                    <td colSpan="5" className="py-24 text-center">
+                      <div className="flex flex-col items-center justify-center space-y-2 text-slate-400">
+                        <span className="text-4xl animate-pulse">🔍</span>
+                        <p className="font-bold text-slate-700 text-sm mt-1">Pelanggan tidak ditemukan</p>
+                        <p className="text-xs text-slate-400 max-w-xs">
+                          Coba gunakan kata kunci lain atau periksa kembali ejaan pencarian Anda.
                         </p>
                       </div>
                     </td>
@@ -187,6 +188,7 @@ export default function Customers() {
             </table>
           </div>
         </div>
+
       </div>
     </div>
   );

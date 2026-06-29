@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import PageHeader from "../components/PageHeader";
 import { supabase } from "../../services/supabase";
 import { 
   FaArrowLeft, 
@@ -72,37 +71,29 @@ export default function ReportDetail() {
   const totalPendapatan = totalTransaksi * biayaPerBooking;
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-4 md:p-8 font-sans antialiased text-slate-700">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen text-slate-700 font-sans antialiased">
+      <div className="space-y-6">
         
-        {/* HEADER HERO BANNER (Gaya Orders dengan integrasi Tombol Kembali) */}
-        <div className="relative rounded-3xl overflow-hidden shadow-sm h-36 flex flex-col justify-center px-6 md:px-10 border border-slate-100">
+        {/* HEADER HERO BANNER */}
+        <div className="relative rounded-[24px] overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white p-6 md:p-10 min-h-[140px] flex flex-col justify-end shadow-sm">
           <img
             src="/img/badminton.jpg"
             alt="Badminton Court"
-            className="absolute inset-0 w-full h-full object-cover select-none transform scale-105"
+            className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none transform scale-100"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-blue-900/50" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
           
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full text-white">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-blue-400 uppercase tracking-wider block">Manajemen Laporan</span>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight capitalize">Detail Laporan Bulanan</h1>
-            </div>
-            <Link
-              to="/admin/reports"
-              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md hover:bg-white hover:text-slate-900 text-white font-semibold px-4 py-2.5 rounded-xl border border-white/20 shadow-sm transition-all text-xs w-fit self-start sm:self-center"
-            >
-              <FaArrowLeft size={10} /> Kembali ke Laporan
-            </Link>
+          <div className="relative z-10">
+            <span className="text-xs font-bold text-blue-400 uppercase tracking-wider block mb-1">Manajemen Laporan</span>
+            <h1 className="text-2xl md:text-[32px] font-black tracking-tight text-white leading-tight">Detail Laporan Bulanan</h1>
           </div>
         </div>
 
-        {/* METRICS STATS CARDS GRID (Symmetric 3-Column Layout milik Orders) */}
+        {/* METRICS STATS CARDS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           
           {/* KARTU 1: PERIODE BULAN */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm flex items-center justify-between group hover:border-blue-200 transition-all duration-300">
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Periode Laporan</span>
               <h2 className="text-2xl font-black capitalize text-slate-800 tracking-tight">{bulan}</h2>
@@ -113,7 +104,7 @@ export default function ReportDetail() {
           </div>
 
           {/* KARTU 2: TOTAL PENDAPATAN */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-emerald-200 transition-all duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm flex items-center justify-between group hover:border-emerald-200 transition-all duration-300">
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Pendapatan Omset</span>
               <h2 className="text-2xl font-black text-emerald-600 tracking-tight">{formatRupiah(totalPendapatan)}</h2>
@@ -124,7 +115,7 @@ export default function ReportDetail() {
           </div>
 
           {/* KARTU 3: TOTAL TRANSAKSI */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-indigo-200 transition-all duration-300">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm flex items-center justify-between group hover:border-indigo-200 transition-all duration-300">
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Konfirmasi Booking</span>
               <h2 className="text-2xl font-black text-indigo-600 tracking-tight">
@@ -139,16 +130,16 @@ export default function ReportDetail() {
         </div>
 
         {/* LOG BOOKING TABLE CONTAINER */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/60 overflow-hidden">
           
           {/* BOX HEADER */}
-          <div className="p-6 border-b border-slate-100 bg-[#fafafa]">
+          <div className="p-5 md:p-6 border-b border-slate-100 bg-slate-50/50">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-extrabold text-slate-800 text-base tracking-tight">Rincian Log Sewa GOR</h3>
                 <p className="text-xs text-slate-400 mt-0.5">Seluruh pemesanan lapangan yang berstatus sukses (Approved) pada bulan ini.</p>
               </div>
-              <span className="hidden sm:inline-block bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-bold px-3 py-1 rounded-full">
+              <span className="bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-bold px-3 py-1 rounded-md">
                 {data.length} Baris Data
               </span>
             </div>
@@ -162,8 +153,8 @@ export default function ReportDetail() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[850px]">
-                <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+                <thead className="bg-slate-50/70 border-b border-slate-200/60 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+                  <tr>
                     <th className="p-4 pl-8">Nama Pelanggan</th>
                     <th className="p-4">Identitas Lapangan</th>
                     <th className="p-4">Tanggal Jadwal</th>
@@ -234,6 +225,16 @@ export default function ReportDetail() {
               </table>
             </div>
           )}
+        </div>
+
+        {/* TOMBOL KEMBALI SEKARANG BERWARNA BIRU DI BAWAH KANAN KARTU */}
+        <div className="flex justify-end pt-2">
+          <Link
+            to="/admin/reports"
+            className="inline-flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            <FaArrowLeft size={11} /> Kembali ke Laporan
+          </Link>
         </div>
 
       </div>
