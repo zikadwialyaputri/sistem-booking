@@ -19,11 +19,15 @@ export default function Dashboard() {
   const [notifications, setNotifications] = useState([]);
   const [bookings, setBookings] = useState([]);
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(
+    localStorage.getItem("user")
+  );
 
   const profile = {
     name: user?.username || "User",
-    foto: user?.foto || "https://i.pravatar.cc/100?img=12",
+    foto:
+      user?.foto ||
+      "https://i.pravatar.cc/100?img=12",
   };
 
   useEffect(() => {
@@ -37,11 +41,13 @@ export default function Dashboard() {
       .from("bookings")
       .select("*")
       .eq("user_id", user.id)
-      .order("id", { ascending: false });
+      .order("tanggal", {
+        ascending: true,
+      });
 
     if (!error) {
 
-      // hapus data booking duplikat
+      // Hapus data duplikat
       const uniqueBookings = data.filter(
         (item, index, self) =>
           index ===
@@ -49,29 +55,35 @@ export default function Dashboard() {
             (b) =>
               b.tanggal === item.tanggal &&
               b.jam_mulai === item.jam_mulai &&
+              b.jam_selesai === item.jam_selesai &&
               b.lapangan_id === item.lapangan_id
           )
       );
 
       setBookings(uniqueBookings);
 
-      const notifData = uniqueBookings.map(
-        (item) => ({
+      const notifData =
+        uniqueBookings.map((item) => ({
           id: item.id,
           pesan:
             item.status === "approved"
               ? "✅ Booking Disetujui"
               : item.status === "rejected"
               ? "❌ Booking Ditolak"
+              : item.status === "done"
+              ? "🏁 Booking Selesai"
               : "⏳ Booking Diproses",
 
           tanggal: item.tanggal,
-        })
-      );
+        }));
 
       setNotifications(notifData);
     }
   };
+
+  const today = new Date()
+    .toISOString()
+    .split("T")[0];
 
   const nextBooking = bookings.find(
     (b) =>
@@ -105,24 +117,36 @@ export default function Dashboard() {
     },
   ];
 
-  const today = new Date()
-    .toISOString()
-    .split("T")[0];
-
+  // Jadwal hari ini
   const semuaJadwal = bookings.filter(
-    (b) => b.tanggal === today
+    (b) =>
+      b.tanggal === today &&
+      (
+        b.status === "approved" ||
+        b.status === "pending"
+      )
   );
 
   const jadwal = showAllJadwal
     ? semuaJadwal
-    : semuaJadwal.slice(0, 3);
+    : semuaJadwal.slice(0,3);
 
-  const riwayat = showAllRiwayat
-    ? bookings
-    : bookings.slice(0, 3);
+  // Riwayat
+  const semuaRiwayat =
+    bookings.filter(
+      (b)=>
+        b.status==="done" ||
+        b.status==="rejected"
+    );
 
-  const getStatusColor = (status) => {
-    switch (status) {
+  const riwayat =
+    showAllRiwayat
+      ? semuaRiwayat
+      : semuaRiwayat.slice(0,3);
+
+  const getStatusColor = (status)=>{
+    switch(status){
+
       case "approved":
         return "bg-green-100 text-green-700";
 
@@ -141,11 +165,12 @@ export default function Dashboard() {
   };
 
   return (
+
     <div className="min-h-screen bg-gray-100 p-6">
 
-      {/* Header */}
+      {/* HEADER */}
 
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 rounded-3xl shadow-xl text-white mb-8">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-6 shadow-xl text-white mb-8">
 
         <div className="flex justify-between items-center">
 
@@ -159,64 +184,185 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="flex gap-4 items-center">
+          <div className="flex items-center gap-5">
 
             {/* NOTIF */}
 
             <div className="relative">
 
-              <FaBell
-                className="text-2xl cursor-pointer"
+  <FaBell
+    className="text-2xl cursor-pointer"
+    onClick={() =>
+      setShowNotif(!showNotif)
+    }
+  />
+
+  {notifications.length > 0 && (
+
+    <span className="absolute -top-2 -right-2 bg-red-500 rounded-full w-5 h-5 text-xs flex justify-center items-center">
+      {notifications.length}
+    </span>
+
+  )}
+
+  {showNotif && (
+
+    <div className="absolute right-0 top-12 w-80 bg-white text-black rounded-2xl shadow-2xl z-50 overflow-hidden">
+
+      {/* Header Notif */}
+
+      <div className="bg-blue-500 text-white p-3 font-bold">
+
+        🔔 Notifikasi
+
+      </div>
+
+      {/* Isi Notif */}
+
+      <div className="max-h-64 overflow-y-auto">
+
+        {notifications.length > 0 ? (
+
+          <>
+          
+            {notifications
+              .slice(0,3)
+              .map((item)=>(
+
+                <div
+                  key={item.id}
+                  className="p-3 border-b hover:bg-gray-100 duration-200"
+                >
+
+                  <p className="font-medium">
+                    {item.pesan}
+                  </p>
+
+                  <small className="text-gray-500">
+                    📅 {item.tanggal}
+                  </small>
+
+                </div>
+
+            ))}
+
+            {/* tombol */}
+
+            <div className="p-3 text-center">
+
+              <button
+                onClick={() => {
+
+                  setShowNotif(false);
+
+                  navigate(
+                    "/pelanggan/notifikasi"
+                  );
+
+                }}
+                className="text-blue-600 font-semibold hover:underline"
+              >
+                Lihat Selengkapnya
+              </button>
+
+            </div>
+
+          </>
+
+        ) : (
+
+          <div className="p-4 text-center text-gray-500">
+
+            Belum ada notifikasi
+
+          </div>
+
+        )}
+
+      </div>
+
+    </div>
+
+  )}
+
+</div>
+
+
+            {/* PROFILE */}
+
+            <div className="relative">
+
+              <img
+                src={profile.foto}
+                className="w-11 h-11 rounded-full border-2 border-white cursor-pointer"
                 onClick={() =>
-                  setShowNotif(!showNotif)
+                  setShowProfile(
+                    !showProfile
+                  )
                 }
               />
 
-              {notifications.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 w-5 h-5 rounded-full text-xs flex items-center justify-center">
-                  {notifications.length}
-                </span>
-              )}
+              {showProfile && (
 
-              {showNotif && (
-                <div className="absolute right-0 top-10 w-72 bg-white text-black rounded-xl shadow-xl max-h-80 overflow-y-auto">
+                <div className="absolute right-0 top-14 bg-white text-black rounded-2xl shadow-xl w-52 p-4 z-50">
 
-                  <div className="font-bold p-3 border-b">
-                    Notifikasi
+                  <div className="text-center">
+
+                    <img
+                      src={profile.foto}
+                      className="w-14 h-14 rounded-full mx-auto mb-2"
+                    />
+
+                    <p className="font-bold">
+                      {profile.name}
+                    </p>
+
                   </div>
 
-                  {notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      className="p-3 border-b"
-                    >
-                      <p>{n.pesan}</p>
-                      <small>{n.tanggal}</small>
-                    </div>
-                  ))}
+                  <hr className="my-3"/>
+
+                  <button
+                    onClick={() =>
+                      navigate(
+                        "/pelanggan/profile"
+                      )
+                    }
+                    className="w-full bg-blue-500 text-white p-2 rounded-lg mb-2"
+                  >
+                    Edit Profile
+                  </button>
+
+                  <button
+                    onClick={()=>{
+                      localStorage.removeItem(
+                        "user"
+                      );
+
+                      navigate("/login");
+                    }}
+                    className="w-full bg-red-500 text-white p-2 rounded-lg"
+                  >
+                    Logout
+                  </button>
 
                 </div>
+
               )}
+
             </div>
 
-            <img
-              src={profile.foto}
-              className="w-11 h-11 rounded-full border-2 border-white cursor-pointer"
-              onClick={() =>
-                setShowProfile(!showProfile)
-              }
-            />
-
           </div>
+
         </div>
+
       </div>
 
-      {/* Booking berikutnya */}
+      {/* BOOKING BERIKUTNYA */}
 
-      <div className="bg-white p-6 rounded-3xl shadow mb-8">
+      <div className="bg-white rounded-3xl p-6 shadow mb-8">
 
-        <h2 className="font-bold text-lg mb-3">
-          Booking Berikutnya
+        <h2 className="font-bold text-xl mb-4">
+          🔥 Booking Berikutnya
         </h2>
 
         {nextBooking ? (
@@ -230,33 +376,31 @@ export default function Dashboard() {
             </p>
 
             <p>
-              🕒 {nextBooking.jam_mulai} -
-              {nextBooking.jam_selesai}
+              🕒 {nextBooking.jam_mulai}
+              -{nextBooking.jam_selesai}
             </p>
           </>
         ) : (
           <p>Belum ada booking</p>
         )}
+
       </div>
 
-      {/* Statistik */}
+      {/* STATISTIK */}
 
       <div className="grid md:grid-cols-3 gap-5 mb-8">
 
-        {stats.map((item, index) => (
+        {stats.map((item,index)=>(
 
           <div
             key={index}
-            className="bg-white p-6 rounded-3xl shadow hover:scale-105 duration-300"
+            className="bg-white p-6 rounded-3xl shadow"
           >
-
             <div className="text-3xl mb-3">
               {item.icon}
             </div>
 
-            <h3 className="text-gray-500">
-              {item.title}
-            </h3>
+            <h3>{item.title}</h3>
 
             <p className="text-3xl font-bold">
               {item.value}
@@ -268,68 +412,90 @@ export default function Dashboard() {
 
       </div>
 
-      {/* Jadwal */}
+      {/* JADWAL */}
 
       <div className="bg-white p-6 rounded-3xl shadow mb-8">
 
-        <h2 className="font-bold mb-4">
-          Jadwal Hari Ini
+        <h2 className="font-bold text-xl mb-4">
+          📅 Jadwal Hari Ini
         </h2>
 
-        {jadwal.map((item) => (
-          <div
-            key={item.id}
-            className="border-b p-3"
-          >
-            <p>
-              🏸 Lapangan {item.lapangan_id}
-            </p>
-
-            <p>
-              🕒 {item.jam_mulai} -
-              {item.jam_selesai}
-            </p>
-
-            <span
-              className={`px-3 py-1 rounded-full text-sm ${getStatusColor(item.status)}`}
+        {jadwal.length > 0 ? (
+          jadwal.map((item)=>(
+            <div
+              key={item.id}
+              className="border-b py-3"
             >
-              {item.status}
-            </span>
+              <p>🏸 Lapangan {item.lapangan_id}</p>
+
+              <p>
+                🕒 {item.jam_mulai}
+                -{item.jam_selesai}
+              </p>
+
+              <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(item.status)}`}>
+                {item.status}
+              </span>
+
+            </div>
+          ))
+        ) : (
+          <p>Belum ada jadwal hari ini</p>
+        )}
+
+        {semuaJadwal.length > 3 && (
+          <div className="text-center mt-4">
+
+            <button
+              onClick={()=>
+                setShowAllJadwal(
+                  !showAllJadwal
+                )
+              }
+              className="text-blue-500 font-semibold"
+            >
+              {showAllJadwal
+                ? "Lihat Lebih Sedikit"
+                : "Lihat Selengkapnya"}
+            </button>
 
           </div>
-        ))}
+        )}
 
       </div>
 
-      {/* Riwayat */}
+      {/* RIWAYAT */}
 
       <div className="bg-white p-6 rounded-3xl shadow">
 
-        <h2 className="font-bold mb-4">
-          Riwayat
+        <h2 className="font-bold text-xl mb-4">
+          📜 Riwayat Booking
         </h2>
 
-        {riwayat.map((item) => (
-          <div
-            key={item.id}
-            className="border-b p-3"
-          >
-            <p>
-              🏸 Lapangan {item.lapangan_id}
-            </p>
-
-            <p>
-              📅 {item.tanggal}
-            </p>
-
-            <span
-              className={`px-3 py-1 rounded-full text-sm ${getStatusColor(item.status)}`}
+        {riwayat.length > 0 ? (
+          riwayat.map((item)=>(
+            <div
+              key={item.id}
+              className="border-b py-3"
             >
-              {item.status}
-            </span>
 
-          </div>
-        ))}
+              <p>
+                🏸 Lapangan {item.lapangan_id}
+              </p>
+
+              <p>
+                📅 {item.tanggal}
+              </p>
+
+              <span className={`px-3 py-1 rounded-full text-sm ${getStatusColor(item.status)}`}>
+                {item.status}
+              </span>
+
+            </div>
+          ))
+        ) : (
+          <p>Belum ada riwayat</p>
+        )}
 
       </div>
 
