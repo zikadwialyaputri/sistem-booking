@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "../../../services/supabase";
+
 export default function Register() {
   const navigate = useNavigate();
 
@@ -13,6 +14,8 @@ export default function Register() {
     confirmPassword: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     setDataForm({
       ...dataForm,
@@ -20,7 +23,7 @@ export default function Register() {
     });
   };
 
-const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
 
   if (
@@ -35,40 +38,76 @@ const handleSubmit = async (e) => {
     return;
   }
 
+  const phoneRegex = /^[0-9]{12}$/;
+  if (!phoneRegex.test(dataForm.phone)) {
+    alert("Nomor HP harus 12 angka");
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(dataForm.email)) {
+    alert("Email tidak valid");
+    return;
+  }
+
+  if (dataForm.password.length < 8) {
+    alert("Password minimal 8 karakter");
+    return;
+  }
+
   if (dataForm.password !== dataForm.confirmPassword) {
     alert("Password tidak sama");
     return;
   }
 
-  try {
+  setLoading(true);
 
-    const { error } = await supabase
-      .from("users")
-      .insert([
-        {
-          nama: dataForm.nama,
-          username: dataForm.username,
-          phone: dataForm.phone,
-          email: dataForm.email,
-          password: dataForm.password,
-          role: "pelanggan"
+  try {
+    const { data, error } =
+      await supabase.auth.signUp({
+        email: dataForm.email,
+        password: dataForm.password,
+        options: {
+          data: {
+            nama: dataForm.nama
+          }
         }
-      ]);
+      });
 
     if (error) throw error;
 
-    alert("Registrasi berhasil ✅");
+    // hanya insert jika user berhasil dibuat
+    if (data.user) {
+      const { error: dbError } =
+        await supabase
+          .from("users")
+          .insert([
+            {
+              auth_id: data.user.id,
+              nama: dataForm.nama,
+              username: dataForm.username,
+              phone: dataForm.phone,
+              email: dataForm.email,
+              role: "pelanggan"
+            }
+          ]);
 
+      if (dbError) throw dbError;
+    }
+
+    alert("Registrasi berhasil");
     navigate("/login");
 
   } catch (err) {
     console.log(err);
     alert(err.message);
   }
+
+  setLoading(false);
 };
   return (
     <div>
-      {/* Heading */}
+
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-800">
           Buat Akun Baru ✨
@@ -79,119 +118,78 @@ const handleSubmit = async (e) => {
         </p>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
 
-        {/* Nama */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Nama Lengkap
-          </label>
+        <input
+          type="text"
+          name="nama"
+          value={dataForm.nama}
+          onChange={handleChange}
+          placeholder="Nama Lengkap"
+          className="w-full px-4 py-3 border rounded-xl"
+        />
 
-          <input
-            type="text"
-            name="nama"
-            value={dataForm.nama}
-            onChange={handleChange}
-            placeholder="Masukkan nama lengkap"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <input
+          type="text"
+          name="username"
+          value={dataForm.username}
+          onChange={handleChange}
+          placeholder="Username"
+          className="w-full px-4 py-3 border rounded-xl"
+        />
 
-        {/* Username */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Username
-          </label>
+        <input
+          type="text"
+          name="phone"
+          value={dataForm.phone}
+          onChange={handleChange}
+          placeholder="Nomor Telepon"
+          className="w-full px-4 py-3 border rounded-xl"
+        />
 
-          <input
-            type="text"
-            name="username"
-            value={dataForm.username}
-            onChange={handleChange}
-            placeholder="Masukkan username"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <input
+          type="email"
+          name="email"
+          value={dataForm.email}
+          onChange={handleChange}
+          placeholder="Email"
+          className="w-full px-4 py-3 border rounded-xl"
+        />
 
-        {/* Telepon */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Nomor Telepon
-          </label>
+        <input
+          type="password"
+          name="password"
+          value={dataForm.password}
+          onChange={handleChange}
+          placeholder="Password"
+          className="w-full px-4 py-3 border rounded-xl"
+        />
 
-          <input
-            type="text"
-            name="phone"
-            value={dataForm.phone}
-            onChange={handleChange}
-            placeholder="Masukkan nomor telepon"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Email
-          </label>
-
-          <input
-            type="email"
-            name="email"
-            value={dataForm.email}
-            onChange={handleChange}
-            placeholder="Masukkan email"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Password */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Password
-          </label>
-
-          <input
-            type="password"
-            name="password"
-            value={dataForm.password}
-            onChange={handleChange}
-            placeholder="Masukkan password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Konfirmasi Password */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Konfirmasi Password
-          </label>
-
-          <input
-            type="password"
-            name="confirmPassword"
-            value={dataForm.confirmPassword}
-            onChange={handleChange}
-            placeholder="Ulangi password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <input
+          type="password"
+          name="confirmPassword"
+          value={dataForm.confirmPassword}
+          onChange={handleChange}
+          placeholder="Konfirmasi Password"
+          className="w-full px-4 py-3 border rounded-xl"
+        />
 
         <button
           type="submit"
-          className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+          disabled={loading}
+          className="w-full py-3 rounded-xl bg-blue-600 text-white"
         >
-          Daftar Sekarang
+          {loading ? "Loading..." : "Daftar Sekarang"}
         </button>
+
       </form>
 
       <div className="text-center mt-6">
         <p className="text-sm text-gray-500">
-          Sudah punya akun?{" "}
+          Sudah punya akun?
           <Link
             to="/login"
-            className="text-blue-600 font-semibold"
+            className="text-blue-600 font-semibold ml-1"
           >
             Login disini
           </Link>
@@ -201,6 +199,7 @@ const handleSubmit = async (e) => {
       <p className="text-center text-sm text-gray-400 mt-6">
         SmashBooking - Sistem Booking Lapangan Badminton
       </p>
+
     </div>
   );
 }

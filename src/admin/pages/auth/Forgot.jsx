@@ -12,18 +12,30 @@ export default function Forgot() {
 
     const handleReset = async (e) => {
         e.preventDefault();
+
+        if (!email) {
+            setError("Email wajib diisi");
+            return;
+        }
+
         setLoading(true);
         setMessage("");
         setError("");
 
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: "http://localhost:3000/reset-password",
-        });
+        const { error } = await supabase.auth.resetPasswordForEmail(
+            email,
+            {
+                redirectTo: "http://localhost:5173/reset-password",
+            }
+        );
 
         if (error) {
             setError(error.message);
         } else {
-            setMessage("Link reset password sudah dikirim ke email kamu!");
+            setMessage(
+                "Link reset password berhasil dikirim. Silakan cek email kamu."
+            );
+            setEmail("");
         }
 
         setLoading(false);
@@ -32,7 +44,7 @@ export default function Forgot() {
     return (
         <div>
 
-            {/* HEADER (SAMA SEPERTI LOGIN) */}
+            {/* HEADER */}
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-800">
                     Lupa Password?
@@ -51,7 +63,7 @@ export default function Forgot() {
                 </div>
             )}
 
-            {/* MESSAGE */}
+            {/* SUCCESS */}
             {message && (
                 <div className="bg-green-100 border border-green-200 mb-5 p-4 text-sm text-green-700 rounded-xl">
                     {message}
@@ -74,13 +86,13 @@ export default function Forgot() {
                         placeholder="Masukkan email"
                         disabled={loading}
                         className="
-                        w-full px-4 py-3
-                        border border-gray-300
-                        rounded-xl
-                        bg-gray-50
-                        focus:outline-none
-                        focus:ring-2
-                        focus:ring-blue-500
+                            w-full px-4 py-3
+                            border border-gray-300
+                            rounded-xl
+                            bg-gray-50
+                            focus:outline-none
+                            focus:ring-2
+                            focus:ring-blue-500
                         "
                     />
                 </div>
@@ -90,16 +102,17 @@ export default function Forgot() {
                     type="submit"
                     disabled={loading}
                     className="
-                    w-full py-3
-                    rounded-xl
-                    bg-blue-600 hover:bg-blue-700
-                    text-white font-semibold
+                        w-full py-3
+                        rounded-xl
+                        bg-blue-600 hover:bg-blue-700
+                        text-white font-semibold
+                        disabled:opacity-50
                     "
                 >
                     {loading ? (
                         <span className="flex items-center justify-center">
                             <ImSpinner2 className="animate-spin mr-2" />
-                            Loading...
+                            Mengirim...
                         </span>
                     ) : (
                         "Kirim Link Reset Password"
@@ -107,14 +120,19 @@ export default function Forgot() {
                 </button>
             </form>
 
-            {/* BACK */}
+            {/* BACK LOGIN */}
             <div className="text-center mt-6">
                 <Link
                     to="/login"
-                    className="text-sm text-blue-600 font-semibold"
+                    className="text-sm text-blue-600 font-semibold hover:underline"
                 >
                     ← Kembali ke Login
                 </Link>
+            </div>
+
+            {/* FOOTER */}
+            <div className="text-center mt-8 text-gray-400 text-xs">
+                © 2026 SmashBooking. All rights reserved.
             </div>
 
         </div>

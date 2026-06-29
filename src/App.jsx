@@ -23,7 +23,7 @@ import BookingForm from "./pelanggan/pages/BookingForm";
 import RiwayatBooking from "./pelanggan/pages/RiwayatBooking";
 import Notifikasi from "./pelanggan/pages/Notifikasi";
 
-// ================= ADMIN PAGES =================
+// ================= ADMIN =================
 const AdminDashboard = React.lazy(() =>
   import("./admin/pages/Dashboard")
 );
@@ -81,6 +81,10 @@ const Forgot = React.lazy(() =>
   import("./admin/pages/auth/Forgot")
 );
 
+const ResetPassword = React.lazy(() =>
+  import("./admin/pages/auth/ResetPassword")
+);
+
 // ================= GUEST =================
 const Home = React.lazy(() =>
   import("./guest/pages/Home")
@@ -120,111 +124,42 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="customers" element={<Customers />} />
-          <Route
-            path="customers/:id"
-            element={<CustomerDetail />}
-          />
+          <Route path="customers/:id" element={<CustomerDetail />} />
           <Route path="reports" element={<Reports />} />
-          <Route
-            path="reports/:bulan"
-            element={<ReportDetail />}
-          />
+          <Route path="reports/:bulan" element={<ReportDetail />} />
           <Route path="users" element={<Users />} />
-          <Route
-            path="statistik"
-            element={<Statistik />}
-          />
-          <Route
-            path="status-lapangan"
-            element={<StatusLapangan />}
-          />
-
-          {/* PROFILE ADMIN */}
-          <Route
-            path="profile"
-            element={<ProfileAdmin />}
-          />
+          <Route path="statistik" element={<Statistik />} />
+          <Route path="status-lapangan" element={<StatusLapangan />} />
+          <Route path="profile" element={<ProfileAdmin />} />
         </Route>
 
         {/* Petugas */}
         <Route path="/petugas" element={<PetugasLayout />}>
-          <Route
-            index
-            element={<PetugasDashboard />}
-          />
-
-          <Route
-            path="dashboard"
-            element={<PetugasDashboard />}
-          />
-
-          <Route
-            path="booking"
-            element={<KelolaBooking />}
-          />
-
-          <Route
-            path="jadwal"
-            element={<StatusJadwal />}
-          />
-
-          <Route
-            path="profile"
-            element={<ProfilePetugas />}
-          />
+          <Route index element={<PetugasDashboard />} />
+          <Route path="dashboard" element={<PetugasDashboard />} />
+          <Route path="booking" element={<KelolaBooking />} />
+          <Route path="jadwal" element={<StatusJadwal />} />
+          <Route path="profile" element={<ProfilePetugas />} />
         </Route>
 
         {/* Pelanggan */}
-        <Route
-          path="/pelanggan"
-          element={<PelangganLayout />}
-        >
-          <Route
-            index
-            element={<DashboardPelanggan />}
-          />
-
-          <Route
-            path="booking"
-            element={<BookingSaya />}
-          />
-
-          <Route
-            path="booking/:id"
-            element={<BookingForm />}
-          />
-
-          <Route
-            path="riwayat"
-            element={<RiwayatBooking />}
-          />
-
-          <Route
-            path="profile"
-            element={<Profile />}
-          />
-
-          <Route
-            path="notifikasi"
-            element={<Notifikasi />}
-          />
+        <Route path="/pelanggan" element={<PelangganLayout />}>
+          <Route index element={<DashboardPelanggan />} />
+          <Route path="booking" element={<BookingSaya />} />
+          <Route path="booking/:id" element={<BookingForm />} />
+          <Route path="riwayat" element={<RiwayatBooking />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="notifikasi" element={<Notifikasi />} />
         </Route>
 
         {/* Auth */}
         <Route element={<AuthLayout />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot" element={<Forgot />} />
           <Route
-            path="/login"
-            element={<Login />}
-          />
-
-          <Route
-            path="/register"
-            element={<Register />}
-          />
-
-          <Route
-            path="/forgot"
-            element={<Forgot />}
+            path="/reset-password"
+            element={<ResetPassword />}
           />
         </Route>
 
