@@ -94,16 +94,14 @@ export default function Notifikasi() {
 
       <div className="flex items-center gap-4 mb-8">
 
-        <button
-          onClick={() =>
-            navigate(
-              "/pelanggan/dashboard"
-            )
-          }
-          className="bg-white p-3 rounded-full shadow hover:scale-110 duration-300"
-        >
-          <FaArrowLeft />
-        </button>
+       <button
+  onClick={() =>
+    navigate("/pelanggan")
+  }
+  className="bg-white p-3 rounded-full shadow hover:scale-110 duration-300"
+>
+  <FaArrowLeft />
+</button>
 
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <FaBell />
