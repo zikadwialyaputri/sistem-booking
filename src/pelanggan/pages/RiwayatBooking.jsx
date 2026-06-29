@@ -98,7 +98,7 @@ export default function RiwayatBooking() {
         </span>
       </div>
 
-      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1"> {/* Ditambahkan max-h & overflow scroll jika isi per kotak sangat penuh */}
+      <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
         {data.length > 0 ? (
           data.map((item) => {
             const colors = getStatusColor(item.status);
@@ -142,7 +142,6 @@ export default function RiwayatBooking() {
     </div>
   );
 
-  // PERBAIKAN: Posisi Loading harus berada di dalam fungsi komponen sebelum return utama
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex justify-center items-center font-medium text-blue-600">
@@ -194,7 +193,7 @@ export default function RiwayatBooking() {
             <div className="bg-gradient-to-r from-blue-800 to-blue-600 text-white p-5 relative">
               <button
                 onClick={() => setSelectedBooking(null)}
-                className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold transition"
+                className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold transition z-10"
               >
                 ✕
               </button>
@@ -205,7 +204,7 @@ export default function RiwayatBooking() {
             </div>
 
             {/* Isi Detail Lengkap */}
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 pb-8">
               <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
                 <div className="flex justify-between items-center text-sm border-b pb-2 border-gray-200/60">
                   <span className="text-gray-500">ID Booking</span>
@@ -239,16 +238,6 @@ export default function RiwayatBooking() {
                   {getStatusText(selectedBooking.status).toUpperCase()}
                 </span>
               </div>
-            </div>
-
-            {/* Tombol Aksi */}
-            <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
-              <button
-                onClick={() => setSelectedBooking(null)}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl shadow-md shadow-blue-600/20 transition duration-200"
-              >
-                Tutup Rincian
-              </button>
             </div>
 
           </div>

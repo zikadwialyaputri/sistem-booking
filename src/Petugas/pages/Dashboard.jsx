@@ -1,623 +1,321 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FaCalendarCheck,
   FaClock,
   FaTimesCircle,
   FaUserCircle,
   FaSignOutAlt,
+  FaCalendarDay,
+  FaCircle
 } from "react-icons/fa";
-
-import PageHeader from "../components/PageHeader";
 import { useNavigate } from "react-router-dom";
 import bookingService from "../../services/bookingService";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   const [openProfile, setOpenProfile] = useState(false);
   const [bookings, setBookings] = useState([]);
-
-  // ambil user login
-  const user = JSON.parse(
-    localStorage.getItem("user")
-  );
-
-  const [profile, setProfile] = useState({
-    name: "",
-    foto: "",
-  });
+  const [profile, setProfile] = useState({ name: "", foto: "" });
 
   useEffect(() => {
     loadData();
 
+    // Ambil data user login dari localStorage
+    const user = JSON.parse(localStorage.getItem("user"));
     setProfile({
-      name:
-        user?.nama ||
-        user?.username ||
-        "Petugas",
-
-      foto:
-        user?.foto || "",
+      name: user?.nama || user?.username || "Petugas",
+      foto: user?.foto || "",
     });
+
+    // Event listener untuk menutup dropdown profil ketika klik di luar menu
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenProfile(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   async function loadData() {
     try {
-      const data =
-        await bookingService.getBookings();
-
+      const data = await bookingService.getBookings();
       setBookings(data || []);
-
     } catch (err) {
-      console.log(err);
+      console.error("Gagal memuat data booking:", err);
     }
   }
 
-  // ======================
-  // DATA ASLI
-  // ======================
+  // ========================================================
+  // MEMPROSES DATA UNIK & MENANGGULANGI DUPLIKAT (SAFE SCOPE)
+  // ========================================================
+  const uniqueBookings = Array.from(
+    new Map(
+      bookings.map((item) => [
+        `${item.tanggal}_${item.jam_mulai}_${item.jam_selesai}_${item.lapangan?.id}_${item.users?.id}`,
+        item,
+      ])
+    ).values()
+  );
 
-  const totalBooking =
-    bookings.length;
+  const totalBooking = uniqueBookings.length;
 
-  const pendingBooking =
-    bookings.filter(
-      (item) =>
-        item.status === "pending"
-    ).length;
+  const pendingBooking = uniqueBookings.filter(
+    (item) => item.status?.toLowerCase() === "pending"
+  ).length;
 
-  const rejectedBooking =
-    bookings.filter(
-      (item) =>
-        item.status === "rejected"
-    ).length;
+  const rejectedBooking = uniqueBookings.filter(
+    (item) => item.status?.toLowerCase() === "rejected" || item.status?.toLowerCase() === "dibatalkan"
+  ).length;
 
-  const todayBooking =
-    bookings.filter(
-      (item) => {
+  // Format tanggal lokal (YYYY-MM-DD) penyeimbang zona waktu runtime browser
+  const todayLocalStr = new Date().toLocaleDateString("sv-SE"); 
 
-        if(!item.tanggal)
-          return false;
-
-        const today =
-          new Date()
-          .toISOString()
-          .split("T")[0];
-
-        return (
-          item.tanggal ===
-          today
-        );
-      }
-    ).length;
+  const todayBooking = uniqueBookings.filter((item) => {
+    if (!item.tanggal) return false;
+    return item.tanggal.startsWith(todayLocalStr);
+  }).length;
 
   const stats = [
     {
-      title: "Total Booking",
+      title: "TOTAL BOOKING",
       value: totalBooking,
-      icon: (
-        <FaCalendarCheck size={18}/>
-      ),
-      color: "blue",
+      icon: <FaCalendarCheck size={18} />,
+      badgeStyle: "bg-blue-50 text-blue-500",
       path: "/petugas/booking",
     },
-
     {
-      title:
-      "Menunggu Konfirmasi",
-
-      value:
-      pendingBooking,
-
-      icon:
-      <FaClock size={18}/>,
-
-      color:
-      "orange",
-
-      path:
-      "/petugas/booking",
+      title: "MENUNGGU KONFIRMASI",
+      value: pendingBooking,
+      icon: <FaClock size={18} />,
+      badgeStyle: "bg-amber-50 text-amber-500",
+      path: "/petugas/booking",
     },
-
     {
-      title:
-      "Booking Hari Ini",
-
-      value:
-      todayBooking,
-
-      icon:
-      <FaCalendarCheck size={18}/>,
-
-      color:
-      "green",
-
-      path:
-      "/petugas/jadwal",
+      title: "DIBATALKAN",
+      value: rejectedBooking,
+      icon: <FaTimesCircle size={18} />,
+      badgeStyle: "bg-rose-50 text-rose-500",
+      path: "/petugas/booking",
     },
-
     {
-      title:
-      "Dibatalkan",
-
-      value:
-      rejectedBooking,
-
-      icon:
-      <FaTimesCircle size={18}/>,
-
-      color:
-      "red",
-
-      path:
-      "/petugas/booking",
-    }
+      title: "BOOKING HARI INI",
+      value: todayBooking,
+      icon: <FaCalendarDay size={18} />,
+      badgeStyle: "bg-emerald-50 text-emerald-500",
+      path: "/petugas/jadwal",
+    },
   ];
 
-  const colorMap = {
-    blue:{
-      border:"border-blue-500",
-      iconBg:"bg-blue-500"
-    },
+  const pendingList = uniqueBookings
+    .filter((x) => x.status?.toLowerCase() === "pending")
+    .slice(0, 3);
 
-    orange:{
-      border:"border-orange-500",
-      iconBg:"bg-orange-500"
-    },
-
-    red:{
-      border:"border-red-500",
-      iconBg:"bg-red-500"
-    },
-
-    green:{
-      border:"border-green-500",
-      iconBg:"bg-green-500"
-    }
-  };
-
-  const pendingList =
-    bookings
-    .filter(
-      x =>
-      x.status==="pending"
-    )
-    .slice(0,3);
-
-  const today =
-    new Date();
-
-  const jadwalHariIni =
-    bookings.filter(
-      (item)=>{
-
-      if(
-      !item.tanggal
-      )
-      return false;
-
-      const bookingDate =
-      new Date(
-      item.tanggal
-      );
-
-      return (
-      bookingDate.toDateString() ===
-      today.toDateString()
-      );
-
+  // Menampilkan seluruh jadwal hari ini yang berstatus aktif (bukan rejected)
+  const jadwalHariIni = uniqueBookings.filter((item) => {
+    if (!item.tanggal) return false;
+    const isToday = item.tanggal.startsWith(todayLocalStr);
+    const isNotRejected =
+      item.status?.toLowerCase() !== "rejected" &&
+      item.status?.toLowerCase() !== "dibatalkan";
+    return isToday && isNotRejected;
   });
 
   return (
-
-<div className="relative bg-gray-100 min-h-screen overflow-hidden">
-
-{/* background blur */}
-
-<div className="absolute -top-20 -left-20 w-96 h-96 bg-blue-400/20 blur-3xl rounded-full"></div>
-
-<div className="absolute top-40 right-0 w-96 h-96 bg-indigo-400/20 blur-3xl rounded-full"></div>
-
-{/* background image */}
-
-<div className="absolute top-0 left-0 w-full h-64 overflow-hidden">
-
-<img
-src="/img/badminton.jpg"
-alt="badminton"
-className="w-full h-full object-cover"
-/>
-
-<div className="absolute inset-0 bg-gradient-to-r from-blue-800/80 via-blue-600/60 to-indigo-600/80"></div>
-
-</div>
-
-<div className="relative z-10 p-5 md:p-10">
-
-{/* header */}
-
-<div className="flex justify-between items-center mb-6">
-
-<PageHeader
-title="Dashboard Overview"
-breadcrumb={[
-"Petugas",
-"Dashboard"
-]}
-/>
-
-{/* profile */}
-
-<div className="relative">
-
-<button
-onClick={()=>
-setOpenProfile(
-!openProfile
-)
-}
-className="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow"
->
-
-{profile.foto ? (
-
-<img
-src={profile.foto}
-className="w-9 h-9 rounded-full object-cover"
-/>
-
-) : (
-
-<div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
-
-<FaUserCircle
-size={30}
-className="text-blue-500"
-/>
-
-</div>
-
-)}
-
-<div>
-
-<p className="font-semibold">
-
-{profile.name}
-
-</p>
-
-<p className="text-xs text-gray-500">
-
-Petugas
-
-</p>
-
-</div>
-
-</button>
-
-{openProfile && (
-
-<div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow">
-
-<button
-onClick={()=>{
-navigate(
-"/petugas/profile"
-);
-
-setOpenProfile(false);
-}}
-className="w-full p-3 text-left hover:bg-gray-100"
->
-
-<div className="flex gap-2 items-center">
-
-<FaUserCircle/>
-
-Edit Profile
-
-</div>
-
-</button>
-
-<button
-onClick={()=>{
-
-localStorage.removeItem(
-"token"
-);
-
-localStorage.removeItem(
-"user"
-);
-
-navigate(
-"/login"
-);
-
-}}
-className="w-full p-3 text-left text-red-500 hover:bg-red-100"
->
-
-<div className="flex gap-2 items-center">
-
-<FaSignOutAlt/>
-
-Logout
-
-</div>
-
-</button>
-
-</div>
-
-)}
-
-</div>
-
-</div>
-
-{/* statistik */}
-
-<div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5 mt-8">
-
-{stats.map((item,index)=>{
-
-const c=
-colorMap[item.color];
-
-return(
-
-<div
-key={index}
-onClick={()=>
-navigate(
-item.path
-)
-}
-className={`bg-white rounded-2xl p-6 shadow-md border-l-4 ${c.border}
-cursor-pointer hover:scale-105 transition`}
->
-
-<div className="flex justify-between">
-
-<div>
-
-<p className="text-xs text-gray-400">
-
-{item.title}
-
-</p>
-
-<h3 className="text-3xl font-bold mt-2">
-
-{item.value}
-
-</h3>
-
-</div>
-
-<div className={`w-11 h-11 rounded-xl flex items-center justify-center text-white ${c.iconBg}`}>
-
-{item.icon}
-
-</div>
-
-</div>
-
-</div>
-
-);
-
-})}
-
-</div>
-
-{/* booking pending + status lapangan */}
-
-<div className="grid lg:grid-cols-2 gap-6 mt-8">
-
-<div className="bg-white rounded-2xl shadow-md p-6">
-
-<h3 className="font-bold text-xl mb-5">
-
-Booking Menunggu Konfirmasi
-
-</h3>
-
-<div className="space-y-4">
-
-{pendingList.length>0 ? (
-
-pendingList.map((item)=>(
-
-<div
-key={item.id}
-className="flex justify-between border-b pb-3"
->
-
-<div>
-
-<p className="font-semibold">
-
-{item.users?.nama || "-"}
-
-</p>
-
-<p className="text-sm text-gray-500">
-
-{item.lapangan?.nama || "-"} • {item.jam_mulai} - {item.jam_selesai}
-
-</p>
-
-</div>
-
-<span className="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full text-sm">
-
-Menunggu
-
-</span>
-
-</div>
-
-))
-
-):(
-
-<p>Tidak ada booking</p>
-
-)}
-
-</div>
-
-</div>
-
-<div className="bg-white rounded-2xl shadow-md p-6">
-
-<h3 className="font-bold text-xl mb-5">
-
-Status Lapangan
-
-</h3>
-
-<div className="space-y-4">
-
-{jadwalHariIni.length>0 ? (
-
-jadwalHariIni.map((item)=>(
-
-<div
-key={item.id}
-className="flex justify-between"
->
-
-<span>
-
-{item.lapangan?.nama || "-"}
-
-</span>
-
-<span className="text-red-500 font-semibold">
-
-Dipakai
-
-</span>
-
-</div>
-
-))
-
-):(
-
-<p>Tidak ada lapangan dipakai</p>
-
-)}
-
-</div>
-
-</div>
-
-</div>
-
-{/* jadwal */}
-
-<div className="bg-white rounded-2xl shadow-md p-6 mt-8">
-
-<h3 className="font-bold text-xl mb-5">
-
-Jadwal Hari Ini
-
-</h3>
-
-<table className="w-full">
-
-<thead>
-
-<tr className="border-b">
-
-<th className="text-left py-3">
-
-Lapangan
-
-</th>
-
-<th className="text-left py-3">
-
-Jam
-
-</th>
-
-<th className="text-left py-3">
-
-Pelanggan
-
-</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-{jadwalHariIni.length>0 ? (
-
-jadwalHariIni.map((item)=>(
-
-<tr
-key={item.id}
-className="border-b"
->
-
-<td className="py-3">
-
-{item.lapangan?.nama || "-"}
-
-</td>
-
-<td>
-
-{item.jam_mulai} - {item.jam_selesai}
-
-</td>
-
-<td>
-
-{item.users?.nama || "-"}
-
-</td>
-
-</tr>
-
-))
-
-):(
-
-<tr>
-
-<td
-colSpan="3"
-className="text-center py-5 text-gray-500"
->
-
-Belum ada jadwal hari ini
-
-</td>
-
-</tr>
-
-)}
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</div>
-
-);
+    <div className="w-full min-h-screen text-slate-700 font-sans antialiased">
+      <div className="space-y-6">
+        
+        {/* 1. HERO BANNER (MODERN RADIAL DECORATION) */}
+        <div className="relative rounded-[24px] overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white p-6 md:p-10 min-h-[180px] flex flex-col justify-end shadow-sm">
+          <img
+            src="/img/badminton.jpg"
+            alt="badminton"
+            className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none transform scale-100"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+
+          {/* BARIS TOP MENU (BADGE & PROFIL) */}
+          <div className="absolute top-5 left-5 right-5 flex justify-between items-center z-20">
+            <span className="inline-block text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-md bg-white/10 text-white/90 backdrop-blur-md">
+              PETUGAS
+            </span>
+
+            {/* Kontainer Dropdown Profil */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setOpenProfile(!openProfile)}
+                className="flex items-center gap-2.5 bg-white/10 hover:bg-white/20 transition px-3 py-1.5 rounded-full shadow-sm text-white text-xs font-bold backdrop-blur-md active:scale-95"
+              >
+                <span className="tracking-tight hidden sm:inline">{profile.name}</span>
+                {profile.foto ? (
+                  <img src={profile.foto} className="w-6 h-6 rounded-full object-cover ring-2 ring-white/20" alt="Profile" />
+                ) : (
+                  <FaUserCircle size={16} className="text-white/90" />
+                )}
+              </button>
+
+              {openProfile && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 p-1.5 z-50 text-slate-700">
+                  <button
+                    onClick={() => { navigate("/petugas/profile"); setOpenProfile(false); }}
+                    className="w-full px-3 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition flex gap-2.5 items-center"
+                  >
+                    <FaUserCircle size={14} className="text-slate-400" />
+                    Edit Profile
+                  </button>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem("token");
+                      localStorage.removeItem("user");
+                      navigate("/login");
+                    }}
+                    className="w-full px-3 py-2 text-left text-xs text-rose-600 hover:bg-rose-50 font-black rounded-lg transition flex gap-2.5 items-center border-t border-slate-100 mt-1"
+                  >
+                    <FaSignOutAlt size={14} />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Teks Sapaan Utama */}
+          <div className="relative z-10 mt-10 md:mt-0">
+            <h1 className="text-2xl md:text-[32px] font-black tracking-tight text-white leading-tight">
+              Halo, {profile.name}!
+            </h1>
+            <p className="text-slate-300 text-xs md:text-sm mt-1 opacity-90 font-medium">
+              Selamat datang kembali, semoga harimu produktif! 👋
+            </p>
+          </div>
+        </div>
+
+        {/* 2. STATISTIK KARTU (GRID) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {stats.map((item, index) => (
+            <div
+              key={index}
+              onClick={() => navigate(item.path)}
+              className="bg-white rounded-[20px] p-6 border border-slate-100 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between group"
+            >
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">{item.title}</p>
+                <h3 className="text-[28px] font-black tracking-tight text-slate-800 leading-none">{item.value}</h3>
+              </div>
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 duration-200 ${item.badgeStyle}`}>
+                {item.icon}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* 3. SUB MONITORING JADWAL & ANTRIAN */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* Kolom Menunggu Konfirmasi */}
+          <div className="bg-white rounded-[22px] border border-slate-100 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-50 pb-3 text-sm md:text-base">
+                <span className="text-amber-500">⏳</span> Booking Menunggu Konfirmasi
+              </h3>
+              <div className="divide-y divide-slate-50">
+                {pendingList.length > 0 ? (
+                  pendingList.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center py-3.5 first:pt-0 last:pb-0">
+                      <div>
+                        <p className="font-bold text-slate-800 text-sm">{item.users?.nama || item.users?.username || "-"}</p>
+                        <p className="text-xs text-slate-400 mt-1 font-semibold">
+                          {item.lapangan?.nama || "-"} • <span className="font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-[11px]">{item.jam_mulai?.slice(0, 5)} - {item.jam_selesai?.slice(0, 5)}</span>
+                        </p>
+                      </div>
+                      <span className="bg-amber-50 text-amber-600 font-bold px-3 py-1 rounded-xl text-[11px] border border-amber-100 shadow-sm animate-pulse">
+                        Menunggu
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-10 text-slate-400 text-xs italic font-medium">Tidak ada antrean saat ini</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Kolom Status Lapangan */}
+          <div className="bg-white rounded-[22px] border border-slate-100 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-50 pb-3 text-sm md:text-base">
+                <span className="text-blue-500">🏸</span> Status Lapangan Saat Ini (Hari Ini)
+              </h3>
+              <div className="divide-y divide-slate-50">
+                {jadwalHariIni.length > 0 ? (
+                  jadwalHariIni.slice(0, 3).map((item) => (
+                    <div key={item.id} className="flex justify-between items-center py-3.5 first:pt-0 last:pb-0">
+                      <div>
+                        <span className="font-bold text-slate-800 text-sm">{item.lapangan?.nama || "-"}</span>
+                        <p className="text-xs text-slate-400 mt-1 font-semibold">Penyewa: {item.users?.nama || "-"}</p>
+                      </div>
+                      <span className={`font-bold px-3 py-1 rounded-xl text-[11px] flex items-center gap-1.5 border shadow-sm ${
+                        item.status?.toLowerCase() === "success" || item.status?.toLowerCase() === "approved"
+                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                          : "bg-amber-50 text-amber-600 border-amber-100"
+                      }`}>
+                        <FaCircle size={6} className={item.status?.toLowerCase() === "success" || item.status?.toLowerCase() === "approved" ? "text-emerald-500 animate-ping" : "text-amber-500"} />
+                        {item.status?.toLowerCase() === "success" || item.status?.toLowerCase() === "approved" ? "Disetujui" : "Menunggu"}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-10 text-slate-400 text-xs italic font-medium">Semua lapangan kosong hari ini</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* 4. MANIFEST TABEL UTAMA */}
+        <div className="bg-white rounded-[22px] border border-slate-100 p-6 shadow-sm">
+          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm md:text-base">
+            <span className="text-blue-600">📅</span> Manifest Jadwal Pertandingan Hari Ini
+          </h3>
+          
+          <div className="overflow-x-auto rounded-xl border border-slate-100">
+            <table className="w-full text-sm text-left text-slate-600">
+              <thead className="text-[11px] uppercase bg-slate-50/70 text-slate-400 border-b border-slate-100 font-bold tracking-wider">
+                <tr>
+                  <th className="px-6 py-4">Lapangan</th>
+                  <th className="px-6 py-4">Jam Main</th>
+                  <th className="px-6 py-4">Nama Pelanggan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {jadwalHariIni.length > 0 ? (
+                  jadwalHariIni.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
+                      <td className="px-6 py-4 font-bold text-slate-800">{item.lapangan?.nama || "-"}</td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-md text-xs shadow-sm">
+                          {item.jam_mulai?.slice(0, 5)} - {item.jam_selesai?.slice(0, 5)} WIB
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-slate-700 font-semibold">{item.users?.nama || item.users?.username || "-"}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="3" className="text-center py-12 text-slate-400 italic text-xs font-medium bg-slate-50/10">
+                      Belum ada agenda pertandingan terjadwal untuk hari ini
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
 }

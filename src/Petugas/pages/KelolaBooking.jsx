@@ -23,7 +23,7 @@ export default function Orders() {
 
     const interval = setInterval(() => {
       loadBooking();
-    }, 60000);
+    }, 30000); // Sinkronisasi real-time setiap 30 detik
 
     return () => clearInterval(interval);
   }, []);
@@ -38,6 +38,7 @@ export default function Orders() {
         if (item.status === "approved" && item.tanggal && item.jam_selesai) {
           const selesai = new Date(`${item.tanggal}T${item.jam_selesai}`);
 
+          // Jika waktu sekarang sudah melewati jam selesai, ubah status ke 'done'
           if (now > selesai) {
             await bookingService.updateStatus(item.id, "done");
             item.status = "done";
@@ -54,50 +55,42 @@ export default function Orders() {
     }
   }
 
-async function updateStatus(id, status) {
-  try {
-    const booking = bookings.find(
-      (item) => item.id === id
-    );
+  async function updateStatus(id, status) {
+    try {
+      const booking = bookings.find((item) => item.id === id);
+      if (!booking) return;
 
-    if (!booking) return;
+      const now = new Date();
+      const bookingDateTime = new Date(`${booking.tanggal}T${booking.jam_selesai}`);
 
-    const now = new Date();
+      if (now >= bookingDateTime && status !== "done") {
+        alert("Jadwal sewa sudah lewat, status tidak dapat diubah lagi.");
+        return;
+      }
 
-    // gabungkan tanggal + jam selesai
-    const bookingDateTime =
-      new Date(
-        `${booking.tanggal}T${booking.jam_selesai}`
-      );
-
-    // cek apakah booking sudah lewat
-    if (now >= bookingDateTime) {
-      alert(
-        "Booking sudah lewat, tidak dapat disetujui atau ditolak"
-      );
-
-      return;
+      await bookingService.updateStatus(id, status);
+      loadBooking();
+    } catch (error) {
+      console.log(error);
+      alert("Gagal memperbarui status booking");
     }
-
-    await bookingService.updateStatus(
-      id,
-      status
-    );
-
-    loadBooking();
-
-  } catch (error) {
-    console.log(error);
-
-    alert(
-      "Gagal memperbarui status booking"
-    );
   }
-}
 
-  const filtered = bookings.filter(
+  // ========================================================
+  // MEMPROSES DATA UNIK DAN MENANGGULANGI DUPLIKAT
+  // ========================================================
+  const uniqueBookings = Array.from(
+    new Map(
+      bookings.map((item) => [
+        `${item.tanggal}_${item.jam_mulai}_${item.jam_selesai}_${item.lapangan?.id}_${item.users?.id}`,
+        item,
+      ])
+    ).values()
+  );
+
+  const filtered = uniqueBookings.filter(
     (item) =>
-      item.users?.nama?.toLowerCase().includes(search.toLowerCase()) || !search,
+      item.users?.nama?.toLowerCase().includes(search.toLowerCase()) || !search
   );
 
   const pending = filtered.filter((x) => x.status === "pending");
@@ -105,20 +98,34 @@ async function updateStatus(id, status) {
   const rejected = filtered.filter((x) => x.status === "rejected");
   const done = filtered.filter((x) => x.status === "done");
 
-  // Skema warna yang ramah mata (tidak terlalu menusuk, kontras teks tinggi)
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, item) => {
+    const now = new Date();
+    
+    if (status === "approved" && item?.tanggal && item?.jam_mulai && item?.jam_selesai) {
+      const mulai = new Date(`${item.tanggal}T${item.jam_mulai}`);
+      const selesai = new Date(`${item.tanggal}T${item.jam_selesai}`);
+      
+      if (now >= mulai && now <= selesai) {
+        return {
+          bg: "bg-blue-100 text-blue-900 border-blue-300",
+          text: "Bermain",
+          icon: <FaCircle className="text-blue-600 animate-ping" size={8} />,
+        };
+      } else if (now < mulai) {
+        return {
+          bg: "bg-indigo-100 text-indigo-900 border-indigo-300",
+          text: "Terjadwal",
+          icon: <FaCalendarCheck className="text-indigo-700" size={12} />,
+        };
+      }
+    }
+
     switch (status) {
       case "pending":
         return {
           bg: "bg-amber-100 text-amber-900 border-amber-300",
           text: "Menunggu",
           icon: <FaClock className="text-amber-700" size={12} />,
-        };
-      case "approved":
-        return {
-          bg: "bg-emerald-100 text-emerald-900 border-emerald-300",
-          text: "Disetujui",
-          icon: <FaCheckCircle className="text-emerald-700" size={12} />,
         };
       case "rejected":
         return {
@@ -128,9 +135,9 @@ async function updateStatus(id, status) {
         };
       case "done":
         return {
-          bg: "bg-blue-100 text-blue-900 border-blue-300",
+          bg: "bg-emerald-100 text-emerald-900 border-emerald-300",
           text: "Selesai",
-          icon: <FaCheckCircle className="text-blue-700" size={12} />,
+          icon: <FaCheckCircle className="text-emerald-700" size={12} />,
         };
       default:
         return {
@@ -141,10 +148,72 @@ async function updateStatus(id, status) {
     }
   };
 
+  // Helper fungsi untuk render kolom Tindakan Admin secara real-time
+  const renderAdminAction = (item) => {
+    const now = new Date();
+    
+    if (item.status === "pending") {
+      const selesai = new Date(`${item.tanggal}T${item.jam_selesai}`);
+      if (now > selesai) {
+        return (
+          <span className="text-red-500 text-xs font-medium bg-red-50 px-3 py-1 rounded-md border border-red-200">
+            Booking Kadaluarsa
+          </span>
+        );
+      }
+      return (
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => updateStatus(item.id, "approved")}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded-lg flex items-center gap-1 text-xs shadow-sm transition-all"
+          >
+            <FaCheck size={10} /> Setujui
+          </button>
+          <button
+            onClick={() => updateStatus(item.id, "rejected")}
+            className="bg-rose-600 hover:bg-rose-700 text-white font-medium px-3 py-1.5 rounded-lg flex items-center gap-1 text-xs shadow-sm transition-all"
+          >
+            <FaTimes size={10} /> Tolak
+          </button>
+        </div>
+      );
+    }
+
+    if (item.status === "approved") {
+      const mulai = new Date(`${item.tanggal}T${item.jam_mulai}`);
+      const selesai = new Date(`${item.tanggal}T${item.jam_selesai}`);
+
+      if (now >= mulai && now <= selesai) {
+        return (
+          <span className="text-blue-700 font-bold text-xs bg-blue-50 px-3 py-1.5 rounded-md border border-blue-200 animate-pulse">
+            ⚡ Sedang Digunakan
+          </span>
+        );
+      } else if (now < mulai) {
+        return (
+          <span className="text-indigo-700 font-medium text-xs bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-200">
+            Belum Mulai
+          </span>
+        );
+      }
+    }
+
+    if (item.status === "done") {
+      return <span className="text-emerald-600 text-xs font-semibold bg-emerald-50/50 px-2 py-1 rounded">✓ Selesai Main</span>;
+    }
+
+    if (item.status === "rejected") {
+      return <span className="text-slate-400 text-xs font-normal">Sudah Dibatalkan</span>;
+    }
+
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans antialiased">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* HEADER HERO BANNER (Dibuat lebih teduh & profesional) */}
+        
+        {/* HEADER HERO BANNER */}
         <div className="relative rounded-2xl overflow-hidden shadow-sm h-36 flex flex-col justify-center px-6 md:px-8">
           <img
             src="/img/badminton.jpg"
@@ -152,57 +221,38 @@ async function updateStatus(id, status) {
             className="absolute inset-0 w-full h-full object-cover select-none"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-blue-900/40" />
-
           <div className="relative z-10 text-white">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-              Kelola Booking Lapangan
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Kelola Booking Lapangan</h1>
             <p className="text-xs md:text-sm text-slate-300 mt-1 max-w-xl">
-              Halaman validasi pemesanan jadwal olahraga. Gunakan panel aksi
-              untuk menyetujui atau menolak jadwal masuk.
+              Halaman validasi pemesanan jadwal olahraga. Sistem memantau jam bermain secara real-time.
             </p>
           </div>
         </div>
 
-        {/* INFORMASI RINGKASAN (Sederhana, Angka Besar & Jelas) */}
+        {/* STATISTIK RINGKASAN */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Menunggu
-            </p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Menunggu</p>
             <h2 className="text-3xl font-black text-amber-600 mt-1">
-              {pending.length}{" "}
-              <span className="text-xs font-normal text-slate-400">jadwal</span>
+              {pending.length} <span className="text-xs font-normal text-slate-400">jadwal</span>
             </h2>
           </div>
-
           <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Disetujui Aktif
-            </p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Disetujui Aktif</p>
             <h2 className="text-3xl font-black text-emerald-600 mt-1">
-              {approved.length}{" "}
-              <span className="text-xs font-normal text-slate-400">jadwal</span>
+              {approved.length} <span className="text-xs font-normal text-slate-400">jadwal</span>
             </h2>
           </div>
-
           <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Ditolak / Batal
-            </p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Ditolak / Batal</p>
             <h2 className="text-3xl font-black text-rose-600 mt-1">
-              {rejected.length}{" "}
-              <span className="text-xs font-normal text-slate-400">jadwal</span>
+              {rejected.length} <span className="text-xs font-normal text-slate-400">jadwal</span>
             </h2>
           </div>
-
           <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200/80">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-              Selesai Main
-            </p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Selesai Main</p>
             <h2 className="text-3xl font-black text-blue-600 mt-1">
-              {done.length}{" "}
-              <span className="text-xs font-normal text-slate-400">jadwal</span>
+              {done.length} <span className="text-xs font-normal text-slate-400">jadwal</span>
             </h2>
           </div>
         </div>
@@ -221,24 +271,17 @@ async function updateStatus(id, status) {
           />
         </div>
 
-        {/* KONTEN UTAMA: DAFTAR DATA */}
+        {/* TABEL DATA UTAMA */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="p-5 border-b border-slate-100 bg-slate-50/50">
-            <h2 className="font-bold text-slate-800 text-base">
-              Tabel Data Jadwal Sewa
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Menampilkan seluruh riwayat pesanan yang sesuai dengan filter
-              pencarian Anda.
-            </p>
+            <h2 className="font-bold text-slate-800 text-base">Tabel Data Jadwal Sewa</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Menampilkan seluruh alokasi tanding lapangan berdasarkan pencarian.</p>
           </div>
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16 space-y-3 text-slate-500">
               <div className="w-9 h-9 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-sm font-medium">
-                Sedang memuat data sewa terbaru...
-              </p>
+              <p className="text-sm font-medium">Sedang memuat data sewa terbaru...</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -257,120 +300,44 @@ async function updateStatus(id, status) {
                 <tbody className="divide-y divide-slate-200 text-sm text-slate-700">
                   {filtered.length > 0 ? (
                     filtered.map((item) => {
-                      const badge = getStatusBadge(item.status);
+                      const badge = getStatusBadge(item.status, item);
                       return (
-                        <tr
-                          key={item.id}
-                          className="hover:bg-slate-50/80 transition-colors"
-                        >
-                          {/* PELANGGAN */}
-                          <td className="p-4 font-semibold text-slate-900">
-                            {item.users?.nama || "-"}
-                          </td>
-                          {/* LAPANGAN */}
+                        <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="p-4 font-semibold text-slate-900">{item.users?.nama || "-"}</td>
                           <td className="p-4">
                             <span className="font-medium bg-slate-100 text-slate-800 border border-slate-200 px-2.5 py-0.5 rounded-md text-xs">
                               {item.lapangan?.nama || "-"}
                             </span>
                           </td>
-                          {/* TANGGAL */}
                           <td className="p-4 font-medium text-slate-800">
-                            {new Date(item.tanggal).toLocaleDateString(
-                              "id-ID",
-                              {
-                                day: "numeric",
-                                month: "long",
-                                year: "numeric",
-                              },
-                            )}
+                            {item.tanggal 
+                              ? new Date(item.tanggal).toLocaleDateString("id-ID", {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                })
+                              : "-"}
                           </td>
-                          {/* JAM */}
                           <td className="p-4 font-mono text-xs text-slate-600">
-                            {item.jam_mulai} - {item.jam_selesai}
+                            {item.jam_mulai?.slice(0, 5)} - {item.jam_selesai?.slice(0, 5)}
                           </td>
-                          {/* TOTAL BIAYA */}
                           <td className="p-4 font-bold text-slate-900">
-                            Rp{" "}
-                            {Number(
-                              item.total || item.lapangan?.harga || 0,
-                            ).toLocaleString("id-ID")}
+                            Rp {Number(item.total || item.lapangan?.harga || 0).toLocaleString("id-ID")}
                           </td>
-                          {/* STATUS */}
                           <td className="p-4">
-                            <span
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${badge.bg}`}
-                            >
-                              {badge.icon}
-                              {badge.text}
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${badge.bg}`}>
+                              {badge.icon} {badge.text}
                             </span>
                           </td>
-                          {/* AKSI TOMBOL */}
-                         <td className="p-4 text-center">
-
-  {item.status === "pending" && (
-    new Date(`${item.tanggal}T${item.jam_selesai}`) <= new Date() ? (
-
-      <span className="text-red-500 text-xs font-medium bg-red-50 px-3 py-1 rounded-md border border-red-200">
-        Booking Kadaluarsa
-      </span>
-
-    ) : (
-
-      <div className="flex items-center justify-center gap-2">
-
-        <button
-          onClick={() =>
-            updateStatus(item.id, "approved")
-          }
-          className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-3 py-1.5 rounded-lg flex items-center gap-1 text-xs shadow-sm transition-all"
-        >
-          <FaCheck size={10} />
-          Setujui
-        </button>
-
-        <button
-          onClick={() =>
-            updateStatus(item.id, "rejected")
-          }
-          className="bg-rose-600 hover:bg-rose-700 text-white font-medium px-3 py-1.5 rounded-lg flex items-center gap-1 text-xs shadow-sm transition-all"
-        >
-          <FaTimes size={10} />
-          Tolak
-        </button>
-
-      </div>
-
-    )
-  )}
-
-  {item.status === "approved" && (
-    <span className="text-blue-700 font-medium text-xs bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200">
-      Sedang Digunakan
-    </span>
-  )}
-
-  {item.status === "done" && (
-    <span className="text-slate-500 text-xs font-normal">
-      Selesai Sempurna
-    </span>
-  )}
-
-  {item.status === "rejected" && (
-    <span className="text-rose-500 text-xs font-normal">
-      Sudah Dibatalkan
-    </span>
-  )}
-
-</td>
+                          <td className="p-4 text-center">
+                            {renderAdminAction(item)}
+                          </td>
                         </tr>
                       );
                     })
                   ) : (
                     <tr>
-                      <td
-                        colSpan="7"
-                        className="text-center py-12 text-slate-500 font-medium"
-                      >
+                      <td colSpan="7" className="text-center py-12 text-slate-500 font-medium">
                         Daftar riwayat sewa kosong atau tidak ditemukan.
                       </td>
                     </tr>
@@ -380,6 +347,7 @@ async function updateStatus(id, status) {
             </div>
           )}
         </div>
+
       </div>
     </div>
   );
