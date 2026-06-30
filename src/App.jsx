@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Loading from "./admin/components/Loading";
+import ProtectedRoute from "./admin/components/ProtectedRoute";
 
 // Layouts
 import MainLayout from "./admin/layouts/MainLayout";
@@ -23,7 +24,7 @@ import BookingForm from "./pelanggan/pages/BookingForm";
 import RiwayatBooking from "./pelanggan/pages/RiwayatBooking";
 import Notifikasi from "./pelanggan/pages/Notifikasi";
 
-// ================= ADMIN =================
+// ADMIN
 const AdminDashboard = React.lazy(() =>
   import("./admin/pages/Dashboard")
 );
@@ -68,7 +69,7 @@ const NotFound = React.lazy(() =>
   import("./admin/pages/NotFound")
 );
 
-// ================= AUTH =================
+// AUTH
 const Login = React.lazy(() =>
   import("./admin/pages/auth/Login")
 );
@@ -85,7 +86,7 @@ const ResetPassword = React.lazy(() =>
   import("./admin/pages/auth/ResetPassword")
 );
 
-// ================= GUEST =================
+// GUEST
 const Home = React.lazy(() =>
   import("./guest/pages/Home")
 );
@@ -109,6 +110,7 @@ const DetailLapangan = React.lazy(() =>
 export default function App() {
   return (
     <Suspense fallback={<Loading />}>
+
       <Routes>
 
         {/* Guest */}
@@ -120,7 +122,14 @@ export default function App() {
         </Route>
 
         {/* Admin */}
-        <Route path="/admin" element={<MainLayout />}>
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute role="admin">
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<AdminDashboard />} />
           <Route path="orders" element={<Orders />} />
           <Route path="customers" element={<Customers />} />
@@ -134,7 +143,14 @@ export default function App() {
         </Route>
 
         {/* Petugas */}
-        <Route path="/petugas" element={<PetugasLayout />}>
+        <Route
+          path="/petugas"
+          element={
+            <ProtectedRoute role="petugas">
+              <PetugasLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<PetugasDashboard />} />
           <Route path="dashboard" element={<PetugasDashboard />} />
           <Route path="booking" element={<KelolaBooking />} />
@@ -143,7 +159,14 @@ export default function App() {
         </Route>
 
         {/* Pelanggan */}
-        <Route path="/pelanggan" element={<PelangganLayout />}>
+        <Route
+          path="/pelanggan"
+          element={
+            <ProtectedRoute role="pelanggan">
+              <PelangganLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route index element={<DashboardPelanggan />} />
           <Route path="booking" element={<BookingSaya />} />
           <Route path="booking/:id" element={<BookingForm />} />
@@ -170,6 +193,7 @@ export default function App() {
         />
 
       </Routes>
+
     </Suspense>
   );
 }

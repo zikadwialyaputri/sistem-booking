@@ -10,19 +10,20 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkSession();
-  }, []);
+    const getSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
 
-  const checkSession = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      console.log("SESSION:", data);
+      console.log("ERROR:", error);
 
-    if (!session) {
-      alert("Link reset password tidak valid atau sudah kadaluarsa");
-      navigate("/forgot");
-    }
-  };
+      if (!data.session) {
+        alert("Link reset password tidak valid atau sudah kadaluarsa");
+        navigate("/forgot");
+      }
+    };
+
+    getSession();
+  }, [navigate]);
 
   const handleReset = async (e) => {
     e.preventDefault();
@@ -46,6 +47,8 @@ export default function ResetPassword() {
     console.log(data);
     console.log(error);
 
+    setLoading(false);
+
     if (error) {
       alert(error.message);
     } else {
@@ -56,7 +59,9 @@ export default function ResetPassword() {
 
   return (
     <div className="max-w-md mx-auto mt-10 bg-white p-6 rounded-xl shadow">
-      <h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
+      <h2 className="text-2xl font-bold text-center mb-6">
+        Reset Password
+      </h2>
 
       <form onSubmit={handleReset} className="space-y-4">
         <input
