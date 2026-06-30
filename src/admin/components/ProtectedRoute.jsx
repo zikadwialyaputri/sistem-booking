@@ -1,4 +1,3 @@
-import { Navigate } from "react-router-dom";
 import NotFound from "../pages/NotFound";
 
 export default function ProtectedRoute({ children, role }) {
@@ -10,18 +9,18 @@ export default function ProtectedRoute({ children, role }) {
     user = null;
   }
 
-  // belum login
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const userRole = String(user.role || "")
+  const userRole = String(user?.role || "")
     .trim()
     .toLowerCase();
 
   const requiredRole = String(role || "")
     .trim()
     .toLowerCase();
+
+  // belum login
+  if (!user) {
+    return <NotFound />;
+  }
 
   // role tidak sesuai
   if (requiredRole && userRole !== requiredRole) {

@@ -8,7 +8,7 @@ import {
   FaSearch,
   FaChevronRight,
   FaFileInvoiceDollar,
-  FaHashtag
+  FaHashtag,
 } from "react-icons/fa";
 
 export default function Reports() {
@@ -25,7 +25,7 @@ export default function Reports() {
     const { data, error } = await supabase
       .from("bookings")
       .select("*")
-      .eq("status", "approved");
+      .in("status", ["approved", "done"]);
 
     if (error) {
       console.log("ERROR:", error);
@@ -61,14 +61,16 @@ export default function Reports() {
       : laporan.filter((item) => item.bulan === selectedMonth);
 
   const totalBooking = filtered.reduce((acc, cur) => acc + cur.totalBooking, 0);
-  const totalPendapatan = filtered.reduce((acc, cur) => acc + cur.pendapatan, 0);
+  const totalPendapatan = filtered.reduce(
+    (acc, cur) => acc + cur.pendapatan,
+    0,
+  );
 
   const formatRupiah = (num) => "Rp " + num.toLocaleString("id-ID");
 
   return (
     <div className="w-full min-h-screen text-slate-700 font-sans antialiased">
       <div className="space-y-6">
-
         {/* 1. HERO BANNER (FORMAT SAMA PERSIS DENGAN PAGES LAIN) */}
         <div className="relative rounded-[24px] overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white p-6 md:p-10 min-h-[170px] flex flex-col justify-end shadow-sm">
           <img
@@ -84,29 +86,43 @@ export default function Reports() {
               Laporan Rekapitulasi Bulanan
             </h1>
             <p className="text-slate-300 text-xs md:text-sm mt-1.5 opacity-90 font-medium max-w-xl">
-              Halaman panel kontrol data sewa, akumulasi omset pendapatan bersih, dan rekam log aktivitas transaksi GOR.
+              Halaman panel kontrol data sewa, akumulasi omset pendapatan
+              bersih, dan rekam log aktivitas transaksi GOR.
             </p>
           </div>
         </div>
 
         {/* SUB-JUDUL DI LUAR BANNER */}
         <div className="pt-2">
-          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Ringkasan Finansial</h3>
+          <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
+            Ringkasan Finansial
+          </h3>
         </div>
 
         {/* 2. AREA KONTROL (FILTER DROPDOWN) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 max-w-4xl">
           <div className="relative w-full max-w-md shadow-sm rounded-2xl bg-white border border-slate-200 focus-within:ring-4 focus-within:ring-blue-100/70 focus-within:border-blue-500 transition-all duration-200 flex items-center py-1">
-            <FaSearch className="absolute left-4 text-slate-400 pointer-events-none" size={14} />
+            <FaSearch
+              className="absolute left-4 text-slate-400 pointer-events-none"
+              size={14}
+            />
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
               className="w-full pl-11 pr-10 py-2.5 bg-transparent outline-none text-slate-800 text-sm font-bold cursor-pointer appearance-none"
-              style={{ backgroundImage: 'url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2364748b\' stroke-width=\'2.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpolyline points=\'6 9 12 15 18 9\'%3E%3C/polyline%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 16px center', backgroundSize: '14px' }}
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E\")",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "right 16px center",
+                backgroundSize: "14px",
+              }}
             >
               <option value="Semua">🗓️ Semua Bulan Aktif</option>
               {laporan.map((item) => (
-                <option key={item.bulan} value={item.bulan}>📦 Bulan {item.bulan}</option>
+                <option key={item.bulan} value={item.bulan}>
+                  📦 Bulan {item.bulan}
+                </option>
               ))}
             </select>
           </div>
@@ -119,8 +135,15 @@ export default function Reports() {
             <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Volume Transaksi</p>
-                <h2 className="text-2xl font-black text-slate-800 tracking-tight">{totalBooking} <span className="text-xs font-bold text-slate-400 normal-case ml-0.5">Jadwal</span></h2>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+                  Volume Transaksi
+                </p>
+                <h2 className="text-2xl font-black text-slate-800 tracking-tight">
+                  {totalBooking}{" "}
+                  <span className="text-xs font-bold text-slate-400 normal-case ml-0.5">
+                    Jadwal
+                  </span>
+                </h2>
               </div>
               <div className="bg-blue-50 p-3 rounded-xl text-blue-600 border border-blue-100/30">
                 <FaCalendarAlt size={18} />
@@ -133,8 +156,12 @@ export default function Reports() {
             <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Akumulasi Omset</p>
-                <h2 className="text-2xl font-black text-emerald-600 tracking-tight">{formatRupiah(totalPendapatan)}</h2>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+                  Akumulasi Omset
+                </p>
+                <h2 className="text-2xl font-black text-emerald-600 tracking-tight">
+                  {formatRupiah(totalPendapatan)}
+                </h2>
               </div>
               <div className="bg-emerald-50 p-3 rounded-xl text-emerald-600 border border-emerald-100/30">
                 <FaMoneyBillWave size={18} />
@@ -147,8 +174,17 @@ export default function Reports() {
             <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Rata-Rata Booking</p>
-                <h2 className="text-2xl font-black text-purple-600 tracking-tight">{filtered.length ? Math.round(totalBooking / filtered.length) : 0} <span className="text-xs font-bold text-slate-400 normal-case ml-0.5">/ Bln</span></h2>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">
+                  Rata-Rata Booking
+                </p>
+                <h2 className="text-2xl font-black text-purple-600 tracking-tight">
+                  {filtered.length
+                    ? Math.round(totalBooking / filtered.length)
+                    : 0}{" "}
+                  <span className="text-xs font-bold text-slate-400 normal-case ml-0.5">
+                    / Bln
+                  </span>
+                </h2>
               </div>
               <div className="bg-purple-50 p-3 rounded-xl text-purple-600 border border-purple-100/30">
                 <FaChartLine size={18} />
@@ -169,8 +205,12 @@ export default function Reports() {
                     </div>
                   </th>
                   <th className="py-4 px-6 text-left font-bold">Bulan Buku</th>
-                  <th className="py-4 px-6 text-left font-bold">Total Kuantitas Booking</th>
-                  <th className="py-4 px-6 text-left font-bold">Estimasi Pendapatan Bersih</th>
+                  <th className="py-4 px-6 text-left font-bold">
+                    Total Kuantitas Booking
+                  </th>
+                  <th className="py-4 px-6 text-left font-bold">
+                    Estimasi Pendapatan Bersih
+                  </th>
                   <th className="py-4 px-6 text-center font-bold w-36">Aksi</th>
                 </tr>
               </thead>
@@ -197,7 +237,10 @@ export default function Reports() {
                       {/* TOTAL QUANTITY */}
                       <td className="py-5 px-6">
                         <span className="inline-flex items-center gap-1.5 bg-slate-100/80 px-2.5 py-1 rounded-md text-xs font-bold text-slate-600 border border-slate-200/40">
-                          <FaFileInvoiceDollar size={11} className="text-slate-400" />
+                          <FaFileInvoiceDollar
+                            size={11}
+                            className="text-slate-400"
+                          />
                           {item.totalBooking} Booking
                         </span>
                       </td>
@@ -223,7 +266,9 @@ export default function Reports() {
                     <td colSpan="5" className="py-24 text-center">
                       <div className="flex flex-col items-center justify-center space-y-2 text-slate-400">
                         <span className="text-4xl animate-pulse">🔍</span>
-                        <p className="font-bold text-slate-700 text-sm mt-1">Laporan tidak ditemukan</p>
+                        <p className="font-bold text-slate-700 text-sm mt-1">
+                          Laporan tidak ditemukan
+                        </p>
                       </div>
                     </td>
                   </tr>
@@ -232,7 +277,6 @@ export default function Reports() {
             </table>
           </div>
         </div>
-
       </div>
     </div>
   );

@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../services/supabase";
-import { 
-  FaCalendarAlt, 
-  FaClock, 
-  FaUser, 
-  FaCheckCircle, 
+import {
+  FaCalendarAlt,
+  FaClock,
+  FaUser,
+  FaCheckCircle,
   FaMapMarkerAlt,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
 } from "react-icons/fa";
 
 export default function StatusLapangan() {
@@ -31,16 +31,15 @@ export default function StatusLapangan() {
   const fetchBooking = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("bookings")
-        .select(`
-          id,
-          tanggal,
-          jam_mulai,
-          jam_selesai,
-          lapangan_id,
-          users:users(id, nama)
-        `);
+      const { data, error } = await supabase.from("bookings").select(`
+    id,
+    tanggal,
+    jam_mulai,
+    jam_selesai,
+    lapangan_id,
+    status,
+    users:users(id, nama)
+  `);
 
       if (error) {
         console.log("ERROR:", error);
@@ -57,36 +56,51 @@ export default function StatusLapangan() {
       const hasil = masterLapangan.map((lap) => {
         const allValidBookings = (data || []).filter((item) => {
           if (!item.tanggal || !item.jam_selesai) return false;
+
+          const status = String(item.status || "").toLowerCase();
+
+          if (status !== "approved") {
+            return false;
+          }
+
           const selesai = new Date(`${item.tanggal}T${item.jam_selesai}`);
+
           return item.lapangan_id === lap.id && selesai >= now;
         });
 
-        const processedBookings = allValidBookings.map((b) => {
-          const mulai = new Date(`${b.tanggal}T${b.jam_mulai}`);
-          const selesai = new Date(`${b.tanggal}T${b.jam_selesai}`);
+        const processedBookings = allValidBookings
+          .map((b) => {
+            const mulai = new Date(`${b.tanggal}T${b.jam_mulai}`);
+            const selesai = new Date(`${b.tanggal}T${b.jam_selesai}`);
 
-          let status = "Tersedia";
-          if (now >= mulai && now <= selesai) {
-            status = "Sedang Digunakan";
-          } else if (mulai > now) {
-            status = "Akan Digunakan";
-          }
+            let status = "Tersedia";
 
-          return { ...b, mulai, selesai, status };
-        }).sort((a, b) => a.mulai - b.mulai);
+            if (now >= mulai && now <= selesai) {
+              status = "Sedang Digunakan";
+            } else if (mulai > now) {
+              status = "Akan Digunakan";
+            }
 
-        const totalAktif = processedBookings.filter(b => b.status === "Sedang Digunakan").length;
-        const totalBookingMendatang = processedBookings.filter(b => b.status === "Akan Digunakan").length;
+            return { ...b, mulai, selesai, status };
+          })
+          .sort((a, b) => a.mulai - b.mulai);
+
+        const totalAktif = processedBookings.filter(
+          (b) => b.status === "Sedang Digunakan",
+        ).length;
+        const totalBookingMendatang = processedBookings.filter(
+          (b) => b.status === "Akan Digunakan",
+        ).length;
         const isKosongSaatIni = totalAktif === 0;
 
-        return { 
-          ...lap, 
+        return {
+          ...lap,
           listBooking: processedBookings,
           stats: {
             aktif: totalAktif,
             booking: totalBookingMendatang,
-            kosong: isKosongSaatIni
-          }
+            kosong: isKosongSaatIni,
+          },
         };
       });
 
@@ -121,7 +135,6 @@ export default function StatusLapangan() {
   return (
     <div className="min-h-screen text-slate-700 font-sans antialiased bg-[#f8fafc]">
       <div className="space-y-8">
-        
         {/* HEADER HERO BANNER */}
         <div className="relative rounded-[28px] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 text-white p-8 md:p-12 min-h-[160px] flex flex-col justify-end shadow-md border border-slate-800/50">
           <img
@@ -130,10 +143,11 @@ export default function StatusLapangan() {
             className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none transform scale-100 mix-blend-overlay"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent pointer-events-none" />
-          
+
           <div className="relative z-10 space-y-1.5">
             <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-400/20 px-3 py-1 rounded-full text-[11px] font-bold text-blue-400 uppercase tracking-widest backdrop-blur-md">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" /> Realtime Live Monitor
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping" />{" "}
+              Realtime Live Monitor
             </div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
               Status Penggunaan Lapangan
@@ -145,14 +159,18 @@ export default function StatusLapangan() {
         {loading ? (
           <div className="bg-white rounded-2xl border border-slate-100 p-24 flex flex-col items-center justify-center space-y-4 text-slate-400 shadow-sm">
             <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-xs font-bold tracking-wider uppercase text-slate-400/80">Sinkronisasi Jadwal GOR...</p>
+            <p className="text-xs font-bold tracking-wider uppercase text-slate-400/80">
+              Sinkronisasi Jadwal GOR...
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {lapangan.map((item) => {
               const isExpanded = !!expandedLapangan[item.id];
               // Tampilkan semua jadwal jika di-expand, jika tidak batasi hanya 3 teratas
-              const renderedBookings = isExpanded ? item.listBooking : item.listBooking.slice(0, 3);
+              const renderedBookings = isExpanded
+                ? item.listBooking
+                : item.listBooking.slice(0, 3);
 
               return (
                 <div
@@ -177,21 +195,38 @@ export default function StatusLapangan() {
                           <h2 className="font-black text-xl tracking-tight leading-tight">
                             {item.nama}
                           </h2>
-                          <p className="text-[11px] text-slate-300 font-medium tracking-wide mt-0.5">Badminton Arena</p>
+                          <p className="text-[11px] text-slate-300 font-medium tracking-wide mt-0.5">
+                            Badminton Arena
+                          </p>
                         </div>
                       </div>
                     </div>
 
                     {/* BADGES STATUS SUMMARY */}
                     <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/70 flex gap-2.5 flex-wrap items-center">
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black tracking-wider uppercase border ${item.stats.aktif > 0 ? 'bg-rose-50 text-rose-600 border-rose-100 shadow-sm' : 'bg-slate-100 text-slate-400 border-transparent'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${item.stats.aktif > 0 ? 'bg-rose-500 animate-pulse' : 'bg-slate-400'}`} /> {item.stats.aktif} Aktif
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black tracking-wider uppercase border ${item.stats.aktif > 0 ? "bg-rose-50 text-rose-600 border-rose-100 shadow-sm" : "bg-slate-100 text-slate-400 border-transparent"}`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${item.stats.aktif > 0 ? "bg-rose-500 animate-pulse" : "bg-slate-400"}`}
+                        />{" "}
+                        {item.stats.aktif} Aktif
                       </span>
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black tracking-wider uppercase border ${item.stats.booking > 0 ? 'bg-amber-50 text-amber-700 border-amber-100 shadow-sm' : 'bg-slate-100 text-slate-400 border-transparent'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${item.stats.booking > 0 ? 'bg-amber-500' : 'bg-slate-400'}`} /> {item.stats.booking} Booking
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black tracking-wider uppercase border ${item.stats.booking > 0 ? "bg-amber-50 text-amber-700 border-amber-100 shadow-sm" : "bg-slate-100 text-slate-400 border-transparent"}`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${item.stats.booking > 0 ? "bg-amber-500" : "bg-slate-400"}`}
+                        />{" "}
+                        {item.stats.booking} Booking
                       </span>
-                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black tracking-wider uppercase border ${item.stats.kosong ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm' : 'bg-slate-100 text-slate-400 border-transparent'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${item.stats.kosong ? 'bg-emerald-500' : 'bg-slate-400'}`} /> {item.stats.kosong ? "Kosong" : "Terisi"}
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black tracking-wider uppercase border ${item.stats.kosong ? "bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm" : "bg-slate-100 text-slate-400 border-transparent"}`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${item.stats.kosong ? "bg-emerald-500" : "bg-slate-400"}`}
+                        />{" "}
+                        {item.stats.kosong ? "Kosong" : "Terisi"}
                       </span>
                     </div>
 
@@ -207,19 +242,32 @@ export default function StatusLapangan() {
                             >
                               <div className="space-y-2.5 flex-1">
                                 <div className="flex items-center gap-2">
-                                  <span className={`text-[10px] px-2.5 py-0.5 rounded-md font-extrabold uppercase tracking-widest border ${style.badge}`}>
+                                  <span
+                                    className={`text-[10px] px-2.5 py-0.5 rounded-md font-extrabold uppercase tracking-widest border ${style.badge}`}
+                                  >
                                     {b.status}
                                   </span>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-xs text-slate-500 font-medium">
                                   <div className="flex items-center gap-2">
-                                    <FaCalendarAlt size={12} className="text-slate-400/80 flex-shrink-0" />
-                                    <span className="text-slate-600">{b.tanggal}</span>
+                                    <FaCalendarAlt
+                                      size={12}
+                                      className="text-slate-400/80 flex-shrink-0"
+                                    />
+                                    <span className="text-slate-600">
+                                      {b.tanggal}
+                                    </span>
                                   </div>
                                   <div className="flex items-center gap-2 font-mono text-[11px]">
-                                    <FaClock size={12} className="text-slate-400/80 flex-shrink-0" />
-                                    <span className="text-slate-600 font-semibold">{b.jam_mulai?.slice(0, 5)} - {b.jam_selesai?.slice(0, 5)}</span>
+                                    <FaClock
+                                      size={12}
+                                      className="text-slate-400/80 flex-shrink-0"
+                                    />
+                                    <span className="text-slate-600 font-semibold">
+                                      {b.jam_mulai?.slice(0, 5)} -{" "}
+                                      {b.jam_selesai?.slice(0, 5)}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -232,8 +280,12 @@ export default function StatusLapangan() {
                                   <FaUser size={11} />
                                 </div>
                                 <div className="truncate text-left sm:text-right">
-                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Penyewa</p>
-                                  <p className="text-xs font-bold text-slate-800 truncate max-w-[120px]">{b.users?.nama || "-"}</p>
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                    Penyewa
+                                  </p>
+                                  <p className="text-xs font-bold text-slate-800 truncate max-w-[120px]">
+                                    {b.users?.nama || "-"}
+                                  </p>
                                 </div>
                               </div>
                             </div>
@@ -244,9 +296,12 @@ export default function StatusLapangan() {
                           <div className="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto border border-emerald-100">
                             <FaCheckCircle size={16} />
                           </div>
-                          <p className="text-emerald-600 font-bold text-sm tracking-tight">Tidak Ada Antrean</p>
+                          <p className="text-emerald-600 font-bold text-sm tracking-tight">
+                            Tidak Ada Antrean
+                          </p>
                           <p className="text-xs text-slate-400 max-w-[240px] mx-auto">
-                            Lapangan sedang kosong total dan belum ada list booking mendatang yang terdaftar.
+                            Lapangan sedang kosong total dan belum ada list
+                            booking mendatang yang terdaftar.
                           </p>
                         </div>
                       )}
@@ -265,7 +320,8 @@ export default function StatusLapangan() {
                         </>
                       ) : (
                         <>
-                          Lihat {item.listBooking.length - 3} jadwal lainnya <FaChevronDown size={10} />
+                          Lihat {item.listBooking.length - 3} jadwal lainnya{" "}
+                          <FaChevronDown size={10} />
                         </>
                       )}
                     </button>
@@ -276,7 +332,6 @@ export default function StatusLapangan() {
             })}
           </div>
         )}
-
       </div>
     </div>
   );
