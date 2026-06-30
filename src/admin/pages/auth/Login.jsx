@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsFillExclamationDiamondFill } from "react-icons/bs";
@@ -18,12 +17,10 @@ export default function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setDataForm((prev) => ({
       ...prev,
       [name]: value,
     }));
-
     if (error) setError("");
   };
 
@@ -41,73 +38,47 @@ export default function Login() {
     try {
       const email = dataForm.email.trim().toLowerCase();
 
-      // LOGIN AUTH
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password: dataForm.password,
       });
 
-      console.log("AUTH DATA:", data);
-      console.log("AUTH ERROR:", error);
-
       if (error) throw error;
+      if (!data.user) throw new Error("Login gagal");
 
-      if (!data.user) {
-        throw new Error("Login gagal");
-      }
-
-      // AMBIL DATA USER BERDASARKAN EMAIL
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
         .eq("email", email)
         .single();
 
-      if (userError) {
-        console.log(userError);
-        throw new Error("Data user tidak ditemukan");
-      }
+      if (userError) throw new Error("Data user tidak ditemukan");
 
-      // SIMPAN LOGIN HISTORY
-      const { error: historyError } = await supabase
-        .from("login_history")
-        .insert([
-          {
-            user_id: userData.id,
-            nama: userData.nama,
-            email: userData.email,
-            login_at: new Date().toISOString(),
-          },
-        ]);
+      await supabase.from("login_history").insert([
+        {
+          user_id: userData.id,
+          nama: userData.nama,
+          email: userData.email,
+          login_at: new Date().toISOString(),
+        },
+      ]);
 
-      if (historyError) {
-        console.log("LOGIN HISTORY:", historyError);
-      }
-
-      // SIMPAN SESSION
       localStorage.setItem("user", JSON.stringify(userData));
 
-      // REDIRECT BERDASARKAN ROLE
       switch (userData.role) {
         case "admin":
           navigate("/admin");
           break;
-
         case "petugas":
           navigate("/petugas");
           break;
-
         case "pelanggan":
           navigate("/pelanggan");
           break;
-
         default:
           navigate("/");
-          break;
       }
-
     } catch (err) {
-      console.error(err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -116,33 +87,29 @@ export default function Login() {
 
   return (
     <div>
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800">
-          Selamat Datang 👋
-        </h2>
+      <h2 className="text-3xl font-bold text-center mb-2">
+        Selamat Datang 👋
+      </h2>
 
-        <p className="text-gray-500 mt-2 text-sm">
-          Login untuk melakukan booking lapangan badminton
-        </p>
-      </div>
+      <p className="text-center text-gray-500 mb-6">
+        Login untuk booking lapangan
+      </p>
 
       {error && (
-        <div className="bg-red-100 border border-red-200 mb-5 p-4 text-sm text-red-600 rounded-xl flex items-center">
-          <BsFillExclamationDiamondFill className="mr-2 text-lg" />
+        <div className="bg-red-100 p-3 mb-4 rounded flex items-center text-red-600">
+          <BsFillExclamationDiamondFill className="mr-2" />
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-
+      <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="email"
           name="email"
           value={dataForm.email}
           onChange={handleChange}
-          disabled={loading}
-          className="w-full px-4 py-3 border rounded-xl bg-gray-50"
-          placeholder="Masukkan email"
+          placeholder="Email"
+          className="w-full border p-3 rounded"
         />
 
         <input
@@ -150,40 +117,35 @@ export default function Login() {
           name="password"
           value={dataForm.password}
           onChange={handleChange}
-          disabled={loading}
-          className="w-full px-4 py-3 border rounded-xl bg-gray-50"
-          placeholder="Masukkan password"
+          placeholder="Password"
+          className="w-full border p-3 rounded"
         />
 
+        {/* FORGOT PASSWORD */}
+        <div className="text-right">
+          <Link to="/forgot" className="text-blue-600 text-sm">
+            Lupa password?
+          </Link>
+        </div>
+
         <button
-          type="submit"
           disabled={loading}
-          className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold"
+          className="w-full bg-blue-600 text-white p-3 rounded"
         >
           {loading ? (
-            <span className="flex items-center justify-center">
+            <span className="flex justify-center items-center">
               <ImSpinner2 className="animate-spin mr-2" />
               Loading...
             </span>
           ) : (
-            "Login Sekarang"
+            "Login"
           )}
         </button>
-
       </form>
 
-      <div className="text-center mt-6">
-        <p className="text-sm text-gray-500">
-          Belum punya akun?{" "}
-          <Link
-            to="/register"
-            className="text-blue-600 font-semibold"
-          >
-            Daftar sekarang
-          </Link>
-        </p>
-      </div>
+      <p className="text-center mt-4 text-sm">
+        Belum punya akun? <Link to="/register">Register</Link>
+      </p>
     </div>
   );
 }
-
