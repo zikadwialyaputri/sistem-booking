@@ -1,330 +1,429 @@
-import { useState, useEffect, useRef } from "react";
-import {
-  FaCalendarCheck,
-  FaClock,
-  FaTimesCircle,
-  FaUserCircle,
-  FaSignOutAlt,
-  FaCalendarDay,
-  FaCircle
-} from "react-icons/fa";
+import { useEffect, useState } from "react";
+
+import { FaBell, FaClock, FaCheckCircle, FaHistory } from "react-icons/fa";
+
 import { useNavigate } from "react-router-dom";
-import bookingService from "../../services/bookingService";
+
+import { supabase } from "../../services/supabase";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const dropdownRef = useRef(null);
 
-  const [openProfile, setOpenProfile] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+
+  const [showNotif, setShowNotif] = useState(false);
+
+  const [showAllJadwal, setShowAllJadwal] = useState(false);
+
+  const [showAllRiwayat, setShowAllRiwayat] = useState(false);
+
+  const [notifications, setNotifications] = useState([]);
+
   const [bookings, setBookings] = useState([]);
-  const [profile, setProfile] = useState({ name: "", foto: "" });
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const profile = {
+    name: user?.username || "User",
+
+    foto: user?.foto || "https://i.pravatar.cc/100?img=12",
+  };
 
   useEffect(() => {
-    loadData();
-
-    // Ambil data user login dari localStorage
-    const user = JSON.parse(localStorage.getItem("user"));
-    
-    // PENYELARASAN KONSISTEN: Mengambil foto asli dari key database / local storage yang valid
-    const fotoUser = user?.foto || user?.avatar_url || user?.foto_url || "";
-
-    setProfile({
-      name: user?.nama || user?.username || "Petugas",
-      foto: fotoUser,
-    });
-
-    // Event listener untuk menutup dropdown profil ketika klik di luar menu
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpenProfile(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    fetchData();
   }, []);
 
-  async function loadData() {
-    try {
-      const data = await bookingService.getBookings();
-      setBookings(data || []);
-    } catch (err) {
-      console.error("Gagal memuat data booking:", err);
+  const fetchData = async () => {
+    if (!user) return;
+
+    const { data, error } = await supabase
+
+      .from("bookings")
+
+      .select("*")
+
+      .eq("user_id", user.id)
+
+      .order("tanggal", { ascending: true });
+
+    if (!error) {
+      const uniqueBookings = [
+        ...new Map(
+          (data || []).map((item) => [
+            `${item.tanggal}-${item.jam_mulai}-${item.jam_selesai}-${item.lapangan_id}`,
+
+            item,
+          ]),
+        ).values(),
+      ];
+
+      setBookings(uniqueBookings);
+
+      const notifData = uniqueBookings.map((item) => ({
+        id: item.id,
+
+        pesan:
+          item.status === "approved"
+            ? "✅ Booking Disetujui"
+            : item.status === "rejected"
+              ? "❌ Booking Ditolak"
+              : item.status === "done"
+                ? "🏁 Booking Selesai"
+                : "⏳ Booking Diproses",
+
+        tanggal: item.tanggal,
+      }));
+
+      setNotifications(notifData);
     }
-  }
+  };
 
-  // ========================================================
-  // MEMPROSES DATA UNIK & MENANGGULANGI DUPLIKAT (SAFE SCOPE)
-  // ========================================================
-  const uniqueBookings = Array.from(
-    new Map(
-      bookings.map((item) => [
-        `${item.tanggal}_${item.jam_mulai}_${item.jam_selesai}_${item.lapangan?.id}_${item.users?.id}`,
-        item,
-      ])
-    ).values()
-  );
-
-  const totalBooking = uniqueBookings.length;
-
-  const pendingBooking = uniqueBookings.filter(
-    (item) => item.status?.toLowerCase() === "pending"
-  ).length;
-
-  const rejectedBooking = uniqueBookings.filter(
-    (item) => item.status?.toLowerCase() === "rejected" || item.status?.toLowerCase() === "dibatalkan"
-  ).length;
-
-  // Format tanggal lokal (YYYY-MM-DD) penyeimbang zona waktu runtime browser
-  const todayLocalStr = new Date().toLocaleDateString("sv-SE"); 
-
-  const todayBooking = uniqueBookings.filter((item) => {
-    if (!item.tanggal) return false;
-    return item.tanggal.startsWith(todayLocalStr);
-  }).length;
+  const today = new Date().toISOString().split("T")[0];
 
   const stats = [
     {
-      title: "TOTAL BOOKING",
-      value: totalBooking,
-      icon: <FaCalendarCheck size={18} />,
-      badgeStyle: "bg-blue-50 text-blue-500",
-      path: "/petugas/booking",
+      title: "Menunggu",
+
+      value: bookings.filter((b) => b.status === "pending").length,
+
+      icon: <FaClock />,
+
+      color: "text-amber-500 bg-amber-50",
     },
+
     {
-      title: "MENUNGGU KONFIRMASI",
-      value: pendingBooking,
-      icon: <FaClock size={18} />,
-      badgeStyle: "bg-amber-50 text-amber-500",
-      path: "/petugas/booking",
+      title: "Disetujui",
+
+      value: bookings.filter((b) => b.status === "approved").length,
+
+      icon: <FaCheckCircle />,
+
+      color: "text-emerald-500 bg-emerald-50",
     },
+
     {
-      title: "DIBATALKAN",
-      value: rejectedBooking,
-      icon: <FaTimesCircle size={18} />,
-      badgeStyle: "bg-rose-50 text-rose-500",
-      path: "/petugas/booking",
-    },
-    {
-      title: "BOOKING HARI INI",
-      value: todayBooking,
-      icon: <FaCalendarDay size={18} />,
-      badgeStyle: "bg-emerald-50 text-emerald-500",
-      path: "/petugas/jadwal",
+      title: "Selesai",
+
+      value: bookings.filter((b) => b.status === "done").length,
+
+      icon: <FaHistory />,
+
+      color: "text-blue-500 bg-blue-50",
     },
   ];
 
-  const pendingList = uniqueBookings
-    .filter((x) => x.status?.toLowerCase() === "pending")
-    .slice(0, 3);
+  const semuaJadwal = bookings.filter(
+    (b) =>
+      b.tanggal === today &&
+      (b.status === "pending" || b.status === "approved"),
+  );
 
-  // Menampilkan seluruh jadwal hari ini yang berstatus aktif (bukan rejected)
-  const jadwalHariIni = uniqueBookings.filter((item) => {
-    if (!item.tanggal) return false;
-    const isToday = item.tanggal.startsWith(todayLocalStr);
-    const isNotRejected =
-      item.status?.toLowerCase() !== "rejected" &&
-      item.status?.toLowerCase() !== "dibatalkan";
-    return isToday && isNotRejected;
-  });
+  const jadwal = showAllJadwal ? semuaJadwal : semuaJadwal.slice(0, 3);
+
+  const semuaRiwayat = bookings.filter(
+    (b) => b.status === "done" || b.status === "rejected",
+  );
+
+  const riwayat = showAllRiwayat ? semuaRiwayat : semuaRiwayat.slice(0, 3);
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "approved":
+        return "bg-emerald-100 text-emerald-700 font-medium px-3 py-1 rounded-full text-xs capitalize";
+
+      case "pending":
+        return "bg-amber-100 text-amber-700 font-medium px-3 py-1 rounded-full text-xs capitalize";
+
+      case "done":
+        return "bg-blue-100 text-blue-700 font-medium px-3 py-1 rounded-full text-xs capitalize";
+
+      case "rejected":
+        return "bg-rose-100 text-rose-700 font-medium px-3 py-1 rounded-full text-xs capitalize";
+
+      default:
+        return "bg-gray-100 text-gray-700 font-medium px-3 py-1 rounded-full text-xs capitalize";
+    }
+  };
 
   return (
-    <div className="w-full min-h-screen text-slate-700 font-sans antialiased">
-      <div className="space-y-6">
-        
-        {/* 1. HERO BANNER (MODERN RADIAL DECORATION) */}
-        <div className="relative rounded-[24px] overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white p-6 md:p-10 min-h-[180px] flex flex-col justify-end shadow-sm">
-          <img
-            src="/img/badminton.jpg"
-            alt="badminton"
-            className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none transform scale-100"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+    <div className="relative min-h-screen bg-slate-50 overflow-x-hidden p-4 md:p-8 text-slate-800">
+      {/* BACKGROUND DECORATIVE BUBBLES */}
 
-          {/* BARIS TOP MENU (BADGE & PROFIL) */}
-          <div className="absolute top-5 left-5 right-5 flex justify-between items-center z-20">
-            <span className="inline-block text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-md bg-white/10 text-white/90 backdrop-blur-md">
-              PETUGAS
-            </span>
+      <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-blue-400/10 blur-3xl rounded-full pointer-events-none"></div>
 
-            {/* KONTRAK DROPDOWN PROFIL (SAMA SEPERTI PELANGGAN) */}
-            <div className="relative" ref={dropdownRef}>
-              {profile.foto ? (
+      <div className="absolute top-40 right-0 w-[500px] h-[500px] bg-green-300/10 blur-3xl rounded-full pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto relative z-20 space-y-6">
+        {/* BANNER HERO UTAMA */}
+
+        <div className="relative rounded-3xl overflow-visible shadow-md h-60 md:h-72 transition-all duration-300 z-30">
+          <div className="absolute inset-0 rounded-3xl overflow-hidden">
+            <img
+              src="/img/badminton.jpg"
+              alt="Badminton Background"
+              className="w-full h-full object-cover"
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/95 via-slate-900/75 to-blue-950/45" />
+          </div>
+
+          {/* KONTEN UTAMA BANNER */}
+
+          <div className="relative z-10 h-full w-full p-6 md:p-10 flex flex-row justify-between items-start">
+            {/* SISI KIRI: TEXT INFO UTAMA (DIPERBESAR & DI ATAS) */}
+
+            <div className="text-white self-start pt-1">
+              <p className="uppercase tracking-widest text-[10px] md:text-xs font-bold bg-blue-500/30 text-blue-200 w-fit px-3 py-1 rounded-full mb-4 backdrop-blur-sm">
+                Portal Pelanggan
+              </p>
+
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-none">
+                Halo, {profile.name}
+              </h1>
+
+              <p className="text-slate-300 text-sm md:text-lg mt-3 font-medium max-w-sm md:max-w-2xl leading-relaxed">
+                Selamat datang kembali di portal pelanggan 👋
+              </p>
+            </div>
+
+            {/* SISI KANAN: TOMBOL DROPDOWN NOTIF & PROFILE */}
+
+            <div className="flex items-center gap-3 md:gap-4 self-start">
+              {/* NOTIFIKASI DROP DOWN */}
+
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setShowNotif(!showNotif);
+
+                    setShowProfile(false);
+                  }}
+                  className="p-3 bg-white/10 hover:bg-white/20 transition rounded-xl relative focus:outline-none backdrop-blur-sm border border-white/10"
+                >
+                  <FaBell className="text-xl text-white" />
+
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-rose-500 w-5 h-5 rounded-full text-[10px] font-bold flex justify-center items-center border-2 border-slate-900">
+                      {notifications.length}
+                    </span>
+                  )}
+                </button>
+
+                {showNotif && (
+                  <div className="absolute right-0 top-14 w-72 md:w-80 bg-white rounded-2xl shadow-2xl text-slate-800 z-50 border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="bg-slate-50 border-b border-slate-100 p-4 text-sm font-semibold text-slate-700 flex justify-between items-center">
+                      <span>🔔 Notifikasi Terbaru</span>
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto divide-y divide-slate-100">
+                      {notifications.length === 0 ? (
+                        <p className="p-4 text-center text-xs text-slate-400">
+                          Tidak ada notifikasi
+                        </p>
+                      ) : (
+                        notifications.slice(0, 3).map((item) => (
+                          <div
+                            key={item.id}
+                            className="p-4 hover:bg-slate-50 transition"
+                          >
+                            <p className="text-sm text-slate-700 font-medium">
+                              {item.pesan}
+                            </p>
+
+                            <span className="text-[11px] text-slate-400 block mt-1">
+                              📅 {item.tanggal}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="p-2 bg-slate-50 text-center border-t border-slate-100">
+                      <button
+                        onClick={() => navigate("/pelanggan/notifikasi")}
+                        className="text-xs text-blue-600 font-semibold hover:text-blue-700 transition w-full py-1"
+                      >
+                        Lihat Selengkapnya
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* PROFILE DROP DOWN */}
+
+              <div className="relative">
                 <img
                   src={profile.foto}
                   alt="Avatar"
                   className="w-10 h-10 md:w-11 md:h-11 rounded-xl border-2 border-white/50 cursor-pointer shadow-sm hover:scale-105 transition object-cover"
-                  onClick={() => setOpenProfile(!openProfile)}
+                  onClick={() => {
+                    setShowProfile(!showProfile);
+
+                    setShowNotif(false);
+                  }}
                 />
-              ) : (
-                <div 
-                  className="w-10 h-10 md:w-11 md:h-11 bg-white/10 border-2 border-white/50 rounded-xl flex items-center justify-center cursor-pointer shadow-sm hover:scale-105 transition backdrop-blur-sm"
-                  onClick={() => setOpenProfile(!openProfile)}
-                >
-                  <FaUserCircle size={22} className="text-white/90" />
-                </div>
-              )}
 
-              {openProfile && (
-                <div className="absolute right-0 mt-2 bg-white p-2 rounded-xl shadow-2xl w-52 text-slate-800 z-50 border border-slate-100">
-                  <div className="px-3 py-2 border-b border-slate-100 mb-1">
-                    <p className="font-semibold text-sm text-slate-800 truncate">{profile.name}</p>
-                    <p className="text-xs text-slate-400">Petugas</p>
+                {showProfile && (
+                  <div className="absolute right-0 top-14 bg-white p-2 rounded-xl shadow-2xl w-52 text-slate-800 z-50 border border-slate-100">
+                    <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                      <p className="font-semibold text-sm text-slate-800 truncate">
+                        {profile.name}
+                      </p>
+
+                      <p className="text-xs text-slate-400">Pelanggan</p>
+                    </div>
+
+                    <button
+                      onClick={() => navigate("/pelanggan/profile")}
+                      className="w-full text-left text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 p-2 rounded-lg transition"
+                    >
+                      Edit Profile
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem("user");
+
+                        navigate("/login");
+                      }}
+                      className="w-full text-left text-sm text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition font-medium mt-1"
+                    >
+                      Logout
+                    </button>
                   </div>
-                  <button
-                    onClick={() => { navigate("/petugas/profile"); setOpenProfile(false); }}
-                    className="w-full text-left text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 p-2 rounded-lg transition"
-                  >
-                    Edit Profile
-                  </button>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem("token");
-                      localStorage.removeItem("user");
-                      navigate("/login");
-                    }}
-                    className="w-full text-left text-sm text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition font-medium mt-1"
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-
-          {/* Teks Sapaan Utama */}
-          <div className="relative z-10 mt-10 md:mt-0">
-            <h1 className="text-2xl md:text-[32px] font-black tracking-tight text-white leading-tight">
-              Halo, {profile.name}!
-            </h1>
-            <p className="text-slate-300 text-xs md:text-sm mt-1 opacity-90 font-medium">
-              Selamat datang kembali, semoga harimu produktif! 👋
-            </p>
           </div>
         </div>
 
-        {/* 2. STATISTIK KARTU (GRID) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* STATISTIK */}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 relative z-10">
           {stats.map((item, index) => (
             <div
               key={index}
-              onClick={() => navigate(item.path)}
-              className="bg-white rounded-[20px] p-6 border border-slate-100 cursor-pointer shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between group"
+              className="bg-white rounded-xl p-5 shadow-sm border border-slate-100 flex items-center justify-between transition hover:shadow-md duration-200"
             >
-              <div className="space-y-1">
-                <p className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">{item.title}</p>
-                <h3 className="text-[28px] font-black tracking-tight text-slate-800 leading-none">{item.value}</h3>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-slate-400 mb-1">
+                  {item.title}
+                </span>
+
+                <span className="text-3xl font-bold text-slate-800 tracking-tight">
+                  {item.value}
+                </span>
               </div>
-              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-105 duration-200 ${item.badgeStyle}`}>
+
+              <div className={`p-3 rounded-xl text-xl ${item.color}`}>
                 {item.icon}
               </div>
             </div>
           ))}
         </div>
 
-        {/* 3. SUB MONITORING JADWAL & ANTRIAN */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          {/* Kolom Menunggu Konfirmasi */}
-          <div className="bg-white rounded-[22px] border border-slate-100 p-6 shadow-sm flex flex-col justify-between">
-            <div>
-              <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-50 pb-3 text-sm md:text-base">
-                <span className="text-amber-500">⏳</span> Booking Menunggu Konfirmasi
-              </h3>
-              <div className="divide-y divide-slate-50">
-                {pendingList.length > 0 ? (
-                  pendingList.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center py-3.5 first:pt-0 last:pb-0">
-                      <div>
-                        <p className="font-bold text-slate-800 text-sm">{item.users?.nama || item.users?.username || "-"}</p>
-                        <p className="text-xs text-slate-400 mt-1 font-semibold">
-                          {item.lapangan?.nama || "-"} • <span className="font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-[11px]">{item.jam_mulai?.slice(0, 5)} - {item.jam_selesai?.slice(0, 5)}</span>
-                        </p>
-                      </div>
-                      <span className="bg-amber-50 text-amber-600 font-bold px-3 py-1 rounded-xl text-[11px] border border-amber-100 shadow-sm animate-pulse">
-                        Menunggu
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-10 text-slate-400 text-xs italic font-medium">Tidak ada antrean saat ini</div>
-                )}
-              </div>
-            </div>
+        {/* JADWAL HARI INI */}
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 relative z-10">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="font-bold text-lg text-slate-800 flex items-center gap-2">
+              <span>📅</span> Jadwal Hari Ini
+            </h2>
+
+            {semuaJadwal.length > 3 && (
+              <button
+                onClick={() => setShowAllJadwal(!showAllJadwal)}
+                className="text-xs text-blue-600 font-semibold hover:underline"
+              >
+                {showAllJadwal ? "Sembunyikan" : "Lihat Semua"}
+              </button>
+            )}
           </div>
 
-          {/* Kolom Status Lapangan */}
-          <div className="bg-white rounded-[22px] border border-slate-100 p-6 shadow-sm flex flex-col justify-between">
-            <div>
-              <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-50 pb-3 text-sm md:text-base">
-                <span className="text-blue-500">🏸</span> Status Lapangan Saat Ini (Hari Ini)
-              </h3>
-              <div className="divide-y divide-slate-50">
-                {jadwalHariIni.length > 0 ? (
-                  jadwalHariIni.slice(0, 3).map((item) => (
-                    <div key={item.id} className="flex justify-between items-center py-3.5 first:pt-0 last:pb-0">
-                      <div>
-                        <span className="font-bold text-slate-800 text-sm">{item.lapangan?.nama || "-"}</span>
-                        <p className="text-xs text-slate-400 mt-1 font-semibold">Penyewa: {item.users?.nama || "-"}</p>
-                      </div>
-                      <span className={`font-bold px-3 py-1 rounded-xl text-[11px] flex items-center gap-1.5 border shadow-sm ${
-                        item.status?.toLowerCase() === "success" || item.status?.toLowerCase() === "approved"
-                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                          : "bg-amber-50 text-amber-600 border-amber-100"
-                      }`}>
-                        <FaCircle size={6} className={item.status?.toLowerCase() === "success" || item.status?.toLowerCase() === "approved" ? "text-emerald-500 animate-ping" : "text-amber-500"} />
-                        {item.status?.toLowerCase() === "success" || item.status?.toLowerCase() === "approved" ? "Disetujui" : "Menunggu"}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-10 text-slate-400 text-xs italic font-medium">Semua lapangan kosong hari ini</div>
-                )}
+          <div className="space-y-3">
+            {jadwal.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl">
+                <p className="text-sm text-slate-400">
+                  Tidak ada jadwal untuk hari ini.
+                </p>
               </div>
-            </div>
-          </div>
+            ) : (
+              jadwal.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-slate-50 hover:bg-slate-100/70 border border-slate-100 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition"
+                >
+                  <div className="flex flex-col gap-1">
+                    <h3 className="font-semibold text-slate-700 text-sm sm:text-base">
+                      🏸 Lapangan {item.lapangan_id}
+                    </h3>
 
-        </div>
+                    <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                      <span className="text-slate-500">🕒</span>{" "}
+                      {item.jam_mulai.slice(0, 5)} -{" "}
+                      {item.jam_selesai.slice(0, 5)}
+                    </p>
+                  </div>
 
-        {/* 4. MANIFEST TABEL UTAMA */}
-        <div className="bg-white rounded-[22px] border border-slate-100 p-6 shadow-sm">
-          <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm md:text-base">
-            <span className="text-blue-600">📅</span> Manifest Jadwal Pertandingan Hari Ini
-          </h3>
-          
-          <div className="overflow-x-auto rounded-xl border border-slate-100">
-            <table className="w-full text-sm text-left text-slate-600">
-              <thead className="text-[11px] uppercase bg-slate-50/70 text-slate-400 border-b border-slate-100 font-bold tracking-wider">
-                <tr>
-                  <th className="px-6 py-4">Lapangan</th>
-                  <th className="px-6 py-4">Jam Main</th>
-                  <th className="px-6 py-4">Nama Pelanggan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {jadwalHariIni.length > 0 ? (
-                  jadwalHariIni.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/30 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-800">{item.lapangan?.nama || "-"}</td>
-                      <td className="px-6 py-4">
-                        <span className="font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-md text-xs shadow-sm">
-                          {item.jam_mulai?.slice(0, 5)} - {item.jam_selesai?.slice(0, 5)} WIB
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-slate-700 font-semibold">{item.users?.nama || item.users?.username || "-"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="3" className="text-center py-12 text-slate-400 italic text-xs font-medium bg-slate-50/10">
-                      Belum ada agenda pertandingan terjadwal untuk hari ini
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  <span className={getStatusColor(item.status)}>
+                    {item.status}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
+        {/* RIWAYAT BOOKING */}
+
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 relative z-10">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="font-bold text-lg text-slate-800 flex items-center gap-2">
+              <span>📜</span> Riwayat Booking
+            </h2>
+
+            {semuaRiwayat.length > 3 && (
+              <button
+                onClick={() => setShowAllRiwayat(!showAllRiwayat)}
+                className="text-xs text-blue-600 font-semibold hover:underline"
+              >
+                {showAllRiwayat ? "Sembunyikan" : "Lihat Semua"}
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-3">
+            {riwayat.length === 0 ? (
+              <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl">
+                <p className="text-sm text-slate-400">
+                  Belum ada riwayat booking.
+                </p>
+              </div>
+            ) : (
+              riwayat.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-slate-50 hover:bg-slate-100/70 border border-slate-100 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition"
+                >
+                  <div className="flex flex-col gap-1">
+                    <h3 className="font-semibold text-slate-700 text-sm sm:text-base">
+                      🏸 Lapangan {item.lapangan_id}
+                    </h3>
+
+                    <p className="text-xs text-slate-400 flex items-center gap-1.5">
+                      <span className="text-slate-500">📅</span> {item.tanggal}
+                    </p>
+                  </div>
+
+                  <span className={getStatusColor(item.status)}>
+                    {item.status}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
