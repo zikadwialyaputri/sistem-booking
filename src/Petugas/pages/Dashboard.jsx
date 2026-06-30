@@ -24,9 +24,13 @@ export default function Dashboard() {
 
     // Ambil data user login dari localStorage
     const user = JSON.parse(localStorage.getItem("user"));
+    
+    // PENYELARASAN KONSISTEN: Mengambil foto asli dari key database / local storage yang valid (sama seperti pelanggan)
+    const fotoUser = user?.foto || user?.avatar_url || user?.foto_url || "";
+
     setProfile({
       name: user?.nama || user?.username || "Petugas",
-      foto: user?.foto || "",
+      foto: fotoUser,
     });
 
     // Event listener untuk menutup dropdown profil ketika klik di luar menu
