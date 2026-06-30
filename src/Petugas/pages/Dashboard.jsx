@@ -6,12 +6,13 @@ import {
   FaUserCircle,
   FaSignOutAlt,
   FaCalendarDay,
-  FaCircle
+  FaCircle,
+  FaBell
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import bookingService from "../../services/bookingService";
 
-export default function Dashboard() {
+export default function DashboardPetugas() {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
@@ -25,11 +26,11 @@ export default function Dashboard() {
     // Ambil data user login dari localStorage
     const user = JSON.parse(localStorage.getItem("user"));
     
-    // PENYELARASAN KONSISTEN: Mengambil foto asli dari key database / local storage yang valid (sama seperti pelanggan)
-    const fotoUser = user?.foto || user?.avatar_url || user?.foto_url || "";
+    // Sinkronisasi pengambilan foto dan nama agar konsisten dengan dashboard pelanggan
+    const fotoUser = user?.foto || user?.avatar_url || user?.foto_url || "https://i.pravatar.cc/100?img=12";
 
     setProfile({
-      name: user?.nama || user?.username || "Petugas",
+      name: user?.username || user?.nama || "Petugas",
       foto: fotoUser,
     });
 
@@ -128,76 +129,95 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="w-full min-h-screen text-slate-700 font-sans antialiased">
-      <div className="space-y-6">
+    <div className="relative min-h-screen bg-slate-50 overflow-x-hidden p-4 md:p-8 text-slate-800">
+      {/* BACKGROUND DECORATIVE BUBBLES */}
+      <div className="absolute -top-32 -left-32 w-[500px] h-[500px] bg-blue-400/10 blur-3xl rounded-full pointer-events-none"></div>
+      <div className="absolute top-40 right-0 w-[500px] h-[500px] bg-green-300/10 blur-3xl rounded-full pointer-events-none"></div>
+
+      <div className="max-w-7xl mx-auto relative z-20 space-y-6">
         
-        {/* 1. HERO BANNER (MODERN RADIAL DECORATION) */}
-        <div className="relative rounded-[24px] overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white p-6 md:p-10 min-h-[180px] flex flex-col justify-end shadow-sm">
-          <img
-            src="/img/badminton.jpg"
-            alt="badminton"
-            className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none transform scale-100"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
-
-          {/* BARIS TOP MENU (BADGE & PROFIL) */}
-          <div className="absolute top-5 left-5 right-5 flex justify-between items-center z-20">
-            <span className="inline-block text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-md bg-white/10 text-white/90 backdrop-blur-md">
-              PETUGAS
-            </span>
-
-            {/* Kontainer Dropdown Profil */}
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setOpenProfile(!openProfile)}
-                className="flex items-center gap-2.5 bg-white/10 hover:bg-white/20 transition px-3 py-1.5 rounded-full shadow-sm text-white text-xs font-bold backdrop-blur-md active:scale-95"
-              >
-                <span className="tracking-tight hidden sm:inline">{profile.name}</span>
-                {profile.foto ? (
-                  <img src={profile.foto} className="w-6 h-6 rounded-full object-cover ring-2 ring-white/20" alt="Profile" />
-                ) : (
-                  <FaUserCircle size={16} className="text-white/90" />
-                )}
-              </button>
-
-              {openProfile && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 p-1.5 z-50 text-slate-700">
-                  <button
-                    onClick={() => { navigate("/petugas/profile"); setOpenProfile(false); }}
-                    className="w-full px-3 py-2 text-left text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 rounded-lg transition flex gap-2.5 items-center"
-                  >
-                    <FaUserCircle size={14} className="text-slate-400" />
-                    Edit Profile
-                  </button>
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem("token");
-                      localStorage.removeItem("user");
-                      navigate("/login");
-                    }}
-                    className="w-full px-3 py-2 text-left text-xs text-rose-600 hover:bg-rose-50 font-black rounded-lg transition flex gap-2.5 items-center border-t border-slate-100 mt-1"
-                  >
-                    <FaSignOutAlt size={14} />
-                    Logout
-                  </button>
-                </div>
-              )}
-            </div>
+        {/* BANNER HERO UTAMA (DISERASIKAN DENGAN PELANGGAN) */}
+        <div className="relative rounded-3xl overflow-visible shadow-md h-60 md:h-72 transition-all duration-300 z-30">
+          <div className="absolute inset-0 rounded-3xl overflow-hidden">
+            <img
+              src="/img/badminton.jpg"
+              alt="Badminton Background"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/95 via-slate-900/75 to-blue-950/45" />
           </div>
 
-          {/* Teks Sapaan Utama */}
-          <div className="relative z-10 mt-10 md:mt-0">
-            <h1 className="text-2xl md:text-[32px] font-black tracking-tight text-white leading-tight">
-              Halo, {profile.name}!
-            </h1>
-            <p className="text-slate-300 text-xs md:text-sm mt-1 opacity-90 font-medium">
-              Selamat datang kembali, semoga harimu produktif! 👋
-            </p>
+          {/* KONTEN UTAMA BANNER */}
+          <div className="relative z-10 h-full w-full p-6 md:p-10 flex flex-row justify-between items-start">
+            {/* SISI KIRI: TEXT INFO UTAMA */}
+            <div className="text-white self-start pt-1">
+              <p className="uppercase tracking-widest text-[10px] md:text-xs font-bold bg-blue-500/30 text-blue-200 w-fit px-3 py-1 rounded-full mb-4 backdrop-blur-sm">
+                Portal Petugas
+              </p>
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-none">
+                Halo, {profile.name}
+              </h1>
+              <p className="text-slate-300 text-sm md:text-lg mt-3 font-medium max-w-sm md:max-w-2xl leading-relaxed">
+                Selamat datang kembali, semoga harimu produktif! 👋
+              </p>
+            </div>
+
+            {/* SISI KANAN: TOMBOL DROPDOWN PROFILE */}
+            <div className="flex items-center gap-3 md:gap-4 self-start" ref={dropdownRef}>
+              <div className="relative">
+                {profile.foto ? (
+                  <img
+                    src={profile.foto}
+                    alt="Avatar"
+                    className="w-10 h-10 md:w-11 md:h-11 rounded-xl border-2 border-white/50 cursor-pointer shadow-sm hover:scale-105 transition object-cover"
+                    onClick={() => setOpenProfile(!openProfile)}
+                  />
+                ) : (
+                  <div 
+                    onClick={() => setOpenProfile(!openProfile)}
+                    className="w-10 h-10 md:w-11 md:h-11 rounded-xl border-2 border-white/50 bg-white/10 hover:bg-white/20 transition flex items-center justify-center cursor-pointer shadow-sm backdrop-blur-sm"
+                  >
+                    <FaUserCircle size={24} className="text-white/90" />
+                  </div>
+                )}
+
+                {openProfile && (
+                  <div className="absolute right-0 top-14 bg-white p-2 rounded-xl shadow-2xl w-52 text-slate-800 z-50 border border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                      <p className="font-semibold text-sm text-slate-800 truncate">
+                        {profile.name}
+                      </p>
+                      <p className="text-xs text-slate-400">Petugas</p>
+                    </div>
+
+                    <button
+                      onClick={() => { navigate("/petugas/profile"); setOpenProfile(false); }}
+                      className="w-full text-left text-sm text-slate-600 hover:bg-slate-50 hover:text-blue-600 p-2 rounded-lg transition flex gap-2.5 items-center"
+                    >
+                      <FaUserCircle size={14} className="text-slate-400" />
+                      Edit Profile
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem("token");
+                        localStorage.removeItem("user");
+                        navigate("/login");
+                      }}
+                      className="w-full text-left text-sm text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition font-medium mt-1 border-t border-slate-100 flex gap-2.5 items-center"
+                    >
+                      <FaSignOutAlt size={14} />
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* 2. STATISTIK KARTU (GRID) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative z-10">
           {stats.map((item, index) => (
             <div
               key={index}
@@ -216,8 +236,7 @@ export default function Dashboard() {
         </div>
 
         {/* 3. SUB MONITORING JADWAL & ANTRIAN */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
           {/* Kolom Menunggu Konfirmasi */}
           <div className="bg-white rounded-[22px] border border-slate-100 p-6 shadow-sm flex flex-col justify-between">
             <div>
@@ -276,11 +295,10 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-
         </div>
 
         {/* 4. MANIFEST TABEL UTAMA */}
-        <div className="bg-white rounded-[22px] border border-slate-100 p-6 shadow-sm">
+        <div className="bg-white rounded-[22px] border border-slate-100 p-6 shadow-sm relative z-10">
           <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 text-sm md:text-base">
             <span className="text-blue-600">📅</span> Manifest Jadwal Pertandingan Hari Ini
           </h3>

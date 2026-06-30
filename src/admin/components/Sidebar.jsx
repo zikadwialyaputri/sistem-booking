@@ -1,8 +1,8 @@
 import { MdSpaceDashboard, MdSportsTennis, MdBarChart } from "react-icons/md";
-import { AiOutlineUnorderedList, AiOutlineUser } from "react-icons/ai";
+import { AiOutlineUnorderedList, AiOutlineUser, AiOutlineClose } from "react-icons/ai"; 
 import { NavLink } from "react-router-dom";
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, setIsOpen }) {
   const menuClass = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium
     ${
@@ -15,89 +15,89 @@ export default function Sidebar() {
     {
       title: "MAIN MENU",
       items: [
-        {
-          name: "Dashboard",
-          icon: <MdSpaceDashboard size={22} />,
-          path: "/admin",
-        },
-        {
-          name: "Daftar Booking",
-          icon: <AiOutlineUnorderedList size={22} />,
-          path: "/admin/orders",
-        },
+        { name: "Dashboard", icon: <MdSpaceDashboard size={22} />, path: "/admin" },
+        { name: "Daftar Booking", icon: <AiOutlineUnorderedList size={22} />, path: "/admin/orders" },
       ],
     },
     {
       title: "MANAJEMEN",
       items: [
-        {
-          name: "Data Pelanggan",
-          icon: <AiOutlineUser size={22} />,
-          path: "/admin/customers",
-        },
-        {
-          name: "Status Lapangan",
-          icon: <MdSportsTennis size={22} />,
-          path: "/admin/status-lapangan",
-        },
-        {
-          name: "Kelola Pengguna",
-          icon: <AiOutlineUser size={22} />,
-          path: "/admin/users",
-        },
+        { name: "Data Pelanggan", icon: <AiOutlineUser size={22} />, path: "/admin/customers" },
+        { name: "Status Lapangan", icon: <MdSportsTennis size={22} />, path: "/admin/status-lapangan" },
+        { name: "Kelola Pengguna", icon: <AiOutlineUser size={22} />, path: "/admin/users" },
       ],
     },
     {
       title: "MONITORING",
       items: [
-        {
-          name: "Laporan Bulanan",
-          icon: <MdBarChart size={22} />,
-          path: "/admin/reports",
-        },
-        {
-          name: "Statistik Ramal",
-          icon: <MdBarChart size={22} />,
-          path: "/admin/statistik",
-        },
+        { name: "Laporan Bulanan", icon: <MdBarChart size={22} />, path: "/admin/reports" },
+        { name: "Statistik Ramal", icon: <MdBarChart size={22} />, path: "/admin/statistik" },
       ],
     },
   ];
 
   return (
-    <aside className="w-64 min-h-screen bg-white border-r border-gray-100 shadow-sm flex flex-col">
-      {" "}
-      <div className="px-6 py-8 border-b border-gray-100">
-        {" "}
-        <h1 className="text-2xl font-bold text-blue-600">SmashBooking </h1>
-        <p className="text-sm text-gray-400 mt-1">Manajemen Lapangan</p>
-      </div>
-      <div className="flex-1 px-4 py-6 overflow-y-auto">
-        {menus.map((section, index) => (
-          <div key={index} className="mb-8">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">
-              {section.title}
-            </p>
+    <>
+      {/* OVERLAY BACKDROP: Muncul hanya di layar kecil (lg:hidden) saat sidebar terbuka */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
 
-            <div className="space-y-2">
-              {section.items.map((item, i) => (
-                <NavLink
-                  key={i}
-                  to={item.path}
-                  end={item.path === "/admin"}
-                  className={menuClass}
-                >
-                  {item.icon}
-                  <span>{item.name}</span>
-                </NavLink>
-              ))}
-            </div>
+      {/* SIDEBAR CONTAINER: Terikat dengan state isOpen */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 shadow-xl lg:shadow-sm flex flex-col
+        transition-transform duration-300 ease-in-out
+        lg:translate-x-0 lg:static lg:h-screen
+        ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+      `}>
+        
+        <div className="px-6 py-8 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-blue-600">SmashBooking</h1>
+            <p className="text-sm text-gray-400 mt-1">Manajemen Lapangan</p>
           </div>
-        ))}
-      </div>
-      <div className="px-6 py-4 border-t border-gray-100 text-xs text-gray-400">
-        © 2025 SmashBooking
-      </div>
-    </aside>
+
+          {/* TOMBOL CLOSE: Muncul saat sidebar terbuka di responsive view */}
+          <button 
+            onClick={() => setIsOpen(false)}
+            className="lg:hidden p-2 text-gray-500 hover:bg-slate-100 rounded-xl transition"
+          >
+            <AiOutlineClose size={20} />
+          </button>
+        </div>
+
+        <div className="flex-1 px-4 py-6 overflow-y-auto">
+          {menus.map((section, index) => (
+            <div key={index} className="mb-8">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">
+                {section.title}
+              </p>
+
+              <div className="space-y-2">
+                {section.items.map((item, i) => (
+                  <NavLink
+                    key={i}
+                    to={item.path}
+                    end={item.path === "/admin"}
+                    className={menuClass}
+                    onClick={() => setIsOpen(false)} // Otomatis tutup setelah link menu diklik
+                  >
+                    {item.icon}
+                    <span>{item.name}</span>
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="px-6 py-4 border-t border-gray-100 text-xs text-gray-400">
+          © 2026 SmashBooking
+        </div>
+      </aside>
+    </>
   );
 }

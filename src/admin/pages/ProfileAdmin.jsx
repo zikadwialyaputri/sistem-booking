@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Tambah import useNavigate untuk navigasi
 import {
   FaUser,
   FaEnvelope,
@@ -9,12 +10,14 @@ import {
   FaTimes,
   FaCheck,
   FaExclamationCircle,
-  FaCheckCircle
+  FaCheckCircle,
+  FaArrowLeft // Tambah icon panah kembali agar selaras dengan pelanggan
 } from "react-icons/fa";
 import { supabase } from "../../services/supabase";
 
 export default function ProfileAdmin() {
   const user = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate(); // Inisialisasi fungsi navigasi
 
   // SINKRONISASI FOTO: Mengakomodasi jika di dashboard menggunakan nama property yang berbeda
   const fotoAdmin = user?.foto || user?.avatar_url || user?.foto_url || null;
@@ -98,7 +101,6 @@ export default function ProfileAdmin() {
 
     // 3. PROSES SIMPAN KE DATABASE
     try {
-      // Kita update kolom 'foto' di database, sesuaikan jika nama kolom Anda di Supabase berbeda
       const updatedData = {
         nama: form.name,
         phone: form.phone,
@@ -316,31 +318,44 @@ export default function ProfileAdmin() {
               </div>
             </div>
 
-            {/* ACTION BUTTONS */}
-            <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
-              {isEdit ? (
-                <>
+            {/* ACTION BUTTONS (Diselaraskan layoutnya dengan justify-between) */}
+            <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
+              
+              {/* TOMBOL KIRI: Kembali Ke Dashboard Admin */}
+              <button
+                onClick={() => navigate("/admin")} // Mengarah ke dashboard admin
+                className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm group"
+              >
+                <FaArrowLeft size={11} className="text-slate-400 group-hover:text-slate-600 transition-colors" /> Kembali ke Dashboard
+              </button>
+
+              {/* TOMBOL KANAN: Aksi Edit / Simpan */}
+              <div className="flex items-center gap-3">
+                {isEdit ? (
+                  <>
+                    <button
+                      onClick={handleCancel}
+                      className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
+                    >
+                      <FaTimes size={12} /> Batal
+                    </button>
+                    <button
+                      onClick={handleSave}
+                      className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 transition-all cursor-pointer"
+                    >
+                      <FaCheck size={12} /> Simpan Perubahan
+                    </button>
+                  </>
+                ) : (
                   <button
-                    onClick={handleCancel}
-                    className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
+                    onClick={() => setIsEdit(true)}
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer group"
                   >
-                    <FaTimes size={12} /> Batal
+                    <FaPen size={11} className="text-blue-200 group-hover:text-white transition-colors" /> Edit Profile
                   </button>
-                  <button
-                    onClick={handleSave}
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 transition-all cursor-pointer"
-                  >
-                    <FaCheck size={12} /> Simpan Perubahan
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setIsEdit(true)}
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer group"
-                >
-                  <FaPen size={11} className="text-blue-200 group-hover:text-white transition-colors" /> Edit Profile
-                </button>
-              )}
+                )}
+              </div>
+
             </div>
 
           </div>

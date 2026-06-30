@@ -78,31 +78,31 @@ export default function StatusJadwal() {
   );
 
   return (
-    <div className="w-full min-h-screen bg-slate-50/50 text-slate-700 font-sans antialiased pb-12">
-      
-      {/* HEADER BANNER WITH GRADIENT OVERLAY */}
-      <div className="relative w-full h-[220px] overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white flex flex-col justify-end p-6 md:p-10 shadow-inner">
-        <img
-          src="/img/badminton.jpg"
-          className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none"
-          alt=""
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent pointer-events-none" />
-
-        <div className="relative z-10 w-full max-w-7xl mx-auto">
-          <PageHeader
-            title="Status Jadwal Lapangan"
-            breadcrumb={["Petugas", "Jadwal"]}
-          />
-        </div>
-      </div>
-
-      {/* CONTAINER UTAMA */}
-      <div className="max-w-7xl mx-auto px-4 md:px-10 -mt-10 relative z-20 space-y-6">
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans antialiased">
+      <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* BARIS PENCARIAN (INTEGRATED ICON) */}
-        <div className="w-full md:w-96 relative group">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+        {/* HEADER HERO BANNER (Disamakan dengan halaman Kelola Booking) */}
+        <div className="relative rounded-2xl overflow-hidden shadow-sm h-36 flex flex-col justify-center px-6 md:px-8">
+          <img
+            src="/img/badminton.jpg"
+            alt="Badminton Court"
+            className="absolute inset-0 w-full h-full object-cover select-none"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-blue-900/40" />
+          <div className="relative z-10 text-white w-full">
+            <PageHeader
+              title="Status Jadwal Lapangan"
+              breadcrumb={["Petugas", "Jadwal"]}
+            />
+            <p className="text-xs md:text-sm text-slate-300 mt-1 max-w-xl">
+              Memantau alokasi jam tanding dan status ketersediaan lapangan secara real-time.
+            </p>
+          </div>
+        </div>
+
+        {/* FILTER PENCARIAN */}
+        <div className="relative w-full md:w-96">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
             <FaSearch size={14} />
           </span>
           <input
@@ -110,60 +110,60 @@ export default function StatusJadwal() {
             placeholder="Cari lapangan, tanggal, jam..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl shadow-sm border border-slate-200/80 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-sm text-slate-800 placeholder-slate-400"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 text-sm text-slate-800 shadow-inner"
           />
         </div>
 
         {/* AREA DAFTAR DATA */}
-        <div className="bg-white rounded-[24px] border border-slate-100 p-6 shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-slate-800">Daftar Reservasi Aktif</h2>
-              <p className="text-xs text-slate-400 mt-0.5 font-medium">Memantau seluruh alokasi jam tanding lapangan</p>
+              <h2 className="font-bold text-slate-800 text-base">Daftar Reservasi Aktif</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Memantau seluruh alokasi jam tanding lapangan</p>
             </div>
-            <span className="text-xs bg-slate-50 text-slate-500 px-3 py-1.5 rounded-xl font-bold border border-slate-100 shadow-sm">
+            <span className="text-xs bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl font-bold border border-slate-200 shadow-sm">
               Total: {filteredJadwal.length} Data
             </span>
           </div>
 
           {loading ? (
             /* SKELETON LOADING ANIMATION */
-            <div className="space-y-3 py-4">
+            <div className="space-y-3 p-5">
               {[1, 2, 3].map((n) => (
                 <div key={n} className="h-16 w-full bg-slate-50 border border-slate-100 rounded-xl animate-pulse" />
               ))}
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-slate-100">
-              <table className="w-full text-sm text-left text-slate-600 min-w-[700px]">
-                <thead className="text-[11px] uppercase bg-slate-50/70 text-slate-400 border-b border-slate-100 font-bold tracking-wider">
-                  <tr>
-                    <th className="px-6 py-4">Nama Lapangan</th>
-                    <th className="px-6 py-4">Tanggal Main</th>
-                    <th className="px-6 py-4">Alokasi Waktu</th>
-                    <th className="px-6 py-4 text-center">Status Jadwal</th>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[700px]">
+                <thead>
+                  <tr className="bg-slate-100/70 text-slate-700 text-xs font-bold uppercase tracking-wider border-b border-slate-200">
+                    <th className="p-4">Nama Lapangan</th>
+                    <th className="p-4">Tanggal Main</th>
+                    <th className="p-4">Alokasi Waktu</th>
+                    <th className="p-4 text-center">Status Jadwal</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium">
+                <tbody className="divide-y divide-slate-200 text-sm text-slate-700 font-medium">
                   {filteredJadwal.length > 0 ? (
                     filteredJadwal.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/40 transition-colors">
+                      <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                         
                         {/* LAPANGAN */}
-                        <td className="px-6 py-4.5">
+                        <td className="p-4">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm border border-blue-100">
                               <FaMapMarkerAlt size={12} />
                             </div>
-                            <span className="font-bold text-slate-800 text-[14px]">
+                            <span className="font-bold text-slate-800">
                               {item.lapangan?.nama || "-"}
                             </span>
                           </div>
                         </td>
 
                         {/* TANGGAL */}
-                        <td className="px-6 py-4.5 text-slate-600">
-                          <div className="flex items-center gap-2 text-xs">
+                        <td className="p-4 text-slate-800">
+                          <div className="flex items-center gap-2">
                             <FaRegCalendarAlt size={13} className="text-slate-400" />
                             <span>
                               {item.tanggal
@@ -178,7 +178,7 @@ export default function StatusJadwal() {
                         </td>
 
                         {/* JAM */}
-                        <td className="px-6 py-4.5">
+                        <td className="p-4">
                           <div className="flex items-center gap-2">
                             <FaRegClock size={13} className="text-slate-400" />
                             <span className="text-xs text-blue-600 bg-blue-50/70 border border-blue-100 px-2.5 py-1 rounded-md font-bold shadow-sm">
@@ -188,9 +188,9 @@ export default function StatusJadwal() {
                         </td>
 
                         {/* STATUS BADGE */}
-                        <td className="px-6 py-4.5 text-center">
+                        <td className="p-4 text-center">
                           <span
-                            className={`inline-block px-3 py-1 rounded-xl text-[11px] font-bold border shadow-sm tracking-wide ${getStatusStyle(
+                            className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border shadow-sm tracking-wide ${getStatusStyle(
                               item.status
                             )}`}
                           >
