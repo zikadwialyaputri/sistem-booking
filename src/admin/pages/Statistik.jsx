@@ -85,7 +85,7 @@ export default function Statistik() {
     <div className="w-full min-h-screen text-slate-700 font-sans antialiased">
       <div className="space-y-6">
         
-        {/* 1. HERO BANNER (SAMA PERSIS FORMATNYA DENGAN PAGES LAIN) */}
+        {/* 1. HERO BANNER */}
         <div className="relative rounded-[24px] overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white p-6 md:p-10 min-h-[170px] flex flex-col justify-end shadow-sm">
           <img
             src="/img/badminton.jpg"
@@ -126,15 +126,15 @@ export default function Statistik() {
             </div>
           </div>
 
-          {/* Card Jam Teramai */}
+          {/* Card Jam Teramai — DIUBAH MENJADI UNGU */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden transition-all duration-300 hover:shadow-md">
-            <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
+            <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Jam Teramai</p>
-                <h2 className="text-2xl font-black text-red-500 tracking-tight">{jamTeramai?.jam || "-"}</h2>
+                <h2 className="text-2xl font-black text-purple-500 tracking-tight">{jamTeramai?.jam || "-"}</h2>
               </div>
-              <div className="bg-red-50 p-3 rounded-xl text-red-500 border border-red-100/30">
+              <div className="bg-purple-50 p-3 rounded-xl text-purple-500 border border-purple-100/30">
                 <FaFire size={18} />
               </div>
             </div>
@@ -184,7 +184,7 @@ export default function Statistik() {
                     className={`h-full rounded-full transition-all duration-500
                     ${
                       item.level >= 80
-                        ? "bg-red-500"
+                        ? "bg-purple-500" 
                         : item.level >= 50
                         ? "bg-amber-400"
                         : "bg-emerald-500"
@@ -203,7 +203,7 @@ export default function Statistik() {
                     className={`font-bold
                     ${
                       item.level >= 80
-                        ? "text-red-500"
+                        ? "text-violet-700" /* DIUBAH MENJADI UNGU */
                         : item.level >= 50
                         ? "text-amber-500"
                         : "text-emerald-500"
