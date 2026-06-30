@@ -26,8 +26,14 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // VALIDASI
-    if (!dataForm.nama || !dataForm.email || !dataForm.password) {
+    if (
+      !dataForm.nama ||
+      !dataForm.username ||
+      !dataForm.phone ||
+      !dataForm.email ||
+      !dataForm.password ||
+      !dataForm.confirmPassword
+    ) {
       alert("Semua field wajib diisi");
       return;
     }
@@ -40,40 +46,62 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // 1. REGISTER AUTH
+      const email = dataForm.email.trim().toLowerCase();
+
+      // ==========================
+      // REGISTER AUTH
+      // ==========================
       const { data, error } = await supabase.auth.signUp({
-        email: dataForm.email.trim().toLowerCase(),
+        email,
         password: dataForm.password,
       });
 
+      console.log("========== REGISTER ==========");
+      console.log("REGISTER DATA:", data);
+      console.log("REGISTER USER:", data?.user);
+      console.log("REGISTER SESSION:", data?.session);
+      console.log("REGISTER ERROR:", error);
+      console.log("==============================");
+
       if (error) throw error;
 
-      const user = data.user;
-
-      if (!user) {
-        throw new Error("Gagal membuat user auth");
+      if (!data.user) {
+        throw new Error("Gagal membuat akun.");
       }
 
-      // 2. SIMPAN KE TABLE USERS (TANPA ID → BIAR AMAN DARI ERROR KAMU)
+      // ==========================
+      // SIMPAN KE TABEL USERS
+      // ==========================
       const { error: dbError } = await supabase
         .from("users")
         .insert([
           {
+            auth_id: data.user.id,
             nama: dataForm.nama,
             username: dataForm.username,
             phone: dataForm.phone,
-            email: dataForm.email.trim().toLowerCase(),
+            email: email,
             role: "pelanggan",
           },
         ]);
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error("========== DATABASE ERROR ==========");
+        console.error(dbError);
+        console.error("====================================");
+        throw dbError;
+      }
 
-      alert("Registrasi berhasil");
+      console.log("User berhasil disimpan ke tabel users");
+
+      alert("Registrasi berhasil!");
 
       navigate("/login");
     } catch (err) {
-      console.log("REGISTER ERROR:", err);
+      console.error("========== REGISTER ERROR ==========");
+      console.error(err);
+      console.error("====================================");
+
       alert(err.message || "Registrasi gagal");
     } finally {
       setLoading(false);
@@ -86,13 +114,13 @@ export default function Register() {
         <h2 className="text-3xl font-bold text-gray-800">
           Buat Akun Baru ✨
         </h2>
+
         <p className="text-gray-500 mt-2 text-sm">
           Daftar untuk mulai booking lapangan badminton
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-
         <input
           type="text"
           name="nama"
@@ -154,7 +182,6 @@ export default function Register() {
         >
           {loading ? "Loading..." : "Daftar Sekarang"}
         </button>
-
       </form>
 
       <div className="text-center mt-6">

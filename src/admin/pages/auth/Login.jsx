@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { BsFillExclamationDiamondFill } from "react-icons/bs";
@@ -38,58 +39,75 @@ export default function Login() {
     setError("");
 
     try {
-      // 1. LOGIN AUTH
+      const email = dataForm.email.trim().toLowerCase();
+
+      // LOGIN AUTH
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: dataForm.email.trim().toLowerCase(),
+        email,
         password: dataForm.password,
       });
 
-      if (error || !data.user) {
-        throw new Error(error?.message || "Email atau password salah");
+      console.log("AUTH DATA:", data);
+      console.log("AUTH ERROR:", error);
+
+      if (error) throw error;
+
+      if (!data.user) {
+        throw new Error("Login gagal");
       }
 
-      const authUser = data.user;
-
-      // 2. AMBIL USER PROFILE
+      // AMBIL DATA USER BERDASARKAN EMAIL
       const { data: userData, error: userError } = await supabase
         .from("users")
-        .select("id, nama, email, role")
-        .eq("id", authUser.id)
-        .maybeSingle();
+        .select("*")
+        .eq("email", email)
+        .single();
 
-      if (userError || !userData) {
-        throw new Error("User profile tidak ditemukan");
+      if (userError) {
+        console.log(userError);
+        throw new Error("Data user tidak ditemukan");
       }
 
-      // 3. LOGIN HISTORY (TIDAK BOLEH GAGAL LOGIN KALAU ERROR)
-      await supabase.from("login_history").insert([
-        {
-          user_id: userData.id,
-          nama: userData.nama,
-          email: userData.email,
-          login_at: new Date(),
-        },
-      ]).catch(() => {
-        console.log("Login history gagal, tapi login tetap lanjut");
-      });
+      // SIMPAN LOGIN HISTORY
+      const { error: historyError } = await supabase
+        .from("login_history")
+        .insert([
+          {
+            user_id: userData.id,
+            nama: userData.nama,
+            email: userData.email,
+            login_at: new Date().toISOString(),
+          },
+        ]);
 
-      // 4. SIMPAN SESSION
+      if (historyError) {
+        console.log("LOGIN HISTORY:", historyError);
+      }
+
+      // SIMPAN SESSION
       localStorage.setItem("user", JSON.stringify(userData));
 
-      // 5. REDIRECT
-      const role = (userData.role || "").toLowerCase().trim();
+      // REDIRECT BERDASARKAN ROLE
+      switch (userData.role) {
+        case "admin":
+          navigate("/admin");
+          break;
 
-      if (role === "admin") {
-        navigate("/admin");
-      } else if (role === "petugas") {
-        navigate("/petugas");
-      } else if (role === "pelanggan") {
-        navigate("/pelanggan");
-      } else {
-        throw new Error("Role tidak valid");
+        case "petugas":
+          navigate("/petugas");
+          break;
+
+        case "pelanggan":
+          navigate("/pelanggan");
+          break;
+
+        default:
+          navigate("/");
+          break;
       }
 
     } catch (err) {
+      console.error(err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -102,6 +120,7 @@ export default function Login() {
         <h2 className="text-3xl font-bold text-gray-800">
           Selamat Datang 👋
         </h2>
+
         <p className="text-gray-500 mt-2 text-sm">
           Login untuk melakukan booking lapangan badminton
         </p>
@@ -150,12 +169,16 @@ export default function Login() {
             "Login Sekarang"
           )}
         </button>
+
       </form>
 
       <div className="text-center mt-6">
         <p className="text-sm text-gray-500">
           Belum punya akun?{" "}
-          <Link to="/register" className="text-blue-600 font-semibold">
+          <Link
+            to="/register"
+            className="text-blue-600 font-semibold"
+          >
             Daftar sekarang
           </Link>
         </p>
@@ -163,3 +186,4 @@ export default function Login() {
     </div>
   );
 }
+
