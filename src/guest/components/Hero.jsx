@@ -34,9 +34,7 @@ export default function Hero() {
             {/* Title */}
             <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-8">
               Main
-              <span className="block text-blue-400">
-                Badminton
-              </span>
+              <span className="block text-blue-400">Badminton</span>
               Lebih Mudah
             </h1>
 
@@ -53,7 +51,6 @@ export default function Hero() {
                 className="group bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-2xl text-white font-semibold shadow-2xl shadow-blue-900/40 transition-all duration-500 hover:scale-105"
               >
                 Booking Sekarang
-
                 <span className="ml-2 inline-block group-hover:translate-x-2 transition">
                   →
                 </span>
@@ -68,27 +65,17 @@ export default function Hero() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-5 max-w-xl">
-              <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl p-5 text-center">
-                <h3 className="text-4xl font-bold text-blue-400 mb-2">
-                  2
-                </h3>
-
-                <p className="text-gray-300 text-sm">
-                  Lapangan
-                </p>
+            {/* Stats */}
+            <div className="flex gap-5 mt-10">
+              <div className="bg-white/15 backdrop-blur-2xl border border-white/20 rounded-3xl px-8 py-6 min-w-[180px]">
+                <h3 className="text-5xl font-bold text-blue-600">2</h3>
+                <p className="text-blue-500 mt-2">Lapangan Indoor</p>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl p-5 text-center">
-                <h3 className="text-4xl font-bold text-blue-400 mb-2">
-                  4
-                </h3>
-
-                <p className="text-gray-300 text-sm">
-                  Pemain
-                </p>
+              <div className="bg-white/15 backdrop-blur-2xl border border-white/20 rounded-3xl px-8 py-6 min-w-[180px]">
+                <h3 className="text-5xl font-bold text-blue-600">4</h3>
+                <p className="text-blue-500 mt-2">Pemain Aktif</p>
               </div>
-
             </div>
           </div>
 
@@ -106,8 +93,8 @@ export default function Hero() {
               </div>
 
               <p className="text-gray-300 leading-relaxed mb-8">
-                HC5P+GC7, Jl. Kayangan Gg. Gabus, Meranti Pandak, Rumbai,
-                Kota Pekanbaru, Riau.
+                HC5P+GC7, Jl. Kayangan Gg. Gabus, Meranti Pandak, Rumbai, Kota
+                Pekanbaru, Riau.
               </p>
 
               <div className="space-y-4">
