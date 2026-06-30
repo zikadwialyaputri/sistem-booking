@@ -10,11 +10,11 @@ import AuthLayout from "./admin/layouts/AuthLayout";
 import GuestLayout from "./guest/layouts/GuestLayout";
 
 // Petugas
-import PetugasLayout from "./petugas/layouts/PetugasLayout";
-import KelolaBooking from "./petugas/pages/KelolaBooking";
-import PetugasDashboard from "./petugas/pages/Dashboard";
-import StatusJadwal from "./petugas/pages/StatusJadwal";
-import ProfilePetugas from "./petugas/pages/ProfilePetugas";
+import PetugasLayout from "./Petugas/layouts/PetugasLayout";
+import KelolaBooking from "./Petugas/pages/KelolaBooking";
+import PetugasDashboard from "./Petugas/pages/Dashboard";
+import StatusJadwal from "./Petugas/pages/StatusJadwal";
+import ProfilePetugas from "./Petugas/pages/ProfilePetugas";
 
 // Pelanggan
 import PelangganLayout from "./pelanggan/layouts/PelangganLayout";
