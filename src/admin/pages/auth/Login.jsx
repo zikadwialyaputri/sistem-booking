@@ -54,6 +54,14 @@ export default function Login() {
 
       if (userError) throw new Error("Data user tidak ditemukan");
 
+      const role = String(userData.role || "")
+        .trim()
+        .toLowerCase();
+      console.log("ROLE DATABASE =", userData.role);
+      console.log("ROLE CLEAN =", role);
+      console.log("USER DATA:", userData);
+      console.log("ROLE:", role);
+
       await supabase.from("login_history").insert([
         {
           user_id: userData.id,
@@ -63,20 +71,21 @@ export default function Login() {
         },
       ]);
 
-      localStorage.setItem("user", JSON.stringify(userData));
+      const userStorage = {
+        ...userData,
+        role,
+      };
 
-      switch (userData.role) {
-        case "admin":
-          navigate("/admin");
-          break;
-        case "petugas":
-          navigate("/petugas");
-          break;
-        case "pelanggan":
-          navigate("/pelanggan");
-          break;
-        default:
-          navigate("/");
+      localStorage.setItem("user", JSON.stringify(userStorage));
+
+      if (role === "admin") {
+        navigate("/admin", { replace: true });
+      } else if (role === "petugas") {
+        navigate("/petugas", { replace: true });
+      } else if (role === "pelanggan") {
+        navigate("/pelanggan", { replace: true });
+      } else {
+        throw new Error(`Role tidak dikenali: ${role}`);
       }
     } catch (err) {
       setError(err.message);
@@ -87,9 +96,7 @@ export default function Login() {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-center mb-2">
-        Selamat Datang 👋
-      </h2>
+      <h2 className="text-3xl font-bold text-center mb-2">Selamat Datang 👋</h2>
 
       <p className="text-center text-gray-500 mb-6">
         Login untuk booking lapangan
