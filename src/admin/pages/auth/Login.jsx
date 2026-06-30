@@ -15,7 +15,6 @@ export default function Login() {
     password: "",
   });
 
-  // handle input
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -24,12 +23,9 @@ export default function Login() {
       [name]: value,
     }));
 
-    if (error) {
-      setError("");
-    }
+    if (error) setError("");
   };
 
-  // proses login
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -42,80 +38,59 @@ export default function Login() {
     setError("");
 
     try {
-      // login menggunakan Supabase Auth
-      const { error: authError } =
-        await supabase.auth.signInWithPassword({
-          email: dataForm.email,
-          password: dataForm.password,
-        });
+      // 1. LOGIN AUTH
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: dataForm.email.trim().toLowerCase(),
+        password: dataForm.password,
+      });
 
-      if (authError) {
-        throw new Error("Email atau password salah");
+      if (error || !data.user) {
+        throw new Error(error?.message || "Email atau password salah");
       }
 
-      // ambil data user dari tabel users
-      const { data: userData, error: userError } =
-        await supabase
-          .from("users")
-          .select("*")
-          .eq("email", dataForm.email)
-          .single();
+      const authUser = data.user;
+
+      // 2. AMBIL USER PROFILE
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("id, nama, email, role")
+        .eq("id", authUser.id)
+        .maybeSingle();
 
       if (userError || !userData) {
-        throw new Error("Data user tidak ditemukan");
+        throw new Error("User profile tidak ditemukan");
       }
 
-      // simpan login history
-      const { error: historyError } =
-        await supabase
-          .from("login_history")
-          .insert([
-            {
-              user_id: userData.id,
-              nama: userData.nama,
-              email: userData.email,
-              login_at: new Date(),
-            },
-          ]);
+      // 3. LOGIN HISTORY (TIDAK BOLEH GAGAL LOGIN KALAU ERROR)
+      await supabase.from("login_history").insert([
+        {
+          user_id: userData.id,
+          nama: userData.nama,
+          email: userData.email,
+          login_at: new Date(),
+        },
+      ]).catch(() => {
+        console.log("Login history gagal, tapi login tetap lanjut");
+      });
 
-      if (historyError) {
-        console.log("History error:", historyError);
+      // 4. SIMPAN SESSION
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // 5. REDIRECT
+      const role = (userData.role || "").toLowerCase().trim();
+
+      if (role === "admin") {
+        navigate("/admin");
+      } else if (role === "petugas") {
+        navigate("/petugas");
+      } else if (role === "pelanggan") {
+        navigate("/pelanggan");
+      } else {
+        throw new Error("Role tidak valid");
       }
-
-      // simpan session user
-      localStorage.setItem(
-        "user",
-        JSON.stringify(userData)
-      );
-
-      // cek data user
-console.log("USER DATA:", userData);
-console.log("ROLE:", userData.role);
-
-// redirect berdasarkan role
-const role = userData.role?.trim().toLowerCase();
-
-if (role === "admin") {
-  navigate("/admin");
-}
-else if (role === "petugas") {
-  navigate("/petugas");
-}
-else if (role === "pelanggan") {
-  navigate("/pelanggan");
-}
-else {
-  console.log("Role ditemukan:", role);
-  throw new Error("Role tidak valid");
-}
 
     } catch (err) {
-      console.log(err);
-
-      setError(
-        err.message || "Login gagal"
-      );
-
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -123,14 +98,12 @@ else {
 
   return (
     <div>
-
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-800">
           Selamat Datang 👋
         </h2>
-
         <p className="text-gray-500 mt-2 text-sm">
-          Login untuk melakukan booking lapangan badminton dengan mudah
+          Login untuk melakukan booking lapangan badminton
         </p>
       </div>
 
@@ -141,98 +114,33 @@ else {
         </div>
       )}
 
-      {loading && (
-        <div className="bg-gray-100 border border-gray-200 mb-5 p-4 text-sm text-gray-600 rounded-xl flex items-center">
-          <ImSpinner2 className="mr-2 animate-spin" />
-          Mohon Tunggu...
-        </div>
-      )}
+      <form onSubmit={handleSubmit} className="space-y-5">
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-5"
-      >
+        <input
+          type="email"
+          name="email"
+          value={dataForm.email}
+          onChange={handleChange}
+          disabled={loading}
+          className="w-full px-4 py-3 border rounded-xl bg-gray-50"
+          placeholder="Masukkan email"
+        />
 
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Email
-          </label>
-
-          <input
-            type="email"
-            name="email"
-            value={dataForm.email}
-            onChange={handleChange}
-            placeholder="Masukkan email"
-            disabled={loading}
-            className="
-            w-full px-4 py-3
-            border border-gray-300
-            rounded-xl
-            bg-gray-50
-            focus:outline-none
-            focus:ring-2
-            focus:ring-blue-500
-            "
-          />
-        </div>
-
-        <div>
-
-          <div className="flex justify-between mb-2">
-
-            <label className="text-sm font-semibold text-gray-700">
-              Password
-            </label>
-
-            <Link
-              to="/forgot"
-              className="text-sm text-blue-600"
-            >
-              Lupa Password?
-            </Link>
-
-          </div>
-
-          <input
-            type="password"
-            name="password"
-            value={dataForm.password}
-            onChange={handleChange}
-            placeholder="Masukkan password"
-            disabled={loading}
-            className="
-            w-full px-4 py-3
-            border border-gray-300
-            rounded-xl
-            bg-gray-50
-            focus:outline-none
-            focus:ring-2
-            focus:ring-blue-500
-            "
-          />
-
-        </div>
-
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <input type="checkbox" />
-          Ingat Saya
-        </div>
+        <input
+          type="password"
+          name="password"
+          value={dataForm.password}
+          onChange={handleChange}
+          disabled={loading}
+          className="w-full px-4 py-3 border rounded-xl bg-gray-50"
+          placeholder="Masukkan password"
+        />
 
         <button
           type="submit"
           disabled={loading}
-          className="
-          w-full py-3
-          rounded-xl
-          bg-blue-600
-          hover:bg-blue-700
-          text-white
-          font-semibold
-          disabled:opacity-50
-          "
+          className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold"
         >
-
           {loading ? (
             <span className="flex items-center justify-center">
               <ImSpinner2 className="animate-spin mr-2" />
@@ -241,27 +149,17 @@ else {
           ) : (
             "Login Sekarang"
           )}
-
         </button>
-
       </form>
 
       <div className="text-center mt-6">
         <p className="text-sm text-gray-500">
           Belum punya akun?{" "}
-          <Link
-            to="/register"
-            className="text-blue-600 font-semibold"
-          >
+          <Link to="/register" className="text-blue-600 font-semibold">
             Daftar sekarang
           </Link>
         </p>
       </div>
-
-      <p className="text-center text-sm text-gray-400 mt-6">
-        SmashBooking - Sistem Booking Lapangan Badminton
-      </p>
-
     </div>
   );
 }

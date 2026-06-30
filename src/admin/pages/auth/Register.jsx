@@ -23,98 +23,71 @@ export default function Register() {
     });
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  if (
-    !dataForm.nama ||
-    !dataForm.username ||
-    !dataForm.phone ||
-    !dataForm.email ||
-    !dataForm.password ||
-    !dataForm.confirmPassword
-  ) {
-    alert("Semua field harus diisi");
-    return;
-  }
-
-  const phoneRegex = /^[0-9]{12}$/;
-  if (!phoneRegex.test(dataForm.phone)) {
-    alert("Nomor HP harus 12 angka");
-    return;
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(dataForm.email)) {
-    alert("Email tidak valid");
-    return;
-  }
-
-  if (dataForm.password.length < 8) {
-    alert("Password minimal 8 karakter");
-    return;
-  }
-
-  if (dataForm.password !== dataForm.confirmPassword) {
-    alert("Password tidak sama");
-    return;
-  }
-
-  setLoading(true);
-
-  try {
-    const { data, error } =
-      await supabase.auth.signUp({
-        email: dataForm.email,
-        password: dataForm.password,
-        options: {
-          data: {
-            nama: dataForm.nama
-          }
-        }
-      });
-
-    if (error) throw error;
-
-    // hanya insert jika user berhasil dibuat
-    if (data.user) {
-      const { error: dbError } =
-        await supabase
-          .from("users")
-          .insert([
-            {
-              auth_id: data.user.id,
-              nama: dataForm.nama,
-              username: dataForm.username,
-              phone: dataForm.phone,
-              email: dataForm.email,
-              role: "pelanggan"
-            }
-          ]);
-
-      if (dbError) throw dbError;
+    // VALIDASI
+    if (!dataForm.nama || !dataForm.email || !dataForm.password) {
+      alert("Semua field wajib diisi");
+      return;
     }
 
-    alert("Registrasi berhasil");
-    navigate("/login");
+    if (dataForm.password !== dataForm.confirmPassword) {
+      alert("Password tidak sama");
+      return;
+    }
 
-  } catch (err) {
-    console.log(err);
-    alert(err.message);
-  }
+    setLoading(true);
 
-  setLoading(false);
-};
+    try {
+      // 1. REGISTER AUTH
+      const { data, error } = await supabase.auth.signUp({
+        email: dataForm.email.trim().toLowerCase(),
+        password: dataForm.password,
+      });
+
+      if (error) throw error;
+
+      const user = data.user;
+
+      if (!user) {
+        throw new Error("Gagal membuat user auth");
+      }
+
+      // 2. SIMPAN KE TABLE USERS (TANPA ID → BIAR AMAN DARI ERROR KAMU)
+      const { error: dbError } = await supabase
+        .from("users")
+        .insert([
+          {
+            nama: dataForm.nama,
+            username: dataForm.username,
+            phone: dataForm.phone,
+            email: dataForm.email.trim().toLowerCase(),
+            role: "pelanggan",
+          },
+        ]);
+
+      if (dbError) throw dbError;
+
+      alert("Registrasi berhasil");
+
+      navigate("/login");
+    } catch (err) {
+      console.log("REGISTER ERROR:", err);
+      alert(err.message || "Registrasi gagal");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
-
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-gray-800">
           Buat Akun Baru ✨
         </h2>
-
         <p className="text-gray-500 mt-2 text-sm">
-          Daftar untuk mulai booking lapangan badminton dengan mudah
+          Daftar untuk mulai booking lapangan badminton
         </p>
       </div>
 
@@ -187,19 +160,11 @@ export default function Register() {
       <div className="text-center mt-6">
         <p className="text-sm text-gray-500">
           Sudah punya akun?
-          <Link
-            to="/login"
-            className="text-blue-600 font-semibold ml-1"
-          >
+          <Link to="/login" className="text-blue-600 font-semibold ml-1">
             Login disini
           </Link>
         </p>
       </div>
-
-      <p className="text-center text-sm text-gray-400 mt-6">
-        SmashBooking - Sistem Booking Lapangan Badminton
-      </p>
-
     </div>
   );
 }
