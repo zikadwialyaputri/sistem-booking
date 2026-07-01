@@ -17,11 +17,13 @@ export default function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setDataForm((prev) => ({
       ...prev,
       [name]: value,
     }));
-    if (error) setError("");
+
+    setError("");
   };
 
   const handleSubmit = async (e) => {
@@ -33,61 +35,81 @@ export default function Login() {
     }
 
     setLoading(true);
-    setError("");
 
     try {
       const email = dataForm.email.trim().toLowerCase();
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password: dataForm.password,
-      });
+      // LOGIN SUPABASE AUTH
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password: dataForm.password,
+        });
 
-      if (error) throw error;
-      if (!data.user) throw new Error("Login gagal");
+      if (authError) throw authError;
 
+      if (!authData.user) {
+        throw new Error("Login gagal");
+      }
+
+      // AMBIL DATA DARI TABEL USERS
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
         .eq("email", email)
         .single();
 
-      if (userError) throw new Error("Data user tidak ditemukan");
-
-      const role = String(userData.role || "")
-        .trim()
-        .toLowerCase();
-      console.log("ROLE DATABASE =", userData.role);
-      console.log("ROLE CLEAN =", role);
-      console.log("USER DATA:", userData);
-      console.log("ROLE:", role);
-
-      await supabase.from("login_history").insert([
-        {
-          user_id: userData.id,
-          nama: userData.nama,
-          email: userData.email,
-          login_at: new Date().toISOString(),
-        },
-      ]);
-
-      const userStorage = {
-        ...userData,
-        role,
-      };
-
-      localStorage.setItem("user", JSON.stringify(userStorage));
-
-      if (role === "admin") {
-        navigate("/admin", { replace: true });
-      } else if (role === "petugas") {
-        navigate("/petugas", { replace: true });
-      } else if (role === "pelanggan") {
-        navigate("/pelanggan", { replace: true });
-      } else {
-        throw new Error(`Role tidak dikenali: ${role}`);
+      if (userError) {
+        throw new Error("Data user tidak ditemukan");
       }
+
+      const role = userData.role?.trim().toLowerCase();
+
+      // SIMPAN LOGIN HISTORY KE SUPABASE
+      const { error: historyError } = await supabase
+        .from("login_history")
+        .insert([
+          {
+            user_id: userData.id,
+            nama: userData.nama,
+            email: userData.email,
+            login_at: new Date().toISOString(),
+          },
+        ]);
+
+      if (historyError) {
+        console.log(historyError);
+      }
+
+      // SIMPAN KE LOCAL STORAGE
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...userData,
+          role,
+        })
+      );
+
+      // REDIRECT BERDASARKAN ROLE
+      switch (role) {
+        case "admin":
+          navigate("/admin", { replace: true });
+          break;
+
+        case "petugas":
+          navigate("/petugas", { replace: true });
+          break;
+
+        case "pelanggan":
+          navigate("/pelanggan", { replace: true });
+          break;
+
+        default:
+          throw new Error("Role tidak dikenali");
+      }
+
     } catch (err) {
+      console.log(err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -96,7 +118,9 @@ export default function Login() {
 
   return (
     <div>
-      <h2 className="text-3xl font-bold text-center mb-2">Selamat Datang 👋</h2>
+      <h2 className="text-3xl font-bold text-center mb-2">
+        Selamat Datang 👋
+      </h2>
 
       <p className="text-center text-gray-500 mb-6">
         Login untuk booking lapangan
@@ -110,6 +134,7 @@ export default function Login() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+
         <input
           type="email"
           name="email"
@@ -128,7 +153,6 @@ export default function Login() {
           className="w-full border p-3 rounded"
         />
 
-        {/* FORGOT PASSWORD */}
         <div className="text-right">
           <Link to="/forgot" className="text-blue-600 text-sm">
             Lupa password?
@@ -141,17 +165,21 @@ export default function Login() {
         >
           {loading ? (
             <span className="flex justify-center items-center">
-              <ImSpinner2 className="animate-spin mr-2" />
+              <ImSpinner2 className="animate-spin mr-2"/>
               Loading...
             </span>
           ) : (
             "Login"
           )}
         </button>
+
       </form>
 
       <p className="text-center mt-4 text-sm">
-        Belum punya akun? <Link to="/register">Register</Link>
+        Belum punya akun?{" "}
+        <Link to="/register">
+          Register
+        </Link>
       </p>
     </div>
   );

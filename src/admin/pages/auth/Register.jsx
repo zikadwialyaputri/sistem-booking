@@ -48,60 +48,44 @@ export default function Register() {
     try {
       const email = dataForm.email.trim().toLowerCase();
 
-      // ==========================
-      // REGISTER AUTH
-      // ==========================
-      const { data, error } = await supabase.auth.signUp({
+      // Buat user di Supabase Auth
+      const { data: signData, error: signError } = await supabase.auth.signUp({
         email,
         password: dataForm.password,
       });
 
-      console.log("========== REGISTER ==========");
-      console.log("REGISTER DATA:", data);
-      console.log("REGISTER USER:", data?.user);
-      console.log("REGISTER SESSION:", data?.session);
-      console.log("REGISTER ERROR:", error);
-      console.log("==============================");
+      if (signError) throw signError;
 
-      if (error) throw error;
-
-      if (!data.user) {
-        throw new Error("Gagal membuat akun.");
+      // Beberapa deployment Supabase mungkin mengharuskan verifikasi email;
+      // signData.user harus berisi object user dengan id saat pendaftaran sukses.
+      const authUser = signData?.user;
+      if (!authUser || !authUser.id) {
+        throw new Error("Gagal membuat akun. Coba cek email verifikasi jika diperlukan.");
       }
 
-      // ==========================
-      // SIMPAN KE TABEL USERS
-      // ==========================
-      const { error: dbError } = await supabase
-        .from("users")
-        .insert([
-          {
-            auth_id: data.user.id,
-            nama: dataForm.nama,
-            username: dataForm.username,
-            phone: dataForm.phone,
-            email: email,
-            role: "pelanggan",
-          },
-        ]);
+      // Simpan profil di tabel `users` dan set `id` = auth user id.
+      // Gunakan upsert agar tidak menambah duplicate jika sudah ada.
+      const profile = {
+        id: authUser.id,
+        nama: dataForm.nama.trim(),
+        username: dataForm.username.trim(),
+        phone: dataForm.phone.trim(),
+        email,
+        role: "pelanggan",
+      };
+
+      const { error: dbError } = await supabase.from("users").upsert([profile], { onConflict: "id" });
 
       if (dbError) {
-        console.error("========== DATABASE ERROR ==========");
-        console.error(dbError);
-        console.error("====================================");
+        console.error("Database error:", dbError);
         throw dbError;
       }
 
-      console.log("User berhasil disimpan ke tabel users");
-
-      alert("Registrasi berhasil!");
-
+      // Informasi ke user: jika project mengharuskan verifikasi email, beri tahu.
+      alert("Registrasi berhasil! Silakan cek email untuk verifikasi jika diminta.");
       navigate("/login");
     } catch (err) {
-      console.error("========== REGISTER ERROR ==========");
-      console.error(err);
-      console.error("====================================");
-
+      console.error("Register error:", err);
       alert(err.message || "Registrasi gagal");
     } finally {
       setLoading(false);
