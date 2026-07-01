@@ -167,7 +167,7 @@ export default function Login() {
             <span className="flex justify-center items-center">
               <ImSpinner2 className="animate-spin mr-2"/>
               Loading...
-            </span>
+         gmfufty   </span>
           ) : (
             "Login"
           )}
