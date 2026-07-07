@@ -89,59 +89,140 @@ export default function ProfileAdmin() {
   };
 
   const handleSave = async () => {
-    const isNameSame = form.name === (user?.nama || user?.username || "");
-    const isPhoneSame = form.phone === (user?.phone || "");
-    const isImageSame = profileImage === fotoAdmin;
-    const isPasswordEmpty = form.password.trim() === "";
+  const isNameSame =
+    form.name === (user?.nama || user?.username || "");
 
-    if (isNameSame && isPhoneSame && isImageSame && isPasswordEmpty) {
-      triggerToast("warning", "Anda tidak memperbarui apapun");
+  const isPhoneSame =
+    form.phone === (user?.phone || "");
+
+  const isImageSame =
+    profileImage === fotoAdmin;
+
+  const isPasswordEmpty =
+    form.password.trim() === "";
+
+
+  // Cek apakah ada perubahan
+  if (
+    isNameSame &&
+    isPhoneSame &&
+    isImageSame &&
+    isPasswordEmpty
+  ) {
+    triggerToast(
+      "warning",
+      "Anda tidak memperbarui apapun"
+    );
+    return;
+  }
+
+
+  // Validasi password
+  if (
+    !isPasswordEmpty &&
+    form.password.length < 6
+  ) {
+    triggerToast(
+      "warning",
+      "Password baru minimal 6 karakter"
+    );
+    return;
+  }
+
+
+  try {
+
+    // Data yang masuk ke tabel users
+    // JANGAN masukkan password disini
+    const updatedData = {
+      nama: form.name,
+      phone: form.phone,
+      foto: profileImage,
+    };
+
+
+    // Update profile di tabel users
+    const { error } = await supabase
+      .from("users")
+      .update(updatedData)
+      .eq("id", user.id);
+
+
+    if (error) {
+      triggerToast(
+        "error",
+        "Gagal memperbarui profil: " + error.message
+      );
       return;
     }
 
-    if (!isPasswordEmpty && form.password.length < 6) {
-      triggerToast("warning", "Password baru minimal 6 karakter");
-      return;
-    }
 
-    try {
-      const updatedData = {
-        nama: form.name,
-        phone: form.phone,
-        foto: profileImage, 
-      };
 
-      if (!isPasswordEmpty) {
-        updatedData.password = form.password;
-      }
+    // Update password melalui Supabase Auth
+    if (!isPasswordEmpty) {
 
-      const { error } = await supabase
-        .from("users")
-        .update(updatedData)
-        .eq("id", user.id);
+      const { error: passwordError } =
+        await supabase.auth.updateUser({
+          password: form.password,
+        });
 
-      if (error) {
-        triggerToast("error", "Gagal memperbarui profil: " + error.message);
+
+      if (passwordError) {
+        triggerToast(
+          "error",
+          "Password gagal diperbarui: " +
+          passwordError.message
+        );
         return;
       }
-
-      const updatedUser = {
-        ...user,
-        ...updatedData,
-        avatar_url: profileImage, 
-        foto_url: profileImage
-      };
-
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      
-      triggerToast("success", "Profil admin berhasil diperbarui");
-      setIsEdit(false);
-      setForm((prev) => ({ ...prev, password: "" }));
-    } catch (err) {
-      triggerToast("error", "Terjadi kesalahan koneksi");
     }
-  };
 
+
+
+    // Update localStorage agar tampilan ikut berubah
+    const updatedUser = {
+      ...user,
+      ...updatedData,
+      avatar_url: profileImage,
+      foto_url: profileImage,
+    };
+
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(updatedUser)
+    );
+
+
+    triggerToast(
+      "success",
+      "Profil admin berhasil diperbarui"
+    );
+
+
+    setIsEdit(false);
+
+
+    setForm((prev) => ({
+      ...prev,
+      password: "",
+    }));
+
+
+  } catch (err) {
+
+    console.error(
+      "Update profile error:",
+      err
+    );
+
+    triggerToast(
+      "error",
+      "Terjadi kesalahan koneksi"
+    );
+
+  }
+};
   return (
     <div className="min-h-screen text-slate-700 font-sans antialiased bg-[#f8fafc] p-4 md:p-8 relative">
       

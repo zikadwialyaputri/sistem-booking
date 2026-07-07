@@ -79,77 +79,133 @@ export default function Profile() {
   };
 
   const handleSave = async () => {
-    // 1. VALIDASI APAKAH ADA PERUBAHAN DATA
-    const isNameSame = form.name === (user?.username || "");
-    const isPhoneSame = form.phone === (user?.phone || "");
-    const isImageSame = profileImage === (user?.foto || null);
-    const isPasswordEmpty = form.password.trim() === "";
+  const isNameSame =
+    form.name === (user?.username || "");
 
-    if (isNameSame && isPhoneSame && isImageSame && isPasswordEmpty) {
-      triggerToast("warning", "Anda tidak memperbarui apapun");
+  const isPhoneSame =
+    form.phone === (user?.phone || "");
+
+  const isImageSame =
+    profileImage === (user?.foto || null);
+
+  const isPasswordEmpty =
+    form.password.trim() === "";
+
+
+  if (
+    isNameSame &&
+    isPhoneSame &&
+    isImageSame &&
+    isPasswordEmpty
+  ) {
+    triggerToast(
+      "warning",
+      "Anda tidak memperbarui apapun"
+    );
+    return;
+  }
+
+
+  if (
+    !isPasswordEmpty &&
+    form.password.length < 6
+  ) {
+    triggerToast(
+      "warning",
+      "Password baru minimal 6 karakter"
+    );
+    return;
+  }
+
+
+  try {
+
+    // DATA PROFIL (MASUK KE TABLE USERS)
+    const updatedData = {
+      username: form.name,
+      phone: form.phone,
+      foto: profileImage,
+    };
+
+
+    // UPDATE TABLE USERS
+    const { error } = await supabase
+      .from("users")
+      .update(updatedData)
+      .eq("id", user.id);
+
+
+    if (error) {
+      console.log(error);
+      triggerToast(
+        "error",
+        "Gagal memperbarui profil: " + error.message
+      );
       return;
     }
 
-    // 2. VALIDASI PASSWORD BARU TIDAK BOLEH SAMA DENGAN PASSWORD LAMA
-    if (!isPasswordEmpty) {
-      if (form.password.length < 6) {
-        triggerToast("warning", "Password baru minimal 6 karakter");
-        return;
-      }
 
-      try {
-        const { error: checkError } = await supabase.auth.signInWithPassword({
-          email: user.email,
+
+    // UPDATE PASSWORD SUPABASE AUTH
+    if (!isPasswordEmpty) {
+
+      const { error: passwordError } =
+        await supabase.auth.updateUser({
           password: form.password,
         });
 
-        if (!checkError) {
-          triggerToast("warning", "Password baru harus berbeda dengan password lama");
-          return;
-        }
-      } catch (err) {
-        console.log("Pengecekan password dilewati:", err);
-      }
-    }
 
-    // 3. PROSES SIMPAN KE DATABASE
-    try {
-      const updatedData = {
-        username: form.name,
-        phone: form.phone,
-        foto: profileImage,
-      };
-
-      if (!isPasswordEmpty) {
-        updatedData.password = form.password;
-      }
-
-      const { error } = await supabase
-        .from("users")
-        .update(updatedData)
-        .eq("id", user.id);
-
-      if (error) {
-        console.log(error);
-        triggerToast("error", "Gagal memperbarui profil: " + error.message);
+      if (passwordError) {
+        triggerToast(
+          "error",
+          "Password gagal diperbarui: " +
+          passwordError.message
+        );
         return;
       }
-
-      const updatedUser = {
-        ...user,
-        ...updatedData,
-      };
-
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      
-      triggerToast("success", "Profil berhasil diperbarui");
-      setIsEdit(false);
-      setForm((prev) => ({ ...prev, password: "" }));
-    } catch (err) {
-      console.log(err);
-      triggerToast("error", "Terjadi kesalahan koneksi");
     }
-  };
+
+
+
+    // UPDATE LOCAL STORAGE
+    const updatedUser = {
+      ...user,
+      ...updatedData,
+    };
+
+
+    localStorage.setItem(
+      "user",
+      JSON.stringify(updatedUser)
+    );
+
+
+    triggerToast(
+      "success",
+      "Profil berhasil diperbarui"
+    );
+
+
+    setIsEdit(false);
+
+
+    setForm((prev) => ({
+      ...prev,
+      password: "",
+    }));
+
+
+  } catch (err) {
+
+    console.log(err);
+
+    triggerToast(
+      "error",
+      "Terjadi kesalahan koneksi"
+    );
+
+  }
+};
 
   return (
     <div className="min-h-screen text-slate-700 font-sans antialiased bg-[#f8fafc] p-4 md:p-8 relative">
