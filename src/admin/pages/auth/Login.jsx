@@ -35,29 +35,43 @@ export default function Login() {
     }
 
     setLoading(true);
+    setError("");
 
     try {
       const email = dataForm.email.trim().toLowerCase();
 
-      // LOGIN SUPABASE AUTH
+      console.log("===== MULAI LOGIN =====");
+      console.log("Email:", email);
+
+      // LOGIN KE SUPABASE AUTH
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({
           email,
           password: dataForm.password,
         });
 
-      if (authError) throw authError;
+      console.log("LOGIN DATA:", authData);
+      console.log("LOGIN ERROR:", authError);
+
+      if (authError) {
+        throw authError;
+      }
 
       if (!authData.user) {
         throw new Error("Login gagal");
       }
 
-      // AMBIL DATA DARI TABEL USERS
+      console.log("USER AUTH:", authData.user);
+
+      // AMBIL DATA USER DARI TABEL USERS
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
         .eq("email", email)
         .single();
+
+      console.log("USER DATA:", userData);
+      console.log("USER ERROR:", userError);
 
       if (userError) {
         throw new Error("Data user tidak ditemukan");
@@ -65,7 +79,9 @@ export default function Login() {
 
       const role = userData.role?.trim().toLowerCase();
 
-      // SIMPAN LOGIN HISTORY KE SUPABASE
+      console.log("ROLE:", role);
+
+      // SIMPAN LOGIN HISTORY
       const { error: historyError } = await supabase
         .from("login_history")
         .insert([
@@ -77,9 +93,7 @@ export default function Login() {
           },
         ]);
 
-      if (historyError) {
-        console.log(historyError);
-      }
+      console.log("LOGIN HISTORY ERROR:", historyError);
 
       // SIMPAN KE LOCAL STORAGE
       localStorage.setItem(
@@ -90,7 +104,8 @@ export default function Login() {
         })
       );
 
-      // REDIRECT BERDASARKAN ROLE
+      console.log("LOGIN BERHASIL");
+
       switch (role) {
         case "admin":
           navigate("/admin", { replace: true });
@@ -107,9 +122,8 @@ export default function Login() {
         default:
           throw new Error("Role tidak dikenali");
       }
-
     } catch (err) {
-      console.log(err);
+      console.error("LOGIN ERROR:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -134,7 +148,6 @@ export default function Login() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-
         <input
           type="email"
           name="email"
@@ -165,14 +178,13 @@ export default function Login() {
         >
           {loading ? (
             <span className="flex justify-center items-center">
-              <ImSpinner2 className="animate-spin mr-2"/>
+              <ImSpinner2 className="animate-spin mr-2" />
               Loading...
             </span>
           ) : (
             "Login"
           )}
         </button>
-
       </form>
 
       <p className="text-center mt-4 text-sm">
