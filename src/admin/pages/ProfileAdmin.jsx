@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Tambah import useNavigate untuk navigasi
+import { useNavigate } from "react-router-dom"; 
 import {
   FaUser,
   FaEnvelope,
@@ -11,19 +11,21 @@ import {
   FaCheck,
   FaExclamationCircle,
   FaCheckCircle,
-  FaArrowLeft // Tambah icon panah kembali agar selaras dengan pelanggan
+  FaArrowLeft,
+  FaChevronDown
 } from "react-icons/fa";
 import { supabase } from "../../services/supabase";
 
 export default function ProfileAdmin() {
   const user = JSON.parse(localStorage.getItem("user"));
-  const navigate = useNavigate(); // Inisialisasi fungsi navigasi
+  const navigate = useNavigate(); 
 
-  // SINKRONISASI FOTO: Mengakomodasi jika di dashboard menggunakan nama property yang berbeda
+  // SINKRONISASI FOTO
   const fotoAdmin = user?.foto || user?.avatar_url || user?.foto_url || null;
 
   const [isEdit, setIsEdit] = useState(false);
   const [profileImage, setProfileImage] = useState(fotoAdmin);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const [form, setForm] = useState({
     name: user?.nama || user?.username || "",
@@ -32,7 +34,12 @@ export default function ProfileAdmin() {
     password: "",
   });
 
-  // STATE TOAST PREMIUM (TANPA ANIMASI)
+  const profile = {
+    name: user?.username || "Admin",
+    foto: fotoAdmin || "https://i.pravatar.cc/100?img=12",
+  };
+
+  // STATE TOAST PREMIUM
   const [toast, setToast] = useState({
     show: false,
     type: "success",
@@ -77,12 +84,11 @@ export default function ProfileAdmin() {
       phone: user?.phone || "",
       password: "",
     });
-    setProfileImage(fotoAdmin); // Reset ke foto semula saat batal
+    setProfileImage(fotoAdmin); 
     setIsEdit(false);
   };
 
   const handleSave = async () => {
-    // 1. VALIDASI APAKAH ADA PERUBAHAN DATA
     const isNameSame = form.name === (user?.nama || user?.username || "");
     const isPhoneSame = form.phone === (user?.phone || "");
     const isImageSame = profileImage === fotoAdmin;
@@ -93,13 +99,11 @@ export default function ProfileAdmin() {
       return;
     }
 
-    // 2. VALIDASI MINIMAL KARAKTER PASSWORD
     if (!isPasswordEmpty && form.password.length < 6) {
       triggerToast("warning", "Password baru minimal 6 karakter");
       return;
     }
 
-    // 3. PROSES SIMPAN KE DATABASE
     try {
       const updatedData = {
         nama: form.name,
@@ -117,16 +121,14 @@ export default function ProfileAdmin() {
         .eq("id", user.id);
 
       if (error) {
-        console.log(error);
         triggerToast("error", "Gagal memperbarui profil: " + error.message);
         return;
       }
 
-      // Ikut perbarui local storage agar dashboard & profil langsung sinkron tanpa relogin
       const updatedUser = {
         ...user,
         ...updatedData,
-        avatar_url: profileImage, // Duplikat ke key alternatif agar aman untuk dashboard
+        avatar_url: profileImage, 
         foto_url: profileImage
       };
 
@@ -136,7 +138,6 @@ export default function ProfileAdmin() {
       setIsEdit(false);
       setForm((prev) => ({ ...prev, password: "" }));
     } catch (err) {
-      console.log(err);
       triggerToast("error", "Terjadi kesalahan koneksi");
     }
   };
@@ -144,7 +145,7 @@ export default function ProfileAdmin() {
   return (
     <div className="min-h-screen text-slate-700 font-sans antialiased bg-[#f8fafc] p-4 md:p-8 relative">
       
-      {/* TOAST CAPSULE LUXURY (TANPA ANIMASI) */}
+      {/* TOAST CAPSULE LUXURY */}
       {toast.show && (
         <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-3.5 px-6 py-3 rounded-full shadow-xl bg-white/95 backdrop-blur-md border border-slate-150">
           {toast.type === "success" && (
@@ -176,16 +177,17 @@ export default function ProfileAdmin() {
 
       <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* BANNER MATCHING DASHBOARD STYLE */}
-        <div className="relative h-60 md:h-64 bg-slate-950 flex flex-col justify-between p-8 md:p-12 rounded-[28px] overflow-hidden shadow-sm">
+        {/* BANNER WITH PROFILE DROPDOWN ON RIGHT SIDE */}
+        <div className="relative h-60 md:h-64 bg-slate-950 flex flex-row justify-between items-start p-8 md:p-12 rounded-[28px] overflow-visible shadow-sm z-30">
           <img
             src="/img/badminton.jpg"
             alt="Badminton Arena Background"
-            className="absolute inset-0 w-full h-full object-cover opacity-35 pointer-events-none mix-blend-luminosity"
+            className="absolute inset-0 w-full h-full object-cover opacity-35 pointer-events-none mix-blend-luminosity rounded-[28px]"
           />
-          <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/95 via-slate-900/75 to-blue-950/45 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/95 via-slate-900/75 to-blue-950/45 pointer-events-none rounded-[28px]" />
           
-          <div className="relative z-10 w-full flex flex-col justify-start items-start">
+          {/* KIRI BANNER */}
+          <div className="relative z-10 flex flex-col justify-start items-start pt-1">
             <span className="uppercase tracking-widest text-[10px] font-bold bg-blue-500/20 text-blue-300 w-fit px-3 py-1 rounded-full mb-4 backdrop-blur-sm">
               PORTAL ADMINISTRATOR
             </span>
@@ -195,6 +197,48 @@ export default function ProfileAdmin() {
             <p className="text-slate-300 text-xs md:text-sm mt-3 font-medium max-w-md leading-relaxed opacity-90">
               Kelola informasi kredensial dan pengaturan identitas super administrator Anda
             </p>
+          </div>
+
+          {/* KANAN BANNER: DROPDOWN PROFIL AKTIF */}
+          <div className="relative z-20 flex items-center gap-4">
+            <div className="relative">
+              <div 
+                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                className="flex items-center gap-3 bg-white/10 hover:bg-white/20 transition px-3 py-2 rounded-xl border border-white/10 backdrop-blur-sm cursor-pointer select-none"
+              >
+                <img
+                  src={profile.foto}
+                  alt="Avatar Admin"
+                  className="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-sm"
+                />
+                <div className="hidden sm:flex flex-col text-left text-white">
+                  <span className="text-xs font-bold leading-none truncate max-w-[100px]">{profile.name}</span>
+                  <span className="text-[9px] text-slate-300 font-medium mt-0.5 uppercase tracking-wider">Admin</span>
+                </div>
+                <FaChevronDown className={`text-[10px] text-slate-300 transition-transform ${showProfileDropdown ? "rotate-180" : ""}`} />
+              </div>
+
+              {showProfileDropdown && (
+                <div className="absolute right-0 top-14 bg-white p-2 rounded-xl shadow-2xl w-48 text-slate-800 z-50 border border-slate-100">
+                  <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                    <p className="font-semibold text-xs text-slate-800 truncate">
+                      {profile.name}
+                    </p>
+                    <p className="text-[10px] text-slate-400 font-medium">Super Admin</p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem("user");
+                      navigate("/login");
+                    }}
+                    className="w-full text-left text-xs text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition font-semibold mt-1"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -318,18 +362,18 @@ export default function ProfileAdmin() {
               </div>
             </div>
 
-            {/* ACTION BUTTONS (Diselaraskan layoutnya dengan justify-between) */}
+            {/* ACTION BUTTONS */}
             <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
               
-              {/* TOMBOL KIRI: Kembali Ke Dashboard Admin */}
+              {/* TOMBOL KIRI */}
               <button
-                onClick={() => navigate("/admin")} // Mengarah ke dashboard admin
+                onClick={() => navigate("/admin")} 
                 className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm group"
               >
                 <FaArrowLeft size={11} className="text-slate-400 group-hover:text-slate-600 transition-colors" /> Kembali ke Dashboard
               </button>
 
-              {/* TOMBOL KANAN: Aksi Edit / Simpan */}
+              {/* TOMBOL KANAN */}
               <div className="flex items-center gap-3">
                 {isEdit ? (
                   <>

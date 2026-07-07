@@ -5,6 +5,7 @@ import {
   FaClock,
   FaTimesCircle,
   FaWallet,
+  FaChevronDown,
 } from "react-icons/fa";
 import {
   ResponsiveContainer,
@@ -23,10 +24,16 @@ export default function Dashboard() {
 
   const [stats, setStats] = useState([]);
   const [bookingData, setBookingData] = useState([]);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user"));
+  
+  // Ambil foto admin secara dinamis dari localStorage agar sinkron saat diperbarui
+  const fotoAdmin = user?.foto || user?.avatar_url || user?.foto_url || "https://i.pravatar.cc/100?img=12";
+  
   const profile = {
-    name: user?.username || "Admin",
+    name: user?.username || user?.nama || "Admin",
+    foto: fotoAdmin,
   };
 
   const hargaBooking = 35000;
@@ -74,28 +81,78 @@ export default function Dashboard() {
   return (
     <div className="w-full space-y-6">
       
-      {/* HEADER HERO BANNER */}
-      <div className="relative rounded-3xl overflow-hidden shadow-md h-60 md:h-72 transition-all duration-300">
+      {/* HEADER HERO BANNER WITH INTEGRATED DROPDOWN */}
+      <div className="relative rounded-3xl overflow-visible shadow-md h-60 md:h-72 transition-all duration-300 bg-slate-950 flex flex-row justify-between items-start p-6 md:p-10 z-30">
         <img
           src="/img/badminton.jpg"
           alt="Badminton Background"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover rounded-3xl opacity-30 mix-blend-luminosity pointer-events-none"
         />
-        <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/95 via-slate-900/75 to-blue-950/45" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-slate-900/95 via-slate-900/75 to-blue-950/45 rounded-3xl pointer-events-none" />
 
-        <div className="relative z-10 h-full w-full p-6 md:p-10 flex flex-col justify-between">
-          <div className="text-white pt-1">
-            <p className="uppercase tracking-widest text-[10px] md:text-xs font-bold bg-blue-500/30 text-blue-200 w-fit px-3 py-1 rounded-full mb-4 backdrop-blur-sm">
-              PORTAL ADMIN
-            </p>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-none">
-              Dashboard Overview
-            </h1>
-            <p className="text-slate-300 text-sm md:text-lg mt-3 font-medium max-w-sm md:max-w-2xl leading-relaxed">
-              Halo, <span className="text-white font-bold">{profile.name}</span>! 👋
-            </p>
+        {/* SISI KIRI BANNER: INFO UTAMA */}
+        <div className="relative z-10 text-white pt-1">
+          <p className="uppercase tracking-widest text-[10px] md:text-xs font-bold bg-blue-500/30 text-blue-200 w-fit px-3 py-1 rounded-full mb-4 backdrop-blur-sm">
+            PORTAL ADMIN
+          </p>
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-none">
+            Dashboard Overview
+          </h1>
+          <p className="text-slate-300 text-sm md:text-lg mt-3 font-medium max-w-sm md:max-w-2xl leading-relaxed">
+            Halo, <span className="text-white font-bold">{profile.name}</span>! 👋
+          </p>
+        </div>
+
+        {/* SISI KANAN BANNER: INTERACTIVE DROPDOWN PROFIL */}
+        <div className="relative z-20 flex items-center gap-4">
+          <div className="relative">
+            <div 
+              onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+              className="flex items-center gap-3 bg-white/10 hover:bg-white/20 transition px-3 py-2 rounded-xl border border-white/10 backdrop-blur-sm cursor-pointer select-none"
+            >
+              <img
+                src={profile.foto}
+                alt="Avatar Admin"
+                className="w-8 h-8 rounded-lg object-cover border border-white/20 shadow-sm"
+              />
+              <div className="hidden sm:flex flex-col text-left text-white">
+                <span className="text-xs font-bold leading-none truncate max-w-[100px]">{profile.name}</span>
+                <span className="text-[9px] text-slate-300 font-medium mt-0.5 uppercase tracking-wider">Admin</span>
+              </div>
+              <FaChevronDown className={`text-[10px] text-slate-300 transition-transform ${showProfileDropdown ? "rotate-180" : ""}`} />
+            </div>
+
+            {/* ISI DROPDOWN MENU */}
+            {showProfileDropdown && (
+              <div className="absolute right-0 top-14 bg-white p-2 rounded-xl shadow-2xl w-48 text-slate-800 z-50 border border-slate-100">
+                <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                  <p className="font-semibold text-xs text-slate-800 truncate">
+                    {profile.name}
+                  </p>
+                  <p className="text-[10px] text-slate-400 font-medium">Super Admin</p>
+                </div>
+
+                <button
+                  onClick={() => navigate("/admin/profile")}
+                  className="w-full text-left text-xs hover:bg-slate-50 p-2 rounded-lg transition font-medium text-slate-600 block"
+                >
+                  Edit Profil
+                </button>
+
+                <button
+                  onClick={() => {
+                    localStorage.removeItem("user");
+                    navigate("/login");
+                  }}
+                  className="w-full text-left text-xs text-rose-600 hover:bg-rose-50 p-2 rounded-lg transition font-semibold mt-1"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
+
       </div>
 
       {/* STAT CARDS GRID */}
