@@ -48,49 +48,61 @@ export default function Register() {
     try {
       const email = dataForm.email.trim().toLowerCase();
 
-      // Buat user di Supabase Auth
-      const { data: signData, error: signError } = await supabase.auth.signUp({
-        email,
-        password: dataForm.password,
-      });
+      // 1. Buat akun di Supabase Authentication
+      const { data: signData, error: signError } =
+        await supabase.auth.signUp({
+          email,
+          password: dataForm.password,
+        });
 
-      if (signError) throw signError;
-
-      // Beberapa deployment Supabase mungkin mengharuskan verifikasi email;
-      // signData.user harus berisi object user dengan id saat pendaftaran sukses.
-      const authUser = signData?.user;
-      if (!authUser || !authUser.id) {
-        throw new Error("Gagal membuat akun. Coba cek email verifikasi jika diperlukan.");
+      if (signError) {
+        throw signError;
       }
 
-      // Simpan profil di tabel `users` dan set `id` = auth user id.
-      // Gunakan upsert agar tidak menambah duplicate jika sudah ada.
-      const profile = {
-        id: authUser.id,
-        nama: dataForm.nama.trim(),
-        username: dataForm.username.trim(),
-        phone: dataForm.phone.trim(),
-        email,
-        role: "pelanggan",
-      };
+      const authUser = signData.user;
 
-      const { error: dbError } = await supabase.from("users").upsert([profile], { onConflict: "id" });
+      if (!authUser) {
+        throw new Error("Gagal membuat akun Supabase Auth");
+      }
+
+
+      // 2. Simpan data tambahan ke tabel users
+      // id TIDAK DIISI karena auto increment
+      const { error: dbError } = await supabase
+        .from("users")
+        .insert([
+          {
+            auth_id: authUser.id,
+            nama: dataForm.nama.trim(),
+            username: dataForm.username.trim(),
+            phone: dataForm.phone.trim(),
+            email,
+            role: "pelanggan",
+          },
+        ]);
+
 
       if (dbError) {
-        console.error("Database error:", dbError);
+        console.error("Database Error:", dbError);
         throw dbError;
       }
 
-      // Informasi ke user: jika project mengharuskan verifikasi email, beri tahu.
-      alert("Registrasi berhasil! Silakan cek email untuk verifikasi jika diminta.");
+
+      alert(
+        "Registrasi berhasil! Silakan login menggunakan email dan password."
+      );
+
       navigate("/login");
+
+
     } catch (err) {
-      console.error("Register error:", err);
+      console.error("Register Error:", err);
       alert(err.message || "Registrasi gagal");
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div>
@@ -104,7 +116,9 @@ export default function Register() {
         </p>
       </div>
 
+
       <form onSubmit={handleSubmit} className="space-y-5">
+
         <input
           type="text"
           name="nama"
@@ -113,6 +127,7 @@ export default function Register() {
           placeholder="Nama Lengkap"
           className="w-full px-4 py-3 border rounded-xl"
         />
+
 
         <input
           type="text"
@@ -123,6 +138,7 @@ export default function Register() {
           className="w-full px-4 py-3 border rounded-xl"
         />
 
+
         <input
           type="text"
           name="phone"
@@ -131,6 +147,7 @@ export default function Register() {
           placeholder="Nomor Telepon"
           className="w-full px-4 py-3 border rounded-xl"
         />
+
 
         <input
           type="email"
@@ -141,6 +158,7 @@ export default function Register() {
           className="w-full px-4 py-3 border rounded-xl"
         />
 
+
         <input
           type="password"
           name="password"
@@ -149,6 +167,7 @@ export default function Register() {
           placeholder="Password"
           className="w-full px-4 py-3 border rounded-xl"
         />
+
 
         <input
           type="password"
@@ -159,6 +178,7 @@ export default function Register() {
           className="w-full px-4 py-3 border rounded-xl"
         />
 
+
         <button
           type="submit"
           disabled={loading}
@@ -166,16 +186,22 @@ export default function Register() {
         >
           {loading ? "Loading..." : "Daftar Sekarang"}
         </button>
+
       </form>
+
 
       <div className="text-center mt-6">
         <p className="text-sm text-gray-500">
           Sudah punya akun?
-          <Link to="/login" className="text-blue-600 font-semibold ml-1">
+          <Link
+            to="/login"
+            className="text-blue-600 font-semibold ml-1"
+          >
             Login disini
           </Link>
         </p>
       </div>
+
     </div>
   );
 }
